@@ -210,7 +210,7 @@ namespace CmdLineParser
 	};
 
 	template<typename RtrnType, typename... Args>
-	class flag_event_t
+	class flag_event_t : public flag_event
 	{
 	private:
 		mutable RtrnType(*triggeredFunc)(Args...) = nullptr;
