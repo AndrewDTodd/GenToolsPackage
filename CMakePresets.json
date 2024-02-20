@@ -8,8 +8,8 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "installDir": "${sourceDir}/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "cl.exe",
-        "CMAKE_CXX_COMPILER": "cl.exe"
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl"
       },
       "environment": {
         "CMAKE_BUILD_PARALLEL_LEVEL": "18"
@@ -133,8 +133,8 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "installDir": "${sourceDir}/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_C_COMPILER": "clang-14",
+        "CMAKE_CXX_COMPILER": "clang++-14"
       },
       "environment": {
         "CMAKE_BUILD_PARALLEL_LEVEL": "12"
