@@ -9,12 +9,18 @@ namespace CmdLineParser
 #endif // !_DEBUG
 		: _flagDesc(std::move(flagDesc)), FlagRequired(flagRequired)
 	{
-		flagToken.size() > 0 ? (flagToken.size() == 1 ? _shortToken = "-" + std::move(flagToken) : _longTokens.emplace_back("--" + std::move(flagToken))) :
+		if (flagToken.size() == 0)
+		{
 #ifdef _DEBUG
 			throw std::logic_error("Empty token provided");
 #else
 			std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
 #endif // _DEBUG
+
+			return;
+		}
+
+		flagToken.size() == 1 ? _shortToken = "-" + std::move(flagToken) : _longTokens.emplace_back("--" + std::move(flagToken));
 	}
 
 	Flag::Flag(std::string&& flagToken, std::string&& flagDesc, const flag_argument& flagArg,
@@ -24,12 +30,18 @@ namespace CmdLineParser
 #endif // !_DEBUG
 		: _flagDesc(std::move(flagDesc)), _flagArg(&flagArg), ArgRequired(argRequired), FlagRequired(flagRequired)
 	{
-		flagToken.size() > 0 ? (flagToken.size() == 1 ? _shortToken = "-" + std::move(flagToken) : _longTokens.emplace_back("--" + std::move(flagToken))) :
+		if (flagToken.size() == 0)
+		{
 #ifdef _DEBUG
 			throw std::logic_error("Empty token provided");
 #else
 			std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
 #endif // _DEBUG
+
+			return;
+		}
+
+		flagToken.size() == 1 ? _shortToken = "-" + std::move(flagToken) : _longTokens.emplace_back("--" + std::move(flagToken));
 	}
 
 	Flag::Flag(Flag&& other) noexcept : 

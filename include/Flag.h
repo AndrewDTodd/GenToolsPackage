@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <cstdint>
+#include <iostream>
 
 #ifdef _DEBUG
 #include <typeinfo>
@@ -586,7 +587,7 @@ namespace CmdLineParser
 #ifdef _DEBUG
 				throw std::logic_error("Empty token provided")
 #else
-				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl
 #endif // _DEBUG
 				), ...);
 		}
@@ -612,7 +613,7 @@ namespace CmdLineParser
 #ifdef _DEBUG
 				throw std::logic_error("Empty token provided")
 #else
-				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl
 #endif // _DEBUG
 			), ...);
 		}
