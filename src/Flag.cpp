@@ -1,5 +1,7 @@
 #include "../include/Flag.h"
 
+#include <utility>
+
 namespace CmdLineParser
 {
 	Flag::Flag(std::string&& flagToken, std::string&& flagDesc,
