@@ -49,8 +49,8 @@ jobs:
     - name: Run CMake
       uses: lukka/run-cmake@v10
       with:
-        cmakeListsOrSettingsJson: CMakeLists.txt
-        cmakePreset: ${{ matrix.cmake_preset }}
+        cmakeListsTxtPath: CMakeLists.txt
+        configurePreset: ${{ matrix.cmake_preset }}
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
