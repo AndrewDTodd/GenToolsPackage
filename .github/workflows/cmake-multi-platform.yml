@@ -26,16 +26,20 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
+        cpp_flags: ["", "-stdlib=libc++", ""]
         include:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
+            cpp_flags: ""
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
+            cpp_flags: ""
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
+            cpp_flags: "-stdlib=libc++"
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -62,6 +66,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_CXX_FLAGS="${{ matrix.cpp_flags }}"
         -S ${{ github.workspace }}
 
     - name: Build
