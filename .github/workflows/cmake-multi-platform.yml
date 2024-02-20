@@ -46,13 +46,6 @@ jobs:
     - name: Configure CMake
       uses: lukka/get-cmake@latest
 
-    - name: Setup Clang
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clang-14
-        sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
-        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
-
     - name: Run CMake
       uses: lukka/run-cmake@v10
       with:
