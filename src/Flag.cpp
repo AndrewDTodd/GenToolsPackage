@@ -9,7 +9,27 @@ namespace CmdLineParser
 #endif // !_DEBUG
 		: _flagDesc(std::move(flagDesc)), FlagRequired(flagRequired)
 	{
-		flagToken.size() == 1 ? _shortToken = "-" + std::move(flagToken) : _longTokens.emplace_back("--" + std::move(flagToken));
+		flagToken.size() > 0 ? (flagToken.size() == 1 ? _shortToken = "-" + std::move(flagToken) : _longTokens.emplace_back("--" + std::move(flagToken))) :
+#ifdef _DEBUG
+			throw std::logic_error("Empty token provided");
+#else
+			std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+#endif // _DEBUG
+	}
+
+	Flag::Flag(std::string&& flagToken, std::string&& flagDesc, const flag_argument& flagArg,
+		bool argRequired, bool flagRequired)
+#ifndef _DEBUG
+		noexcept
+#endif // !_DEBUG
+		: _flagDesc(std::move(flagDesc)), _flagArg(&flagArg), ArgRequired(argRequired), FlagRequired(flagRequired)
+	{
+		flagToken.size() > 0 ? (flagToken.size() == 1 ? _shortToken = "-" + std::move(flagToken) : _longTokens.emplace_back("--" + std::move(flagToken))) :
+#ifdef _DEBUG
+			throw std::logic_error("Empty token provided");
+#else
+			std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+#endif // _DEBUG
 	}
 
 	Flag::Flag(Flag&& other) noexcept : 

@@ -206,7 +206,7 @@ namespace CmdLineParser
 	{
 	public:
 		virtual void Run() const = 0;
-		virtual void TryRun(std::string* errorMsg = nullptr) const noexcept = 0;
+		virtual bool TryRun(std::string* errorMsg = nullptr) const noexcept = 0;
 	};
 
 	template<typename RtrnType, typename... Args>
@@ -580,8 +580,23 @@ namespace CmdLineParser
 #endif // !_DEBUG
 			: _flagDesc(std::move(flagDesc)), FlagRequired(flagRequired)
 		{
-			((flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))), ...);
+			static_assert(sizeof...(Tokens) > 0, "At least one token is required for a Flag");
+
+			((flagTokens.size() > 0 ? (flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))) :
+#ifdef _DEBUG
+				throw std::logic_error("Empty token provided")
+#else
+				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+#endif // _DEBUG
+				), ...);
 		}
+
+		Flag(std::string&& flagToken, std::string&& flagDesc, const flag_argument& flagArg,
+			bool argRequired = false, bool flagRequired = false)
+#ifndef _DEBUG
+			noexcept
+#endif // !_DEBUG
+			;
 
 		template<StringType... Tokens>
 		Flag(Tokens&&... flagTokens, std::string&& flagDesc, const flag_argument& flagArg,
@@ -589,9 +604,17 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: _flagDesc(std::move(flagDesc)), _flagArg(&flagArg), FlagRequired(flagRequired)
+			: _flagDesc(std::move(flagDesc)), _flagArg(&flagArg), ArgRequired(argRequired), FlagRequired(flagRequired)
 		{
-			((flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))), ...);
+			static_assert(sizeof...(Tokens) > 0, "At least one token is required for a Flag");
+
+			((flagTokens.size() > 0 ? (flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))) :
+#ifdef _DEBUG
+				throw std::logic_error("Empty token provided")
+#else
+				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+#endif // _DEBUG
+			), ...);
 		}
 
 		Flag(Flag&& other) noexcept;

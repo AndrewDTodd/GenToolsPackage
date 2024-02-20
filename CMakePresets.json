@@ -62,7 +62,7 @@
     },
 
     {
-      "name": "linux-x64-base",
+      "name": "linux-gcc-x64-base",
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
@@ -86,9 +86,9 @@
       }
     },
     {
-      "name": "x64-Debug",
-      "displayName": "x64 Debug",
-      "inherits": "linux-x64-base",
+      "name": "gcc-x64-Debug",
+      "displayName": "g++ x64 Debug",
+      "inherits": "linux-gcc-x64-base",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -98,17 +98,17 @@
       }
     },
     {
-      "name": "x64-Release",
-      "displayName": "x64 Release",
-      "inherits": "x64-Debug",
+      "name": "gcc-x64-Release",
+      "displayName": "g++ x64 Release",
+      "inherits": "gcc-x64-Debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "x86-Debug",
-      "displayName": "x86 Debug",
-      "inherits": "linux-x64-base",
+      "name": "gcc-x86-Debug",
+      "displayName": "g++ x86 Debug",
+      "inherits": "linux-gcc-x64-base",
       "architecture": {
         "value": "x86",
         "strategy": "external"
@@ -118,9 +118,74 @@
       }
     },
     {
-      "name": "x86-Release",
-      "displayName": "x86 Release",
-      "inherits": "x86-Debug",
+      "name": "gcc-x86-Release",
+      "displayName": "g++ x86 Release",
+      "inherits": "gcc-x86-Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name": "linux-clang-x64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      },
+      "environment": {
+        "CMAKE_BUILD_PARALLEL_LEVEL": "12"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-clang-x64"
+        }
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "clang-x64-Debug",
+      "displayName": "clang x64 Debug",
+      "inherits": "linux-clang-x64-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "clang-x64-Release",
+      "displayName": "clang x64 Release",
+      "inherits": "clang-x64-Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "clang-x86-Debug",
+      "displayName": "clang x86 Debug",
+      "inherits": "linux-clang-x64-base",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "clang-x86-Release",
+      "displayName": "clang x86 Release",
+      "inherits": "clang-x86-Debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
