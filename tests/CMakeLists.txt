@@ -38,12 +38,33 @@ foreach(TEST_SOURCE ${FLAG_AGGREGATE_TYPES_SOURCES})
 	target_include_directories(${TEST_NAME} PRIVATE ${CmdLineParser_SOURCE_DIR}/include)
 	list(APPEND FLAG_AGGREGATE_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND TEST_TARGETS ${TEST_NAME})
-	gtest_discover_tests(${TEST_NAME})
-	set_target_properties(${TEST_NAME} PROPERTIES FOLDER Tests/flag_aggregates/)
+	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "FlagAggregates")
+	set_target_properties(${TEST_NAME} PROPERTIES FOLDER Tests/flag_aggregates)
+endforeach()
+
+#create a set for the Flag aggregate types unit tests
+set(PARSE_FUNCTIONS_TARGETS)
+#get a list of the .cpp files in the subdirectory for the unit tests
+file(GLOB PARSE_FUNCTIONS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/Flag/parse_functions/*.cpp")
+
+#add each source file as a test target
+foreach(TEST_SOURCE ${PARSE_FUNCTIONS_SOURCES})
+	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
+	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main CmdLineParser)
+	target_include_directories(${TEST_NAME} PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
+	target_include_directories(${TEST_NAME} PRIVATE ${CmdLineParser_SOURCE_DIR}/include)
+	list(APPEND PARSE_FUNCTIONS_TARGETS ${TEST_NAME})
+	list(APPEND TEST_TARGETS ${TEST_NAME})
+	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "ParseFunctions")
+	set_target_properties(${TEST_NAME} PROPERTIES FOLDER Tests/parse_functions)
 endforeach()
 
 #create a custom target for the flag_aggregate types tests
 add_custom_target(flag_aggregate_tests DEPENDS ${FLAG_AGGREGATE_TYPES_TARGETS})
+
+#create a custom target for the parse_functions tests
+add_custom_target(parse_function_tests DEPENDS ${PARSE_FUNCTIONS_TARGETS})
 
 #create a custom target for all tests
 add_custom_target(build_all_tests DEPENDS ${TEST_TARGETS})
