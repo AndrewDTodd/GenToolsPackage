@@ -5,7 +5,10 @@
 
 namespace CmdLineParser
 {
-	class BranchFlag : public Flag
+	template<typename T>
+	concept FlagType = std::is_base_of<Flag, T>::value;
+
+	class BranchFlag : virtual public Flag
 	{
 	protected:
 		std::vector<Flag> _nestedFlags;

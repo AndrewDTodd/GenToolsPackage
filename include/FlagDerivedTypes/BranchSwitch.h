@@ -1,16 +1,13 @@
 #ifndef BRANCH_SWITCH_FLAG_H
 #define BRANCH_SWITCH_FLAG_H
 
-#include <Flag.h>
-#include <FlagSubTypes/SwitchFlag.h>
+#include <BranchFlag.h>
+#include <SwitchFlag.h>
 
 namespace CmdLineParser
 {
-	class BranchSwitch : public SwitchFlag
+	class BranchSwitch : public BranchFlag, public SwitchFlag
 	{
-	protected:
-		std::vector<Flag> _nestedFlags;
-
 	public:
 		BranchSwitch(std::string&& flagToken, std::string&& flagDesc,
 			bool defaultSwitchState = false, bool flagRequired = false)
@@ -25,9 +22,10 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: SwitchFlag(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired), _nestedFlags{ std::forward<Flags>(subFlags)... }
-		{
-		}
+			: Flag(std::move(flagToken), std::move(flagDesc), flagRequired),
+			  BranchFlag(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
+			  SwitchFlag(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired)
+		{}
 
 		template<FlagType... Flags>
 		BranchSwitch& SetSubFlags(Flags&&... subFlags) noexcept

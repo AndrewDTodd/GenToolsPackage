@@ -1,26 +1,39 @@
 #ifndef TRIGGER_SWITCH_FLAG_H
 #define TRIGGER_SWITCH_FLAG_H
 
-#include <Flag.h>
-#include <FlagSubTypes/SwitchFlag.h>
+#include <TriggerFlag.h>
+#include <SwitchFlag.h>
 
 namespace CmdLineParser
 {
-	class TriggerSwitch : public SwitchFlag
+	class TriggerSwitch : public SwitchFlag, public TriggerFlag
 	{
-	protected:
-		const flag_event* _triggeredFunc;
-
 	public:
+		TriggerSwitch(std::string&& flagToken, std::string&& flagDesc,
+			bool defaultSwitchState = false, bool flagRequired = false)
+#ifndef _DEBUG
+			noexcept
+#endif // !_DEBUG
+			;
+
 		template<StringType... Tokens>
 		TriggerSwitch(Tokens&&... flagTokens, std::string&& flagDesc,
 			bool defaultSwitchState = false, bool flagRequired = false)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: SwitchFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), defaultSwitchState, flagRequired)
+			: Flag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), flagRequired),
+			  SwitchFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), defaultSwitchState, flagRequired),
+			  TriggerFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), flagRequired)
 		{
 		}
+
+		TriggerSwitch(std::string&& flagToken, std::string&& flagDesc, const flag_event& triggeredFunc,
+			bool defaultSwitchState = false, bool flagRequired = false)
+#ifndef _DEBUG
+			noexcept
+#endif // !_DEBUG
+			;
 
 		template<StringType... Tokens>
 		TriggerSwitch(Tokens&&... flagTokens, std::string&& flagDesc, const flag_event& triggeredFunc,
@@ -28,7 +41,9 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: SwitchFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), defaultSwitchState, flagRequired), _triggeredFunc(&triggeredFunc)
+			: Flag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), flagRequired),
+			  SwitchFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), defaultSwitchState, flagRequired),
+			  TriggerFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), triggeredFunc, flagRequired)
 		{
 		}
 

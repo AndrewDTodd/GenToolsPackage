@@ -6,7 +6,7 @@
 
 namespace CmdLineParser
 {
-	class SwitchFlag : public Flag
+	class SwitchFlag : virtual public Flag
 	{
 	protected:
 		Arg_Bool switchState;

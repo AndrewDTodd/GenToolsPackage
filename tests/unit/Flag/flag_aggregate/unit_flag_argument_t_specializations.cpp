@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <Flag.h>
+#include <flag_argument_specializations.h>
 
 using namespace CmdLineParser;
 

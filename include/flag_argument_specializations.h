@@ -2,7 +2,7 @@
 #define FLAG_ARGUMENT_SPECIALIZATIONS_H
 
 #include <flag_argument.h>
-#include <ParseFunctions.h>
+#include <parse_functions.h>
 
 namespace CmdLineParser
 {

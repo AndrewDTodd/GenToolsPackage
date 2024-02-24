@@ -68,7 +68,7 @@ file(GLOB_RECURSE SOURCE_FILES "${CmdLineParser_SOURCE_DIR}/src/*.cpp")
 add_library(CmdLineParser STATIC ${SOURCE_FILES})
 #include the header files in the include directory
 target_include_directories(CmdLineParser PUBLIC ${CmdLineParser_SOURCE_DIR}/include)
-target_include_directories(CmdLineParser PUBLIC ${CmdLineParser_SOURCE_DIR}/include/FlagSubTypes)
+target_include_directories(CmdLineParser PUBLIC ${CmdLineParser_SOURCE_DIR}/include/FlagDerivedTypes)
 
 #install the public header files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ 
