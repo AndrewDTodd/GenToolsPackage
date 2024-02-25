@@ -23,7 +23,7 @@ namespace CmdLineParser
 	{
 		_triggeredFunc->Run();
 
-		switchState.SetDefaultValue(true);
+		SwitchFlag::Raise(itr, end);
 
 		for (auto& subFlag : _nestedFlags)
 		{
@@ -36,8 +36,6 @@ namespace CmdLineParser
 		try
 		{
 			_triggeredFunc->Run();
-
-			switchState.SetDefaultValue(true);
 		}
 		catch (const std::exception& e)
 		{
@@ -46,6 +44,8 @@ namespace CmdLineParser
 
 			return false;
 		}
+
+		SwitchFlag::TryRaise(itr, end, errorMsg);
 
 		for (auto& subFlag : _nestedFlags)
 		{

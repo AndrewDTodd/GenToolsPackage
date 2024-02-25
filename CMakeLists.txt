@@ -34,8 +34,7 @@ else()
 	add_definitions(-DTARGET_OS="Unkown")
 endif()
 
-if(UNIX)
-    add_definitions(
+add_definitions(
         -DRESET="\\033[0m"
         -DRED="\\033[31m"
         -DGREEN="\\033[32m"
@@ -44,7 +43,6 @@ if(UNIX)
 		-DDIMB="\\033[2m"
 		-DNORM_TXT="\\03[22m"
     )
-endif()
 
 #A significant release that likely includes new features, changes, and enhancements that may not be backward compatible with the previous version
 set(VERSION_MAJOR 1)
@@ -60,6 +58,11 @@ add_definitions(-DVERSION_MAJOR=${VERSION_MAJOR})
 add_definitions(-DVERSION_MINOR=${VERSION_MINOR})
 add_definitions(-DVERSION_PATCH=${VERSION_PATCH})
 add_definitions(-DVERSION_BUILD=${VERSION_BUILD})
+
+set(GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+configure_file(rootConfig.h.in ${GENERATED_DIR}/rootConfig.h)
+
+include_directories(${GENERATED_DIR})
 
 set(CmdLineParser_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 

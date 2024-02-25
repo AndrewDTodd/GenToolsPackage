@@ -14,7 +14,7 @@ namespace CmdLineParser
 
 	void BranchSwitch::Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end)
 	{
-		switchState.SetDefaultValue(true);
+		SwitchFlag::Raise(itr, end);
 
 		for (auto& subFlag : _nestedFlags)
 		{
@@ -24,7 +24,7 @@ namespace CmdLineParser
 
 	bool BranchSwitch::TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
 	{
-		switchState.SetDefaultValue(true);
+		SwitchFlag::TryRaise(itr, end, errorMsg);
 
 		for (auto& subFlag : _nestedFlags)
 		{

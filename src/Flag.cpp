@@ -16,7 +16,7 @@ namespace CmdLineParser
 #ifdef _DEBUG
 			throw std::logic_error("Empty token provided");
 #else
-			std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+			PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
 #endif // _DEBUG
 
 			return;
@@ -37,7 +37,7 @@ namespace CmdLineParser
 #ifdef _DEBUG
 			throw std::logic_error("Empty token provided");
 #else
-			std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl;
+			PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
 #endif // _DEBUG
 
 			return;
@@ -50,7 +50,10 @@ namespace CmdLineParser
 		_shortToken(std::move(other._shortToken)), 
 		_longTokens(std::move(other._longTokens)), 
 		_flagArg(std::exchange(other._flagArg, nullptr)), 
-		_flagDesc(std::move(other._flagDesc))
+		_flagDesc(std::move(other._flagDesc)),
+		FlagRequired(other.FlagRequired),
+		ArgRequired(other.ArgRequired),
+		PosParsable(other.PosParsable)
 	{
 	}
 
@@ -62,6 +65,9 @@ namespace CmdLineParser
 			_longTokens = std::move(other._longTokens);
 			_flagArg = std::exchange(other._flagArg, nullptr);
 			_flagDesc = std::move(other._flagDesc);
+			const_cast<bool&>(FlagRequired) = other.FlagRequired;
+			const_cast<bool&>(ArgRequired) = other.ArgRequired;
+			const_cast<bool&>(PosParsable) = other.PosParsable;
 		}
 
 		return *this;
@@ -119,46 +125,5 @@ namespace CmdLineParser
 	const std::string& Flag::FlagDescription() const noexcept
 	{
 		return _flagDesc;
-	}
-
-	void Flag::Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end)
-	{
-#ifdef _DEBUG
-		if (itr == end)
-			throw std::logic_error("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
-#endif // _DEBUG
-
-		_flagArg->Parse(itr->data());
-
-		itr++;
-	}
-
-	bool Flag::TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
-	{
-#ifdef _DEBUG
-		if (itr == end)
-		{
-			if(errorMsg)
-				*errorMsg = "Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse";
-
-			return false;
-		}
-#endif // _DEBUG
-
-		try
-		{
-			_flagArg->Parse(itr->data());
-		}
-		catch (const std::exception& e)
-		{
-			if (errorMsg)
-				*errorMsg = e.what();
-
-			return false;
-		}
-
-		itr++;
-
-		return true;
 	}
 }

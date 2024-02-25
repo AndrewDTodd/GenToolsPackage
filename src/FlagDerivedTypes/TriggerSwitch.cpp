@@ -33,7 +33,7 @@ namespace CmdLineParser
 	{
 		_triggeredFunc->Run();
 
-		switchState.SetDefaultValue(true);
+		SwitchFlag::Raise(itr, end);
 	}
 
 	bool TriggerSwitch::TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
@@ -50,8 +50,6 @@ namespace CmdLineParser
 			return false;
 		}
 
-		switchState.SetDefaultValue(true);
-
-		return true;
+		return SwitchFlag::TryRaise(itr, end, errorMsg);
 	}
 }

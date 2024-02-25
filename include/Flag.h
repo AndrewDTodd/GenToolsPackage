@@ -10,6 +10,8 @@
 #include <flag_argument.h>
 #include <flag_event.h>
 
+#include <rootConfig.h>
+
 namespace CmdLineParser
 {
 	//Flag Type
@@ -52,7 +54,7 @@ namespace CmdLineParser
 #ifdef _DEBUG
 				throw std::logic_error("Empty token provided")
 #else
-				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl
+				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
 #endif // _DEBUG
 				), ...);
 		}
@@ -78,7 +80,7 @@ namespace CmdLineParser
 #ifdef _DEBUG
 				throw std::logic_error("Empty token provided")
 #else
-				std::cerr << "Error: Empty token provided to Flag! Run in debug mode for more details on this error." << std::endl
+				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
 #endif // _DEBUG
 			), ...);
 		}
@@ -105,9 +107,79 @@ namespace CmdLineParser
 
 		const std::string& FlagDescription() const noexcept;
 
-		virtual void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end);
+		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end)
+		{
+			if (!_flagArg)
+				throw std::logic_error("Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.");
 
-		virtual bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept;
+			if (itr == end && ArgRequired)
+				throw std::logic_error("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
+
+			try
+			{
+				_flagArg->Parse(itr->data());
+			}
+			catch (std::invalid_argument& argExc)
+			{
+				if (ArgRequired)
+					throw argExc;
+
+				return;
+			}
+
+			itr++;
+		}
+
+		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept
+		{
+			if (!_flagArg)
+			{
+				if(errorMsg)
+					*errorMsg = "Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.";
+
+				PRINT_ERROR("Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.");
+
+				return false;
+			}
+
+			if (itr == end && ArgRequired)
+			{
+				if(errorMsg)
+					*errorMsg = "Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse";
+
+				PRINT_ERROR("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
+
+				return false;
+			}
+
+			try
+			{
+				_flagArg->Parse(itr->data());
+			}
+			catch (std::invalid_argument& argExc)
+			{
+				if (ArgRequired)
+				{
+					if (errorMsg)
+						*errorMsg = argExc.what();
+
+					return false;
+				}
+
+				return true;
+			}
+			catch (const std::exception& e)
+			{
+				if (errorMsg)
+					*errorMsg = e.what();
+
+				return false;
+			}
+
+			itr++;
+
+			return true;
+		}
 
 		Flag(const Flag&) = delete;
 

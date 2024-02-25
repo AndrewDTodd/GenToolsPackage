@@ -18,16 +18,4 @@ namespace CmdLineParser
 
 		return *this;
 	}
-
-	void SwitchFlag::Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end)
-	{
-		switchState.SetDefaultValue(true);
-	}
-
-	bool SwitchFlag::TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
-	{
-		switchState.SetDefaultValue(true);
-
-		return true;
-	}
 }

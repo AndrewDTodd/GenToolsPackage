@@ -32,9 +32,17 @@ namespace CmdLineParser
 
 		SwitchFlag& SetDefaultState(bool defaultSwitchState) noexcept;
 
-		void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override;
+		inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override
+		{
+			switchState.SetDefaultValue(!switchState.GetArg());
+		}
 
-		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override;
+		inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override
+		{
+			switchState.SetDefaultValue(!switchState.GetArg());
+
+			return true;
+		}
 
 		SwitchFlag(const SwitchFlag&) = delete;
 		SwitchFlag(SwitchFlag&&) = delete;
