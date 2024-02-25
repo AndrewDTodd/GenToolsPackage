@@ -41,10 +41,10 @@ TEST(ParseLongDouble, ThrowOnTooBig)
 TEST(ParseLongDouble, ThrowOnTooSmall)
 {
 	std::ostringstream oss;
-	oss << std::setprecision(std::numeric_limits<long double>::max_digits10) << std::numeric_limits<long double>::min();
+	oss << std::setprecision(std::numeric_limits<long double>::max_digits10) << std::numeric_limits<long double>::denorm_min();
 
 	std::string str(std::move(oss.str()));
-	str[0] -= 1;
+	str[0] -= 3;
 
 	EXPECT_THROW(ParseLongDouble(str.c_str()), std::out_of_range);
 }

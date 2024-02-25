@@ -41,7 +41,7 @@ TEST(ParseFloat, ThrowOnTooBig)
 TEST(ParseFloat, ThrowOnTooSmall)
 {
 	std::ostringstream oss;
-	oss << std::setprecision(std::numeric_limits<float>::max_digits10) << std::numeric_limits<float>::min();
+	oss << std::setprecision(std::numeric_limits<float>::max_digits10) << std::numeric_limits<float>::denorm_min();
 
 	std::string str(std::move(oss.str()));
 	str[0] -= 1;
