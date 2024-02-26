@@ -12,3 +12,4 @@ _deps
 /.vs
 /build/x64-debug
 /out/Ubuntu-22.04/build
+/build/x64-release

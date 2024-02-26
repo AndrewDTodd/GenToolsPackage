@@ -5,13 +5,13 @@
 
 #include <iostream>
 
-#define GREEN_TERMINAL std::cout << GREEN;
-#define RED_TERMINAL std::cout << RED;
-#define YELLOW_TERMINAL std::cout << YELLOW;
-#define BLUE_TERMINAL std::cout << BLUE;
-#define RESET_TERMINAL std::cout << RESET;
-#define DIMB_TEXT std::cout << DIMB;
-#define NORM_TEXT std::cout << NORM_TXT;
+#define GREEN_TERMINAL std::cout << GREEN
+#define RED_TERMINAL std::cout << RED
+#define YELLOW_TERMINAL std::cout << YELLOW
+#define BLUE_TERMINAL std::cout << BLUE
+#define RESET_TERMINAL std::cout << RESET
+#define DIMB_TEXT std::cout << DIMB
+#define NORM_TEXT std::cout << NORM_TXT
 
 #if defined(_LINUX_TARGET) || defined(_MAC_TARGET)
 #include <cstdlib>
@@ -19,16 +19,16 @@
 
 #define PRINT_WARNING(message) \
 	do { \
-		YELLOW_TERMINAL \
-		std::cerr << message << std::endl \
-		RESET_TERMINAL \
+		YELLOW_TERMINAL; \
+		std::cerr << message << std::endl; \
+		RESET_TERMINAL; \
 	} while(0)
 
 #define PRINT_ERROR(message) \
 	do { \
-		RED_TERMINAL \
+		RED_TERMINAL; \
 		std::cerr << message << std::endl; \
-		RESET_TERMINAL \
+		RESET_TERMINAL; \
 	} while(0)
 #endif
 
@@ -36,35 +36,22 @@
 #include <windows.h>
 #define CLEAR_TERMINAL std::system("cls");
 
-bool windows_terminal_initialized = false;
-
-void init_windows_terminal()
-{
-	if (!windows_terminal_initialized)
-	{
-		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-		DWORD dwMode;
-		GetConsoleMode(hOut, &dwMode);
-		dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-		SetConsoleMode(hOut, dwMode);
-		windows_terminal_initialized = true;
-	}
-}
+void init_windows_terminal();
 
 #define PRINT_WARNING(message) \
 	do { \
 		init_windows_terminal(); \
-		YELLOW_TERMINAL \
-		std::cerr << message << std::endl \
-		RESET_TERMINAL \
+		YELLOW_TERMINAL; \
+		std::cerr << message << std::endl; \
+		RESET_TERMINAL; \
 	} while(0)
 
 #define PRINT_ERROR(message) \
 	do { \
 		init_windows_terminal(); \
-		RED_TERMINAL \
+		RED_TERMINAL; \
 		std::cerr << message << std::endl; \
-		RESET_TERMINAL \
+		RESET_TERMINAL; \
 	} while(0)
 #endif
 

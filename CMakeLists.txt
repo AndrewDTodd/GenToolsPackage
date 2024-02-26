@@ -66,7 +66,7 @@ include_directories(${GENERATED_DIR})
 
 set(CmdLineParser_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB_RECURSE SOURCE_FILES "${CmdLineParser_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE SOURCE_FILES "${CmdLineParser_SOURCE_DIR}/src/*.cpp" "${CmdLineParser_SOURCE_DIR}/generated/*.cpp")
 
 add_library(CmdLineParser STATIC ${SOURCE_FILES})
 #include the header files in the include directory

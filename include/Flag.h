@@ -50,11 +50,17 @@ namespace CmdLineParser
 		{
 			static_assert(sizeof...(Tokens) > 0, "At least one token is required for a Flag");
 
+#ifndef _DEBUG
+			auto print_error = []() {
+				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
+			};
+#endif // !_DEBUG
+
 			((flagTokens.size() > 0 ? (flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))) :
 #ifdef _DEBUG
 				throw std::logic_error("Empty token provided")
 #else
-				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
+				print_error()
 #endif // _DEBUG
 				), ...);
 		}
@@ -76,11 +82,17 @@ namespace CmdLineParser
 		{
 			static_assert(sizeof...(Tokens) > 0, "At least one token is required for a Flag");
 
+#ifndef _DEBUG
+			auto print_error = []() {
+				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
+			};
+#endif // !_DEBUG
+
 			((flagTokens.size() > 0 ? (flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))) :
 #ifdef _DEBUG
 				throw std::logic_error("Empty token provided")
 #else
-				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
+				print_error()
 #endif // _DEBUG
 			), ...);
 		}
