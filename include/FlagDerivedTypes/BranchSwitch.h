@@ -22,7 +22,7 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: Flag(std::move(flagToken), std::move(flagDesc), flagRequired),
+			: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
 			  BranchFlag(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
 			  SwitchFlag(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired)
 		{}

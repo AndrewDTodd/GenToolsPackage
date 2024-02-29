@@ -2,24 +2,24 @@
 
 namespace CmdLineParser
 {
-	TriggerSwitch::TriggerSwitch(std::string&& flagToken, std::string&& flagDesc,
+	TriggerSwitch::TriggerSwitch(Tokens&& flagTokens, std::string&& flagDesc,
 		bool defaultSwitchState, bool flagRequired)
 #ifndef _DEBUG
 		noexcept
 #endif // !_DEBUG
-		: Flag(std::move(flagToken), std::move(flagDesc), flagRequired),
-		  SwitchFlag(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired),
-		  TriggerFlag(std::move(flagToken), std::move(flagDesc), flagRequired)
+		: Flag(std::move(flagTokens), std::move(flagDesc), flagRequired),
+		SwitchFlag(std::move(flagTokens), std::move(flagDesc), defaultSwitchState, flagRequired),
+		TriggerFlag(std::move(flagTokens), std::move(flagDesc), flagRequired)
 	{}
 
-	TriggerSwitch::TriggerSwitch(std::string&& flagToken, std::string&& flagDesc, const flag_event& triggeredFunc,
+	TriggerSwitch::TriggerSwitch(Tokens&& flagTokens, std::string&& flagDesc, const flag_event& triggeredFunc,
 		bool defaultSwitchState, bool flagRequired)
 #ifndef _DEBUG
 		noexcept
 #endif // !_DEBUG
-		: Flag(std::move(flagToken), std::move(flagDesc), flagRequired),
-		  SwitchFlag(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired),
-		  TriggerFlag(std::move(flagToken), std::move(flagDesc), triggeredFunc, flagRequired)
+		: Flag(std::move(flagTokens), std::move(flagDesc), flagRequired),
+		SwitchFlag(std::move(flagTokens), std::move(flagDesc), defaultSwitchState, flagRequired),
+		TriggerFlag(std::move(flagTokens), std::move(flagDesc), triggeredFunc, flagRequired)
 	{}
 
 	TriggerSwitch& TriggerSwitch::SetFlagEvent(const flag_event& triggeredFunc) noexcept

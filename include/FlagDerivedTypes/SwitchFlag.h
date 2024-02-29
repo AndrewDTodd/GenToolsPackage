@@ -12,23 +12,12 @@ namespace CmdLineParser
 		Arg_Bool switchState;
 
 	public:
-		SwitchFlag(std::string&& flagToken, std::string&& flagDesc,
+		SwitchFlag(Tokens&& flagTokens, std::string&& flagDesc,
 			bool defaultSwitchState = false, bool flagRequired = false)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
 			;
-
-		template<StringType... Tokens>
-		SwitchFlag(Tokens&&... flagTokens, std::string&& flagDesc,
-			bool defaultSwitchState = false, bool flagRequired = false)
-#ifndef _DEBUG
-			noexcept
-#endif // !_DEBUG
-			: Flag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), flagRequired)
-		{
-			switchState.SetDefaultValue(std::move(defaultSwitchState));
-		}
 
 		SwitchFlag& SetDefaultState(bool defaultSwitchState) noexcept;
 

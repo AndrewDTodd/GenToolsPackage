@@ -2,28 +2,28 @@
 
 namespace CmdLineParser
 {
-	TriggerFlag::TriggerFlag(std::string&& flagToken, std::string&& flagDesc,
+	TriggerFlag::TriggerFlag(Tokens&& flagTokens, std::string&& flagDesc,
 		bool flagRequired)
 #ifndef _DEBUG
 		noexcept
 #endif // !_DEBUG
-		: Flag(std::move(flagToken), std::move(flagDesc), flagRequired)
+		: Flag(std::move(flagTokens), std::move(flagDesc), flagRequired)
 	{}
 
-	TriggerFlag::TriggerFlag(std::string&& flagToken, std::string&& flagDesc, const flag_event& triggeredFunc,
+	TriggerFlag::TriggerFlag(Tokens&& flagTokens, std::string&& flagDesc, const flag_event& triggeredFunc,
 		bool flagRequired)
 #ifndef _DEBUG
 		noexcept
 #endif // !_DEBUG
-		: Flag(std::move(flagToken), std::move(flagDesc), flagRequired), _triggeredFunc(&triggeredFunc)
+		: Flag(std::move(flagTokens), std::move(flagDesc), flagRequired), _triggeredFunc(&triggeredFunc)
 	{}
 
-	TriggerFlag::TriggerFlag(std::string&& flagToken, std::string&& flagDesc, const flag_event& triggeredFunc, const flag_argument& flagArg,
+	TriggerFlag::TriggerFlag(Tokens&& flagTokens, std::string&& flagDesc, const flag_event& triggeredFunc, const flag_argument& flagArg,
 		bool argRequired, bool flagRequired)
 #ifndef _DEBUG
 		noexcept
 #endif // !_DEBUG
-		: Flag(std::move(flagToken), std::move(flagDesc), flagArg, argRequired, flagRequired), _triggeredFunc(&triggeredFunc)
+		: Flag(std::move(flagTokens), std::move(flagDesc), flagArg, argRequired, flagRequired), _triggeredFunc(&triggeredFunc)
 	{}
 
 	TriggerFlag& TriggerFlag::SetFlagEvent(const flag_event& triggeredFunc) noexcept

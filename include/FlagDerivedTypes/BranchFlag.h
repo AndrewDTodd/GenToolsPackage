@@ -27,7 +27,7 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: Flag(std::move(flagToken), std::move(flagDesc), flagRequired), _nestedFlags{ std::forward<Flags>(subFlags)... }
+			: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired), _nestedFlags{ std::forward<Flags>(subFlags)... }
 		{
 #ifdef _DEBUG
 			if (flagToken.length() == 1)
@@ -41,7 +41,7 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: Flag(std::move(flagToken), std::move(flagDesc), flagArg, argRequired, flagRequired), _nestedFlags{ std::forward<Flags>(subFlags)... }
+			: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagArg, argRequired, flagRequired), _nestedFlags{ std::forward<Flags>(subFlags)... }
 		{
 #ifdef _DEBUG
 			if (flagToken.length() == 1)

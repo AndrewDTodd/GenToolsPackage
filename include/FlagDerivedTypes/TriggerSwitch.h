@@ -9,43 +9,19 @@ namespace CmdLineParser
 	class TriggerSwitch : public SwitchFlag, public TriggerFlag
 	{
 	public:
-		TriggerSwitch(std::string&& flagToken, std::string&& flagDesc,
+		TriggerSwitch(Tokens&& flagTokens, std::string&& flagDesc,
 			bool defaultSwitchState = false, bool flagRequired = false)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
 			;
 
-		template<StringType... Tokens>
-		TriggerSwitch(Tokens&&... flagTokens, std::string&& flagDesc,
-			bool defaultSwitchState = false, bool flagRequired = false)
-#ifndef _DEBUG
-			noexcept
-#endif // !_DEBUG
-			: Flag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), flagRequired),
-			  SwitchFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), defaultSwitchState, flagRequired),
-			  TriggerFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), flagRequired)
-		{
-		}
-
-		TriggerSwitch(std::string&& flagToken, std::string&& flagDesc, const flag_event& triggeredFunc,
+		TriggerSwitch(Tokens&& flagTokens, std::string&& flagDesc, const flag_event& triggeredFunc,
 			bool defaultSwitchState = false, bool flagRequired = false)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
 			;
-
-		template<StringType... Tokens>
-		TriggerSwitch(Tokens&&... flagTokens, std::string&& flagDesc, const flag_event& triggeredFunc,
-			bool defaultSwitchState = false, bool flagRequired = false)
-#ifndef _DEBUG
-			noexcept
-#endif // !_DEBUG
-			: Flag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), flagRequired),
-			  SwitchFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), defaultSwitchState, flagRequired),
-			  TriggerFlag(std::forward<Tokens>(flagTokens)..., std::move(flagDesc), triggeredFunc, flagRequired)
-		{
-		}
 
 		TriggerSwitch& SetFlagEvent(const flag_event& triggeredFunc) noexcept;
 

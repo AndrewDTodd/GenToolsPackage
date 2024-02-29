@@ -7,7 +7,7 @@ namespace CmdLineParser
 #ifndef _DEBUG
 		noexcept
 #endif // !_DEBUG
-		: Flag(std::move(flagToken), std::move(flagDesc), flagRequired)
+		: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired)
 	{}
 
 	void BranchFlag::Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end)

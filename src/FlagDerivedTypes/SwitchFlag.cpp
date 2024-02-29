@@ -2,12 +2,12 @@
 
 namespace CmdLineParser
 {
-	SwitchFlag::SwitchFlag(std::string&& flagToken, std::string&& flagDesc,
+	SwitchFlag::SwitchFlag(Tokens&& flagTokens, std::string&& flagDesc,
 		bool defaultSwitchState, bool flagRequired)
 #ifndef _DEBUG
 		noexcept
 #endif // !_DEBUG
-		: Flag(std::move(flagToken), std::move(flagDesc), flagRequired)
+		: Flag(std::move(flagTokens), std::move(flagDesc), flagRequired)
 	{
 		switchState.SetDefaultValue(std::move(defaultSwitchState));
 	}

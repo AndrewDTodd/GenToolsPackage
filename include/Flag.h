@@ -21,81 +21,91 @@ namespace CmdLineParser
 	constexpr bool ARGUMENT_REQUIRED = true;
 	constexpr bool ARGUMENT_OPTIONAL = false;
 
-	template<typename T>
-	concept StringType = std::same_as<T, std::string>;
+	template<typename... Ts>
+	class initializer_pack
+	{
+	protected:
+		std::array<std::common_type_t<Ts...>, sizeof...(Ts)> collection;
+
+	public:
+		constexpr initializer_pack(Ts&&... ts) noexcept
+			: collection{ std::forward<Ts>(ts)... }
+		{}
+	};
+
+	// Deduction guide
+	template<typename... Ts>
+	initializer_pack(Ts&&... ts) -> initializer_pack<std::decay_t<Ts>...>;
+
+	/*template<typename T>
+	concept StringType = requires(T a) {
+		{ std::string(a) } -> std::same_as<std::string>;
+	};*/
+
+	struct Tokens
+	{
+		std::string _shortToken = "";
+		std::vector<std::string> _longTokens;
+
+		template<typename... Ts>
+		requires(sizeof...(Ts) > 0)
+		Tokens(Ts&&... tokens)
+		{
+			auto to_string = [](auto&& token){
+				static_assert(std::is_convertible_v<std::remove_reference_t<decltype(token)>, std::string>, "Tokens constructor expects string types");
+				return std::string(std::forward<decltype(token)>(token));
+			};
+
+			auto token_sort = [&](auto&& token){
+				std::string str_token = to_string(std::forward<decltype(token)>(token));
+				if (str_token.size() > 0)
+				{
+					if (str_token.size() == 1)
+						_shortToken = "-" + std::move(str_token);
+					else
+						_longTokens.emplace_back("--" + std::move(str_token));
+				}
+				else
+				{
+#ifdef _DEBUG
+					throw std::logic_error("Empty token provided");
+#else
+					PRINT_ERROR("Error: Empty token provided! Run in debug mode for more details on this error.");
+#endif // _DEBUG
+				}
+			};
+
+			(token_sort(std::forward<Ts>(tokens)), ...);
+		}
+
+		Tokens(Tokens&& other);
+		Tokens& operator=(Tokens&& other);
+
+		Tokens(const Tokens&) = delete;
+		Tokens& operator=(const Tokens&) = delete;
+	};
 
 	class Flag
 	{
 	protected:
-		std::string _shortToken = "";
-		std::vector<std::string> _longTokens;
+		Tokens _tokens;
 		const flag_argument* _flagArg = nullptr;
 		std::string _flagDesc;
 
 	public:
-		Flag(std::string&& flagToken, std::string&& flagDesc,
-			bool flagRequired = false)
-#ifndef _DEBUG
-			noexcept
-#endif // !_DEBUG
-			;
-
-		template<StringType... Tokens>
-		Flag(Tokens&&... flagTokens, std::string&& flagDesc,
+		Flag(Tokens&& flagTokens, std::string&& flagDesc,
 			bool flagRequired = false)
 #ifndef _DEBUG 
 			noexcept
 #endif // !_DEBUG
-			: _flagDesc(std::move(flagDesc)), FlagRequired(flagRequired)
-		{
-			static_assert(sizeof...(Tokens) > 0, "At least one token is required for a Flag");
+			;
 
-#ifndef _DEBUG
-			auto print_error = []() {
-				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
-			};
-#endif // !_DEBUG
-
-			((flagTokens.size() > 0 ? (flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))) :
-#ifdef _DEBUG
-				throw std::logic_error("Empty token provided")
-#else
-				print_error()
-#endif // _DEBUG
-				), ...);
-		}
-
-		Flag(std::string&& flagToken, std::string&& flagDesc, const flag_argument& flagArg,
+		Flag(Tokens&& flagTokens, std::string&& flagDesc, const flag_argument& flagArg,
 			bool argRequired = false, bool flagRequired = false)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
 			;
-
-		template<StringType... Tokens>
-		Flag(Tokens&&... flagTokens, std::string&& flagDesc, const flag_argument& flagArg,
-			bool argRequired = false, bool flagRequired = false) 
-#ifndef _DEBUG
-			noexcept
-#endif // !_DEBUG
-			: _flagDesc(std::move(flagDesc)), _flagArg(&flagArg), ArgRequired(argRequired), FlagRequired(flagRequired)
-		{
-			static_assert(sizeof...(Tokens) > 0, "At least one token is required for a Flag");
-
-#ifndef _DEBUG
-			auto print_error = []() {
-				PRINT_ERROR("Error: Empty token provided to Flag! Run in debug mode for more details on this error.");
-			};
-#endif // !_DEBUG
-
-			((flagTokens.size() > 0 ? (flagTokens.size() == 1 ? _shortToken = "-" + std::move(flagTokens) : _longTokens.emplace_back("--" + std::move(flagTokens))) :
-#ifdef _DEBUG
-				throw std::logic_error("Empty token provided")
-#else
-				print_error()
-#endif // _DEBUG
-			), ...);
-		}
 
 		Flag(Flag&& other) noexcept;
 

@@ -22,7 +22,7 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: Flag(std::move(flagToken), std::move(flagDesc), flagRequired),
+			: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
 			  BranchFlag(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
 			  TriggerFlag(std::move(flagToken), std::move(flagDesc), triggeredFunc, flagRequired)
 		{}
@@ -33,7 +33,7 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: Flag(std::move(flagToken), std::move(flagDesc), flagArg, argRequired, flagRequired),
+			: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagArg, argRequired, flagRequired),
 			  BranchFlag(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
 			  TriggerFlag(std::move(flagToken), std::move(flagDesc), triggeredFunc, flagRequired)
 		{}
