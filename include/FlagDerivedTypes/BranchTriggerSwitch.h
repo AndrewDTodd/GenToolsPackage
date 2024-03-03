@@ -6,7 +6,8 @@
 
 namespace CmdLineParser
 {
-	class BranchTriggerSwitch : public BranchFlag, public TriggerSwitch
+	template<IsFlagEvent Flag_Event>
+	class BranchTriggerSwitch : public BranchFlag<Arg_Bool>, public TriggerSwitch<Flag_Event>
 	{
 	public:
 		BranchTriggerSwitch(std::string&& flagToken, std::string&& flagDesc,
@@ -14,19 +15,21 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			;
+			: Flag<Arg_Bool>(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
+			BranchFlag<Arg_Bool>(std::move(flagToken), std::move(flagDesc), flagRequired),
+			TriggerSwitch<Flag_Event>(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired)
+		{}
 
 		template<FlagType... Flags>
-		BranchTriggerSwitch(std::string&& flagToken, std::string&& flagDesc, const flag_event& triggeredFunc, Flags&&... subFlags,
+		explicit BranchTriggerSwitch(std::string&& flagToken, std::string&& flagDesc, const Flag_Event&& triggeredFunc, Flags&&... subFlags,
 			bool defaultSwitchState = false, bool flagRequired = false)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
-			  BranchFlag(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
-			  TriggerSwitch(std::move(flagToken), std::move(flagDesc), triggeredFunc, defaultSwitchState, flagRequired)
-		{
-		}
+			: Flag<Arg_Bool>(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
+			  BranchFlag<Arg_Bool>(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
+			  TriggerSwitch<Flag_Event>(std::move(flagToken), std::move(flagDesc), std::move(triggeredFunc), defaultSwitchState, flagRequired)
+		{}
 
 		template<FlagType... Flags>
 		BranchTriggerSwitch& SetSubFlags(Flags&&... subFlags) noexcept
@@ -37,11 +40,42 @@ namespace CmdLineParser
 			return *this;
 		}
 
-		BranchTriggerSwitch& SetFlagEvent(const flag_event& triggeredFunc) noexcept;
+		BranchTriggerSwitch& SetFlagEvent(const Flag_Event&& triggeredFunc) noexcept
+		{
+			const_cast<Flag_Event&>(_triggeredFunc) = std::move(triggeredFunc);
 
-		void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override;
+			_triggerSet = true;
 
-		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override;
+			return *this;
+		}
+
+		void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override
+		{
+			_triggeredFunc.Run();
+
+			SwitchFlag::Raise(itr, end);
+
+			for (auto& subFlag : _nestedFlags)
+			{
+				subFlag.Raise(itr, end);
+			}
+		}
+
+		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept override
+		{
+			if (!_triggeredFunc.TryRun(errorMsg))
+				return false;
+
+			SwitchFlag::TryRaise(itr, end, errorMsg);
+
+			for (auto& subFlag : _nestedFlags)
+			{
+				if (!subFlag.TryRaise(itr, end, errorMsg))
+					return false;
+			}
+
+			return true;
+		}
 
 		BranchTriggerSwitch(const BranchTriggerSwitch&) = delete;
 		BranchTriggerSwitch(BranchTriggerSwitch&&) = delete;

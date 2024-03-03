@@ -6,9 +6,9 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
-
+#include <type_traits>
 #include <flag_argument.h>
-#include <flag_event.h>
+#include <concepts>
 
 #include <rootConfig.h>
 
@@ -21,61 +21,63 @@ namespace CmdLineParser
 	constexpr bool ARGUMENT_REQUIRED = true;
 	constexpr bool ARGUMENT_OPTIONAL = false;
 
-	template<typename... Ts>
-	class initializer_pack
-	{
-	protected:
-		std::array<std::common_type_t<Ts...>, sizeof...(Ts)> collection;
-
-	public:
-		constexpr initializer_pack(Ts&&... ts) noexcept
-			: collection{ std::forward<Ts>(ts)... }
-		{}
-	};
-
-	// Deduction guide
-	template<typename... Ts>
-	initializer_pack(Ts&&... ts) -> initializer_pack<std::decay_t<Ts>...>;
-
-	/*template<typename T>
-	concept StringType = requires(T a) {
-		{ std::string(a) } -> std::same_as<std::string>;
-	};*/
+	template<typename T>
+	concept StringConvertible = std::is_convertible_v<T, std::string>;
 
 	struct Tokens
 	{
 		std::string _shortToken = "";
 		std::vector<std::string> _longTokens;
 
-		template<typename... Ts>
+		template<StringConvertible... Ts>
 		requires(sizeof...(Ts) > 0)
 		Tokens(Ts&&... tokens)
+#ifndef _DEBUG
+			noexcept
+#endif // !_DEBUG
 		{
 			auto to_string = [](auto&& token){
-				static_assert(std::is_convertible_v<std::remove_reference_t<decltype(token)>, std::string>, "Tokens constructor expects string types");
-				return std::string(std::forward<decltype(token)>(token));
+				using T = std::remove_reference_t<decltype(token)>;
+
+				if constexpr (std::is_same_v<T, std::string>)
+				{
+					return std::move(token);
+				}
+				else
+				{
+					return std::string(std::move(token));
+				}
 			};
 
 			auto token_sort = [&](auto&& token){
-				std::string str_token = to_string(std::forward<decltype(token)>(token));
+				std::string str_token = std::move(to_string(std::move(token)));
 				if (str_token.size() > 0)
 				{
 					if (str_token.size() == 1)
-						_shortToken = "-" + std::move(str_token);
+					{
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
+						if (_shortToken.size() != 0)
+						{
+							PRINT_WARNING("Short token has already been set. Another token argument is overriding previous short token.");
+						}
+#endif // _DEBUG
+						_shortToken = std::move(str_token);
+					}
 					else
-						_longTokens.emplace_back("--" + std::move(str_token));
+						_longTokens.emplace_back(std::move(str_token));
 				}
 				else
 				{
 #ifdef _DEBUG
 					throw std::logic_error("Empty token provided");
-#else
-					PRINT_ERROR("Error: Empty token provided! Run in debug mode for more details on this error.");
 #endif // _DEBUG
+#if RELEASE_ERROR_MSG
+					PRINT_ERROR("Error: Empty token provided! Run in debug mode for more details on this error.");
+#endif // RELEASE_ERROR_MSG
 				}
 			};
 
-			(token_sort(std::forward<Ts>(tokens)), ...);
+			(token_sort(std::move(tokens)), ...);
 		}
 
 		Tokens(Tokens&& other);
@@ -85,61 +87,177 @@ namespace CmdLineParser
 		Tokens& operator=(const Tokens&) = delete;
 	};
 
-	class Flag
+	class flag_interface
+	{
+	public:
+		const bool FlagRequired = false;
+		const bool ArgRequired = false;
+		const bool PosParsable = false;
+
+		flag_interface(bool flagRequired, bool argRequired, bool posParsable = false) : FlagRequired(flagRequired), ArgRequired(argRequired), PosParsable(posParsable) {}
+
+		virtual ~flag_interface() = default;
+
+		virtual flag_interface& SetFlagRequired(bool required) noexcept = 0;
+
+		virtual flag_interface& SetFlagArgRequired(bool required) noexcept = 0;
+
+		virtual flag_interface& SetFlagIsPosParsable(bool posParsable) noexcept = 0;
+
+		virtual flag_interface& SetFlagArgument(flag_argument&& flagArg)
+#ifndef _DEBUG
+			noexcept
+#endif // !_DEBUG
+			= 0;
+
+		virtual const std::string& ShortToken() const noexcept = 0;
+
+		virtual const std::vector<std::string>& LongTokens() const noexcept = 0;
+
+		virtual bool ArgumentSet() const noexcept = 0;
+
+		virtual const flag_argument& FlagArgument() const noexcept = 0;
+
+		virtual const std::string& FlagDescription() const noexcept = 0;
+
+		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) = 0;
+
+		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept = 0;
+	};
+
+	template<typename T>
+	concept IsFlagArgument = std::is_base_of_v<flag_argument, T> && std::movable<T>;
+
+	template<IsFlagArgument Flag_Argument>
+	class Flag : public flag_interface
 	{
 	protected:
 		Tokens _tokens;
-		const flag_argument* _flagArg = nullptr;
+		Flag_Argument _flagArg;
+		bool _argSet = false;
 		std::string _flagDesc;
 
 	public:
 		Flag(Tokens&& flagTokens, std::string&& flagDesc,
-			bool flagRequired = false)
-#ifndef _DEBUG 
-			noexcept
-#endif // !_DEBUG
-			;
+			bool flagRequired = false) noexcept
+			: flag_interface(flagRequired, false), _tokens(std::move(flagTokens)), _flagDesc(std::move(flagDesc))
+		{}
 
-		Flag(Tokens&& flagTokens, std::string&& flagDesc, const flag_argument& flagArg,
-			bool argRequired = false, bool flagRequired = false)
+		explicit Flag(Tokens&& flagTokens, std::string&& flagDesc, Flag_Argument&& flagArg,
+			bool argRequired = false, bool flagRequired = false) noexcept
+			: flag_interface(flagRequired, argRequired), _tokens(std::move(flagTokens)), _flagDesc(std::move(flagDesc)), _flagArg(std::move(flagArg)), _argSet(true)
+		{}
+
+		Flag(Flag&& other) noexcept :
+			flag_interface(other.FlagRequired, other.ArgRequired, other.PosParsable),
+			_tokens(std::move(other._tokens)),
+			_flagArg(std::move(other._flagArg)),
+			_argSet(true),
+			_flagDesc(std::move(other._flagDesc))
+		{
+			other._argSet = false;
+		}
+
+		Flag& operator=(Flag&& other) noexcept
+		{
+			if (this != &other)
+			{
+				_tokens = std::move(other._tokens);
+				_flagArg = std::move(other._flagArg);
+				_argSet = true;
+				_flagDesc = std::move(other._flagDesc);
+				const_cast<bool&>(FlagRequired) = other.FlagRequired;
+				const_cast<bool&>(ArgRequired) = other.ArgRequired;
+				const_cast<bool&>(PosParsable) = other.PosParsable;
+
+				other._argSet = false;
+			}
+
+			return *this;
+		}
+
+		Flag& SetFlagRequired(bool required) noexcept final
+		{
+			const_cast<bool&>(FlagRequired) = required;
+
+			return *this;
+		}
+
+		Flag& SetFlagArgRequired(bool required) noexcept final
+		{
+			const_cast<bool&>(ArgRequired) = required;
+
+			return *this;
+		}
+
+		Flag& SetFlagIsPosParsable(bool posParsable) noexcept final
+		{
+			const_cast<bool&>(PosParsable) = posParsable;
+
+			if (posParsable)
+			{
+				if (FlagRequired)
+					const_cast<bool&>(ArgRequired) = true;
+			}
+
+			return *this;
+		}
+
+		Flag& SetFlagArgument(flag_argument&& flagArg)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			;
-
-		Flag(Flag&& other) noexcept;
-
-		Flag& operator=(Flag&& other) noexcept;
-
-		const bool FlagRequired = false;
-		const bool ArgRequired  = false;
-		const bool PosParsable  = false;
-
-		Flag& SetFlagRequired(bool required) noexcept;
-		Flag& SetFlagArgRequired(bool required) noexcept;
-		Flag& SetFlagIsPosParsable(bool posParsable) noexcept;
-
-		Flag& SetFlagArgument(const flag_argument& flagArg) noexcept;
-
-		const std::string& ShortToken() const noexcept;
-
-		const std::vector<std::string>& LongTokens() const noexcept;
-
-		const flag_argument& FlagArgument() const noexcept;
-
-		const std::string& FlagDescription() const noexcept;
-
-		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end)
+			final
 		{
-			if (!_flagArg)
+#ifdef _DEBUG
+			_flagArg = dynamic_cast<Flag_Argument&&>(std::move(flagArg));
+#else
+			_flagArg = static_cast<Flag_Argument&&>(std::move(flagArg));
+#endif // _DEBUG
+
+			_argSet = true;
+
+			return *this;
+		}
+
+		const std::string& ShortToken() const noexcept final
+		{
+			return _tokens._shortToken;
+		}
+
+		const std::vector<std::string>& LongTokens() const noexcept final
+		{
+			return _tokens._longTokens;
+		}
+
+		bool ArgumentSet() const noexcept final
+		{
+			return _argSet;
+		}
+
+		const Flag_Argument& FlagArgument() const noexcept final
+		{
+			return _flagArg;
+		}
+
+		const std::string& FlagDescription() const noexcept final
+		{
+			return _flagDesc;
+		}
+
+		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override
+		{
+			if (!_argSet)
 				throw std::logic_error("Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.");
 
 			if (itr == end && ArgRequired)
 				throw std::logic_error("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
+			else if (itr == end && !ArgRequired)
+				return;
 
 			try
 			{
-				_flagArg->Parse(itr->data());
+				_flagArg.Parse(itr->data());
 			}
 			catch (std::invalid_argument& argExc)
 			{
@@ -152,31 +270,37 @@ namespace CmdLineParser
 			itr++;
 		}
 
-		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept
+		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override
 		{
-			if (!_flagArg)
+			if (!_argSet)
 			{
 				if(errorMsg)
 					*errorMsg = "Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.";
 
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
 				PRINT_ERROR("Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.");
+#endif
 
 				return false;
 			}
 
 			if (itr == end && ArgRequired)
 			{
-				if(errorMsg)
+				if (errorMsg)
 					*errorMsg = "Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse";
 
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
 				PRINT_ERROR("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
+#endif
 
 				return false;
 			}
+			else if (itr == end && !ArgRequired)
+				return true;
 
 			try
 			{
-				_flagArg->Parse(itr->data());
+				_flagArg.Parse(itr->data());
 			}
 			catch (std::invalid_argument& argExc)
 			{
@@ -211,11 +335,12 @@ namespace CmdLineParser
 
 	//Flag Modifying/Extension Functions
 	//************************************************************************************************
-	template<typename... Flags>
-	void MakeFlagsPositionParsable(Flags&... flags)
-	{
-		static_assert((std::is_same_v<Flags, Flag> && ...), "All arguments passed to MakeFlagsPositionParsable must be of type Flag");
-		
+	template<typename T>
+	concept IsFlag = std::is_base_of_v<flag_interface, T>;
+
+	template<IsFlag... Flags>
+	void MakeFlagsPositionParsable(Flags&... flags) noexcept
+	{	
 		(..., flags.SetFlagIsPosParsable(true));
 	}
 	//************************************************************************************************

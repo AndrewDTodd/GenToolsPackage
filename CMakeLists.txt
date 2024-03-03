@@ -5,6 +5,10 @@ cmake_minimum_required (VERSION 3.20)
 
 project(CmdLineParser)
 
+#include(DetectArchitecture.cmake)
+
+#message(STATUS "Detected System Architecture: ${SYSTEM_ARCHITECTURE}")
+
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
@@ -68,10 +72,22 @@ set(CmdLineParser_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 file(GLOB_RECURSE SOURCE_FILES "${CmdLineParser_SOURCE_DIR}/src/*.cpp" "${CmdLineParser_SOURCE_DIR}/generated/*.cpp")
 
+option(RELEASE_ERROR_MSG "Suppress the inclusion of release error messages in the build" OFF)
+
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Release-Dev" CACHE STRING "List of supported build modes." FORCE)
+
+set(CMAKE_CXX_FLAGS_RELEASE-Dev "${CMAKE_CXX_FLAGS_RELEASE} -DRELEASE_ERROR_MSG=ON")
+
 add_library(CmdLineParser STATIC ${SOURCE_FILES})
 #include the header files in the include directory
 target_include_directories(CmdLineParser PUBLIC ${CmdLineParser_SOURCE_DIR}/include)
 target_include_directories(CmdLineParser PUBLIC ${CmdLineParser_SOURCE_DIR}/include/FlagDerivedTypes)
+
+if(NOT RELEASE_ERROR_MSG)
+	target_compile_definitions(CmdLineParser PUBLIC RELEASE_ERROR_MSG=0)
+else()
+	target_compile_definitions(CmdLineParser PUBLIC RELEASE_ERROR_MSG=1)
+endif()
 
 #install the public header files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ 

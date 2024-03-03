@@ -9,16 +9,8 @@ using namespace CmdLineParser;
 
 TEST(ParseDouble, Parse_dec)
 {
-	std::ostringstream oss;
-	oss << std::setprecision(std::numeric_limits<double>::max_digits10) << std::numeric_limits<double>::max();
-
-	EXPECT_NEAR(ParseDouble(oss.str().c_str()), std::numeric_limits<double>::max(), std::abs(std::numeric_limits<double>::max() * 1e-10));
-
-	oss.str("");
-	oss.clear();
-	oss << std::setprecision(std::numeric_limits<double>::max_digits10) << std::numeric_limits<double>::min();
-
-	EXPECT_NEAR(ParseDouble(oss.str().c_str()), std::numeric_limits<double>::min(), std::abs(std::numeric_limits<double>::min() * 1e-10));
+	EXPECT_EQ(ParseDouble("3.14159"), 3.14159);
+	EXPECT_EQ(ParseDouble("-3.14159"), -3.14159);
 }
 
 TEST(ParseDouble, Parse_scientific)

@@ -6,7 +6,7 @@
 
 namespace CmdLineParser
 {
-	class BranchSwitch : public BranchFlag, public SwitchFlag
+	class BranchSwitch : public BranchFlag<Arg_Bool>, public SwitchFlag
 	{
 	public:
 		BranchSwitch(std::string&& flagToken, std::string&& flagDesc,
@@ -14,7 +14,10 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			;
+			: Flag<Arg_Bool>(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
+			BranchFlag<Arg_Bool>(std::move(flagToken), std::move(flagDesc), flagRequired),
+			SwitchFlag(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired)
+		{}
 
 		template<FlagType... Flags>
 		BranchSwitch(std::string&& flagToken, std::string&& flagDesc, Flags&&... subFlags,
@@ -22,8 +25,8 @@ namespace CmdLineParser
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
-			: Flag(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
-			  BranchFlag(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
+			: Flag<Arg_Bool>(Tokens(std::move(flagToken)), std::move(flagDesc), flagRequired),
+			  BranchFlag<Arg_Bool>(std::move(flagToken), std::move(flagDesc), std::forward<Flags>(subFlags)..., flagRequired),
 			  SwitchFlag(std::move(flagToken), std::move(flagDesc), defaultSwitchState, flagRequired)
 		{}
 
@@ -36,9 +39,28 @@ namespace CmdLineParser
 			return *this;
 		}
 
-		void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override;
+		void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override
+		{
+			SwitchFlag::Raise(itr, end);
 
-		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override;
+			for (auto& subFlag : _nestedFlags)
+			{
+				subFlag.Raise(itr, end);
+			}
+		}
+
+		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override
+		{
+			SwitchFlag::TryRaise(itr, end, errorMsg);
+
+			for (auto& subFlag : _nestedFlags)
+			{
+				if (!subFlag.TryRaise(itr, end, errorMsg))
+					return false;
+			}
+
+			return true;
+		}
 
 		BranchSwitch(const BranchSwitch&) = delete;
 		BranchSwitch(BranchSwitch&&) = delete;

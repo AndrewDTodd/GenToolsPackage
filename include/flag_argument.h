@@ -3,15 +3,17 @@
 
 #include <string>
 #include <stdexcept>
+#include <concepts>
+#include <utility>
 
 namespace CmdLineParser
 {
 	//Flag Aggregate Types
 	//************************************************************************************************
-	template<typename ArgType>
+	template<std::movable ArgType>
 	class flag_argument_t;
 
-	template<typename ArgType>
+	template<std::movable ArgType>
 	class flag_pointer_t;
 
 	class flag_argument
@@ -50,7 +52,7 @@ namespace CmdLineParser
 		}
 	};
 
-	template<typename ArgType>
+	template<std::movable ArgType>
 	class flag_argument_t : public flag_argument
 	{
 	private:
@@ -65,7 +67,7 @@ namespace CmdLineParser
 
 		template<typename default_constructible_type = ArgType,
 			std::enable_if_t<std::is_default_constructible<default_constructible_type>::value>* = nullptr>
-		flag_argument_t() noexcept : argument(ArgType())
+		constexpr flag_argument_t() noexcept : argument(ArgType())
 		{}
 
 		flag_argument_t(ArgType&& defaultValue) noexcept : argument(std::move(defaultValue))
@@ -78,6 +80,22 @@ namespace CmdLineParser
 
 		flag_argument_t(ArgType&& defaultValue, ArgType(*parseFunction)(const char*)) noexcept : argument(std::move(defaultValue)), parseFunc(parseFunction)
 		{}
+
+		flag_argument_t(flag_argument_t&& other) :
+			argument(std::move(other.argument)),
+			parseFunc(std::exchange(other.parseFunc, nullptr))
+		{}
+
+		flag_argument_t& operator=(flag_argument_t&& other)
+		{
+			if (this != &other)
+			{
+				argument = std::move(other.argument);
+				parseFunc = std::exchange(other.parseFunc, nullptr);
+			}
+
+			return *this;
+		}
 
 		const flag_argument_t& SetDefaultValue(ArgType&& defaultValue) const noexcept
 		{
@@ -95,14 +113,14 @@ namespace CmdLineParser
 
 		void Parse(const char* str) const override
 		{
-			argument = parseFunc(str);
+			argument = std::move(parseFunc(str));
 		}
 
 		bool TryParse(const char* str, std::string* errorMsg = nullptr) const noexcept override
 		{
 			try
 			{
-				argument = parseFunc(str);
+				argument = std::move(parseFunc(str));
 			}
 			catch (const std::exception& e)
 			{
@@ -116,13 +134,11 @@ namespace CmdLineParser
 		}
 
 		flag_argument_t(const flag_argument_t&) = delete;
-		flag_argument_t(flag_argument_t&&) = delete;
 
 		flag_argument_t& operator=(const flag_argument_t&) = delete;
-		flag_argument_t& operator=(flag_argument_t&&) = delete;
 	};
 
-	template<typename ArgType>
+	template<std::movable ArgType>
 	class flag_pointer_t : public flag_argument
 	{
 	private:
@@ -147,6 +163,22 @@ namespace CmdLineParser
 		flag_pointer_t(ArgType* linkedValue, ArgType(*parseFunction)(const char*)) noexcept : argument(linkedValue), parseFunc(parseFunction)
 		{}
 
+		flag_pointer_t(flag_pointer_t&& other) :
+			argument(std::exchange(other.argument, nullptr)),
+			parseFunc(std::exchange(other.parseFunc), nullptr)
+		{}
+
+		flag_pointer_t& operator=(flag_pointer_t&& other)
+		{
+			if (this != &other)
+			{
+				argument = std::exchange(other.argument, nullptr);
+				parseFunc = std::exchange(other.parseFunc, nullptr);
+			}
+
+			return *this;
+		}
+
 		const flag_pointer_t& SetLinkedValue(ArgType* linkedValue) const noexcept
 		{
 			argument = linkedValue;
@@ -163,14 +195,14 @@ namespace CmdLineParser
 
 		void Parse(const char* str) const override
 		{
-			*argument = parseFunc(str);
+			*argument = std::move(parseFunc(str));
 		}
 
 		bool TryParse(const char* str, std::string* errorMsg = nullptr) const noexcept override
 		{
 			try
 			{
-				*argument = parseFunc(str);
+				*argument = std::move(parseFunc(str));
 			}
 			catch (const std::exception& e)
 			{
@@ -184,10 +216,8 @@ namespace CmdLineParser
 		}
 
 		flag_pointer_t(const flag_pointer_t&) = delete;
-		flag_pointer_t(flag_pointer_t&&) = delete;
 
 		flag_pointer_t& operator=(const flag_pointer_t&) = delete;
-		flag_pointer_t& operator=(flag_pointer_t&&) = delete;
 	};
 }
 #endif // !FLAG_ARGUMENT_H

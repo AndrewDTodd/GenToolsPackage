@@ -4,6 +4,7 @@
 #include <string>
 #include <stdexcept>
 #include <tuple>
+#include <utility>
 
 namespace CmdLineParser
 {
@@ -22,30 +23,48 @@ namespace CmdLineParser
 		mutable std::tuple<Args...> args;
 
 	public:
-		flag_event_t()
+		flag_event_t() noexcept
 		{}
 
-		flag_event_t(RtrnType(*triggeredFunction)(Args...), Args... arguments) : triggeredFunc(triggeredFunction), args(std::make_tuple(arguments...))
+		flag_event_t(RtrnType(*triggeredFunction)(Args...), Args&&... arguments) : triggeredFunc(triggeredFunction), args(std::forward<Args>(arguments)...)
 		{}
 
-		const flag_event_t& SetTriggeredFunc(RtrnType(*triggeredFuntion)(Args...)) const noexcept
+		flag_event_t(flag_event_t&& other) noexcept
+			: triggeredFunc(std::exchange(other.triggeredFunc, nullptr)), args(std::move(other.args))
+		{}
+
+		flag_event_t& operator=(flag_event_t&& other) noexcept
 		{
-			triggeredFunc = triggeredFuntion;
+			if (this != &other)
+			{
+				triggeredFunc = std::exchange(other.triggeredFunc, nullptr);
+				args = std::move(other.args);
+			}
 
 			return *this;
 		}
 
-		const flag_event_t& SetTriggeredFunc(RtrnType(*triggeredFunction)(Args...), Args... arguments) const noexcept
+		const flag_event_t& SetTriggeredFunc(RtrnType(*triggeredFunction)(Args...)) const noexcept
 		{
 			triggeredFunc = triggeredFunction;
-			args = std::make_tuple(arguments...);
 
 			return *this;
 		}
 
-		const flag_event_t& SetFuncArguments(Args... arguments) const noexcept
+		template<typename... FuncArgs>
+		const flag_event_t& SetTriggeredFunc(RtrnType(*triggeredFunction)(Args...), FuncArgs&&... arguments) const
 		{
-			args = std::make_tuple(arguments...);
+			static_assert(std::is_same_v<std::tuple<FuncArgs...>, std::tuple<Args...>>, "Provided arguments types don't match the types specified in the template instance");
+
+			triggeredFunc = triggeredFunction;
+			args = std::make_tuple(std::forward<FuncArgs>(arguments)...);
+
+			return *this;
+		}
+
+		const flag_event_t& SetFuncArguments(Args&&... arguments) const
+		{
+			args = std::make_tuple(std::forward<Args>(arguments)...);
 
 			return *this;
 		}
@@ -73,10 +92,8 @@ namespace CmdLineParser
 		}
 
 		flag_event_t(const flag_event_t&) = delete;
-		flag_event_t(flag_event_t&&) = delete;
 
 		flag_event_t& operator=(const flag_event_t&) = delete;
-		flag_event_t& operator=(flag_event_t&&) = delete;
 	};
 	//************************************************************************************************
 }

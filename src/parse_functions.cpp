@@ -147,11 +147,16 @@ namespace CmdLineParser
 		return value;
 	}
 
-	std::string ParseString(const char* str)
+	std::string ParseStringDilimited(const char* str)
 	{
 		std::string s(str);
 		if (s.size() < 2 || s.front() != '"' || s.back() != '"')
 			throw std::invalid_argument("Could not parse " + s + " to string value");
 		return s.substr(1, s.size() - 2);
+	}
+
+	std::string ParseString(const char* str)
+	{
+		return std::string(str);
 	}
 }

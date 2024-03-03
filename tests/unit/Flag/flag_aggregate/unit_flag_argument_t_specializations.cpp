@@ -3,42 +3,47 @@
 
 using namespace CmdLineParser;
 
-TEST(Arg_Bool, ParsesTrueString)
-{
-	Arg_Bool arg;
-	ASSERT_NO_THROW(arg.Parse("true"));
-	EXPECT_TRUE(arg.as<bool>());
-}
+#define CREATE_SPEC_TESTS(SpecTypeName, ArgSetValue, UnderlyingType) \
+	TEST(SpecTypeName, VerifyAsFunctionality) \
+	{ \
+		const flag_argument* argPtr = nullptr; \
+		SpecTypeName arg(ArgSetValue); \
+		argPtr = &arg; \
+		EXPECT_EQ(argPtr->as<UnderlyingType>(), ArgSetValue); \
+	} \
+    \
+	TEST(SpecTypeName, VerifyGetArg) \
+	{ \
+		SpecTypeName arg(ArgSetValue); \
+		EXPECT_EQ(arg.GetArg(), ArgSetValue); \
+	} \
+	\
+	TEST(SpecTypeName, VerifySetDefaultValue) \
+	{ \
+		SpecTypeName arg; \
+		UnderlyingType before = arg.GetArg(); \
+		arg.SetDefaultValue(ArgSetValue); \
+		UnderlyingType after = arg.GetArg(); \
+		EXPECT_NE(before, after); \
+		EXPECT_EQ(after, ArgSetValue); \
+	}
 
-TEST(Arg_Bool, ParsesFalseString)
-{
-	Arg_Bool arg;
-	ASSERT_NO_THROW(arg.Parse("false"));
-	EXPECT_FALSE(arg.as<bool>());
-}
+CREATE_SPEC_TESTS(Arg_Bool, true, bool);
 
-TEST(Arg_Bool, ThrowsForInvalidInput)
-{
-	Arg_Bool arg;
-	EXPECT_THROW(arg.Parse("invalid"), std::invalid_argument);
-}
+CREATE_SPEC_TESTS(Arg_Int32, -5, int32_t);
 
-TEST(Arg_Bool, TryParseTrueString)
-{
-	Arg_Bool arg;
-	ASSERT_TRUE(arg.TryParse("true"));
-	EXPECT_TRUE(arg.as<bool>());
-}
+CREATE_SPEC_TESTS(Arg_UInt32, 5, uint32_t);
 
-TEST(Arg_Bool, TryParseFalseString)
-{
-	Arg_Bool arg;
-	ASSERT_TRUE(arg.TryParse("false"));
-	EXPECT_FALSE(arg.as<bool>());
-}
+CREATE_SPEC_TESTS(Arg_Int64, -10, int64_t);
 
-TEST(Arg_Bool, TryParseInvalidInput)
-{
-	Arg_Bool arg;
-	EXPECT_FALSE(arg.TryParse("invalid"));
-}
+CREATE_SPEC_TESTS(Arg_UInt64, 10, uint64_t);
+
+CREATE_SPEC_TESTS(Arg_Float, 3.14159f, float);
+
+CREATE_SPEC_TESTS(Arg_Double, 3.14159, double);
+
+CREATE_SPEC_TESTS(Arg_LongDouble, 3.14159L, long double);
+
+CREATE_SPEC_TESTS(Arg_String, "Test string", std::string);
+
+CREATE_SPEC_TESTS(Arg_DilString, "Test string", std::string);

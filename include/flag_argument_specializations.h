@@ -12,12 +12,7 @@ namespace CmdLineParser
 	{
 	public:
 		Arg_Bool() : flag_argument_t<bool>(false, StringToBool) {}
-	};
-
-	class Arg_InvertBool : public flag_argument_t<bool>
-	{
-	public:
-		Arg_InvertBool() : flag_argument_t<bool>(true, StringToBool) {}
+		Arg_Bool(bool&& defaultValue) : flag_argument_t<bool>(std::move(defaultValue), StringToBool) {}
 	};
 
 	class Arg_Int32 : public flag_argument_t<int32_t>
@@ -74,6 +69,13 @@ namespace CmdLineParser
 	public:
 		Arg_String() : flag_argument_t<std::string>("", ParseString) {}
 		Arg_String(std::string&& defalutValue) : flag_argument_t<std::string>(std::move(defalutValue), ParseString) {}
+	};
+
+	class Arg_DilString : public flag_argument_t<std::string>
+	{
+	public:
+		Arg_DilString() : flag_argument_t<std::string>("", ParseStringDilimited) {}
+		Arg_DilString(std::string&& defalutValue) : flag_argument_t<std::string>(std::move(defalutValue), ParseStringDilimited) {}
 	};
 
 	class Ptr_Bool : public flag_pointer_t<bool>
@@ -137,6 +139,13 @@ namespace CmdLineParser
 	public:
 		Ptr_String() : flag_pointer_t<std::string>(ParseString) {}
 		Ptr_String(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseString) {}
+	};
+
+	class Ptr_DilString : public flag_pointer_t<std::string>
+	{
+	public:
+		Ptr_DilString() : flag_pointer_t<std::string>(ParseStringDilimited) {}
+		Ptr_DilString(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseStringDilimited) {}
 	};
 	//************************************************************************************************
 }

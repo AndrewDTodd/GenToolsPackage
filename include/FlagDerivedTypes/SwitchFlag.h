@@ -6,29 +6,29 @@
 
 namespace CmdLineParser
 {
-	class SwitchFlag : virtual public Flag
+	class SwitchFlag : virtual public Flag<Arg_Bool>
 	{
-	protected:
-		Arg_Bool switchState;
-
 	public:
 		SwitchFlag(Tokens&& flagTokens, std::string&& flagDesc,
-			bool defaultSwitchState = false, bool flagRequired = false)
-#ifndef _DEBUG
-			noexcept
-#endif // !_DEBUG
-			;
+			bool defaultSwitchState = false, bool flagRequired = false) noexcept
+			: Flag<Arg_Bool>(std::move(flagTokens), std::move(flagDesc), Arg_Bool(std::move(defaultSwitchState)), false, flagRequired)
+		{}
 
-		SwitchFlag& SetDefaultState(bool defaultSwitchState) noexcept;
+		SwitchFlag& SetDefaultState(bool defaultSwitchState) noexcept
+		{
+			_flagArg.SetDefaultValue(std::move(defaultSwitchState));
+
+			return *this;
+		}
 
 		inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override
 		{
-			switchState.SetDefaultValue(!switchState.GetArg());
+			_flagArg.SetDefaultValue(!_flagArg.GetArg());
 		}
 
 		inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override
 		{
-			switchState.SetDefaultValue(!switchState.GetArg());
+			_flagArg.SetDefaultValue(!_flagArg.GetArg());
 
 			return true;
 		}
