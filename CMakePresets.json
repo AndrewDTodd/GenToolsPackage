@@ -12,7 +12,7 @@
         "CMAKE_CXX_COMPILER": "cl"
       },
       "environment": {
-        "CMAKE_BUILD_PARALLEL_LEVEL": "18"
+        "CMAKE_BUILD_PARALLEL_LEVEL": "16"
       },
       "condition": {
         "type": "equals",

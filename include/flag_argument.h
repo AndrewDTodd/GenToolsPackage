@@ -67,7 +67,7 @@ namespace CmdLineParser
 
 		template<typename default_constructible_type = ArgType,
 			std::enable_if_t<std::is_default_constructible<default_constructible_type>::value>* = nullptr>
-		constexpr flag_argument_t() noexcept : argument(ArgType())
+		flag_argument_t() noexcept : argument(ArgType())
 		{}
 
 		flag_argument_t(ArgType&& defaultValue) noexcept : argument(std::move(defaultValue))
@@ -81,12 +81,12 @@ namespace CmdLineParser
 		flag_argument_t(ArgType&& defaultValue, ArgType(*parseFunction)(const char*)) noexcept : argument(std::move(defaultValue)), parseFunc(parseFunction)
 		{}
 
-		flag_argument_t(flag_argument_t&& other) :
+		flag_argument_t(flag_argument_t&& other) noexcept :
 			argument(std::move(other.argument)),
 			parseFunc(std::exchange(other.parseFunc, nullptr))
 		{}
 
-		flag_argument_t& operator=(flag_argument_t&& other)
+		flag_argument_t& operator=(flag_argument_t&& other) noexcept
 		{
 			if (this != &other)
 			{
@@ -163,12 +163,12 @@ namespace CmdLineParser
 		flag_pointer_t(ArgType* linkedValue, ArgType(*parseFunction)(const char*)) noexcept : argument(linkedValue), parseFunc(parseFunction)
 		{}
 
-		flag_pointer_t(flag_pointer_t&& other) :
+		flag_pointer_t(flag_pointer_t&& other) noexcept :
 			argument(std::exchange(other.argument, nullptr)),
 			parseFunc(std::exchange(other.parseFunc), nullptr)
 		{}
 
-		flag_pointer_t& operator=(flag_pointer_t&& other)
+		flag_pointer_t& operator=(flag_pointer_t&& other) noexcept
 		{
 			if (this != &other)
 			{

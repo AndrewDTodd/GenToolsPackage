@@ -76,7 +76,8 @@ option(RELEASE_ERROR_MSG "Suppress the inclusion of release error messages in th
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Release-Dev" CACHE STRING "List of supported build modes." FORCE)
 
-set(CMAKE_CXX_FLAGS_RELEASE-Dev "${CMAKE_CXX_FLAGS_RELEASE} -DRELEASE_ERROR_MSG=ON")
+set(CMAKE_CXX_FLAGS_RELEASE_DEV "${CMAKE_CXX_FLAGS_RELEASE} -DRELEASE_ERROR_MSG=ON")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE_DEV "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
 add_library(CmdLineParser STATIC ${SOURCE_FILES})
 #include the header files in the include directory
