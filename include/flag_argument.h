@@ -52,6 +52,13 @@ namespace CmdLineParser
 		}
 	};
 
+	class __void_argument final : public flag_argument
+	{
+	public:
+		void Parse(const char*) const final {}
+		bool TryParse(const char*, std::string* = nullptr) const noexcept final { return true; }
+	};
+
 	template<std::movable ArgType>
 	class flag_argument_t : public flag_argument
 	{
