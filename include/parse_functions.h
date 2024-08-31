@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cstdint>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	//Parsing Functions
 	//************************************************************************************************

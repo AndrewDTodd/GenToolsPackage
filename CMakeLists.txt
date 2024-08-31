@@ -1,9 +1,9 @@
-# CMakeList.txt : CMakeLists for CmdLineParser, include source and define
+# CMakeList.txt : CMakeLists for TokenValueParser, include source and define
 # project specific logic here.
-#
+
 cmake_minimum_required (VERSION 3.20)
 
-project(CmdLineParser)
+project(TokenValueParser)
 
 #include(DetectArchitecture.cmake)
 
@@ -57,7 +57,7 @@ set(VERSION_PATCH 0)
 #A version that is often used to denote a specific build of the software, including revisions, builds, or other metadata
 set(VERSION_BUILD 0)
 
-#Add versioning definitions for the CmdLineParser library
+#Add versioning definitions for the TokenValueParser library
 add_definitions(-DVERSION_MAJOR=${VERSION_MAJOR})
 add_definitions(-DVERSION_MINOR=${VERSION_MINOR})
 add_definitions(-DVERSION_PATCH=${VERSION_PATCH})
@@ -68,9 +68,9 @@ configure_file(rootConfig.h.in ${GENERATED_DIR}/rootConfig.h)
 
 include_directories(${GENERATED_DIR})
 
-set(CmdLineParser_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(TokenValueParser_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB_RECURSE SOURCE_FILES "${CmdLineParser_SOURCE_DIR}/src/*.cpp" "${CmdLineParser_SOURCE_DIR}/generated/*.cpp")
+file(GLOB_RECURSE SOURCE_FILES "${TokenValueParser_SOURCE_DIR}/src/*.cpp" "${TokenvalueParser_SOURCE_DIR}/generated/*.cpp")
 
 option(RELEASE_ERROR_MSG "Suppress the inclusion of release error messages in the build" OFF)
 
@@ -79,24 +79,24 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Release-Dev" CACHE STRING "List of 
 set(CMAKE_CXX_FLAGS_RELEASE-DEV "${CMAKE_CXX_FLAGS_RELEASE} -DRELEASE_ERROR_MSG=ON")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE-DEV "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
-add_library(CmdLineParser STATIC ${SOURCE_FILES})
+add_library(TokenValueParser STATIC ${SOURCE_FILES})
 #include the header files in the include directory
-target_include_directories(CmdLineParser PUBLIC ${CmdLineParser_SOURCE_DIR}/include)
-target_include_directories(CmdLineParser PUBLIC ${CmdLineParser_SOURCE_DIR}/include/FlagDerivedTypes)
+target_include_directories(TokenValueParser PUBLIC ${TokenValueParser_SOURCE_DIR}/include)
+target_include_directories(TokenValueParser PUBLIC ${TokenValueParser_SOURCE_DIR}/include/FlagDerivedTypes)
 
 if(NOT RELEASE_ERROR_MSG)
-	target_compile_definitions(CmdLineParser PUBLIC RELEASE_ERROR_MSG=0)
+	target_compile_definitions(TokenValueParser PUBLIC RELEASE_ERROR_MSG=0)
 else()
-	target_compile_definitions(CmdLineParser PUBLIC RELEASE_ERROR_MSG=1)
+	target_compile_definitions(TokenValueParser PUBLIC RELEASE_ERROR_MSG=1)
 endif()
 
 #install the public header files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ 
-DESTINATION CmdLineParser/include 
+DESTINATION TokenValueParser/include 
 FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
 #install the static library
-install(TARGETS CmdLineParser DESTINATION CmdLineParser/lib)
+install(TARGETS TokenValueParser DESTINATION TokenValueParser/lib)
 
 enable_testing()
 add_subdirectory(tests)

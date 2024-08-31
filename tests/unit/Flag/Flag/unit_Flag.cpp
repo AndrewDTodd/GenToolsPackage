@@ -3,7 +3,7 @@
 
 #include <flag_argument_specializations.h>
 
-using namespace CmdLineParser;
+using namespace TokenValueParser;
 
 TEST(TokensConstructor, VerifyShortToken)
 {
@@ -100,7 +100,7 @@ TEST(FlagConstructor2, VerifyDefaultFlagRequired)
 TEST(FlagConstructor2, VerifyDefaultArgRequired)
 {
 	Flag flag{ {"test"}, "This flag is for testing", Arg_String("default") };
-	EXPECT_FALSE(flag.ArgRequired);
+	EXPECT_TRUE(flag.ArgRequired);
 }
 
 TEST(FlagConstructor2, VerifySetFlagRequired)
@@ -195,7 +195,7 @@ TEST(FlagMethods, SetFlagArgument)
 
 TEST(FlagRaise, VerifySuccessOnValid)
 {
-	const char* cmdArgs[] = { "log.exe", "-f", "/.ssh/named_key.pub" };
+	const char* cmdArgs[] = { "ssh-keygen.exe", "-f", "/.ssh/named_key.pub" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0])};
 	std::vector<std::string_view>::const_iterator itr = args.begin();
 	itr += 2;
@@ -240,7 +240,7 @@ TEST(FlagRaise, NoThrowOnEnd_ArgNOTRequired)
 	std::vector<std::string_view>::const_iterator itr = args.begin();
 	itr += 3;
 
-	Flag flag({ "f", "out-file" }, "Specify what file to save to", Arg_String());
+	Flag flag({ "f", "out-file" }, "Specify what file to save to", Arg_String(), false);
 
 	ASSERT_FALSE(flag.ArgRequired);
 	EXPECT_NO_THROW(flag.Raise(itr, args.end()));
@@ -267,7 +267,7 @@ TEST(FlagRaise, NoThrowOnBadParse_ArgNOTRequired)
 	itr += 2;
 	auto preRaiseItr = itr;
 
-	Flag flag({ "i", "intensity" }, "Specify the illumination intensity value", Arg_Double());
+	Flag flag({ "i", "intensity" }, "Specify the illumination intensity value", Arg_Double(), false);
 
 	ASSERT_FALSE(flag.ArgRequired);
 	EXPECT_NO_THROW(flag.Raise(itr, args.end()));
@@ -332,7 +332,7 @@ TEST(FlagTryRaise, NoThrowOnEnd_ArgNOTRequired)
 	std::vector<std::string_view>::const_iterator itr = args.begin();
 	itr += 3;
 
-	Flag flag({ "f", "out-file" }, "Specify what file to save to", Arg_String());
+	Flag flag({ "f", "out-file" }, "Specify what file to save to", Arg_String(), false);
 
 	ASSERT_FALSE(flag.ArgRequired);
 	EXPECT_TRUE(flag.TryRaise(itr, args.end()));
@@ -359,7 +359,7 @@ TEST(FlagTryRaise, NoThrowOnBadParse_ArgNOTRequired)
 	itr += 2;
 	auto preRaiseItr = itr;
 
-	Flag flag({ "i", "intensity" }, "Specify the illumination intensity value", Arg_Double());
+	Flag flag({ "i", "intensity" }, "Specify the illumination intensity value", Arg_Double(), false);
 
 	ASSERT_FALSE(flag.ArgRequired);
 	EXPECT_TRUE(flag.TryRaise(itr, args.end()));

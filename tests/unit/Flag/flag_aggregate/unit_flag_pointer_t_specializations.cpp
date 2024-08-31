@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <flag_argument_specializations.h>
 
-using namespace CmdLineParser;
+using namespace TokenValueParser;
 
 #define CREATE_SPEC_TESTS(SpecTypeName, ArgSetValue, UnderlyingType) \
 	TEST(SpecTypeName, VerifyAsFunctionality) \

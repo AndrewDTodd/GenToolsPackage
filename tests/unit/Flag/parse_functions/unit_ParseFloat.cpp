@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-using namespace CmdLineParser;
+using namespace TokenValueParser;
 
 TEST(ParseFloat, Parse_dec)
 {

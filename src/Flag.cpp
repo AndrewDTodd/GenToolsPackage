@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	Tokens::Tokens(Tokens&& other) :
 		_shortToken(std::move(other._shortToken)),

@@ -1,6 +1,6 @@
 #include <parse_functions.h>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	bool StringToBool(const char* str)
 	{

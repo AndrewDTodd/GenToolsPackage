@@ -4,7 +4,7 @@
 #include <Flag.h>
 #include <flag_argument_specializations.h>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	class SwitchFlag : virtual public Flag<Arg_Bool>
 	{

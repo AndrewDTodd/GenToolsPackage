@@ -1,5 +1,5 @@
-#ifndef CMD_LINE_PARSER_FLAGS_H
-#define CMD_LINE_PARSER_FLAGS_H
+#ifndef TOKEN_VALUE_PARSER_FLAG_H
+#define TOKEN_VALUE_PARSER_FLAG_H
 
 #include <string>
 #include <string_view>
@@ -12,7 +12,7 @@
 
 #include <rootConfig.h>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	//Flag Type
 	//************************************************************************************************
@@ -98,27 +98,27 @@ namespace CmdLineParser
 
 		virtual ~flag_interface() = default;
 
-		virtual flag_interface& SetFlagRequired(bool required) noexcept = 0;
+		virtual inline flag_interface& SetFlagRequired(bool required) noexcept = 0;
 
-		virtual flag_interface& SetFlagArgRequired(bool required) noexcept = 0;
+		virtual inline flag_interface& SetFlagArgRequired(bool required) noexcept = 0;
 
-		virtual flag_interface& SetFlagIsPosParsable(bool posParsable) noexcept = 0;
+		virtual inline flag_interface& SetFlagIsPosParsable(bool posParsable) noexcept = 0;
 
-		virtual flag_interface& SetFlagArgument(flag_argument&& flagArg)
+		virtual inline flag_interface& SetFlagArgument(flag_argument&& flagArg)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
 			= 0;
 
-		virtual const std::string& ShortToken() const noexcept = 0;
+		virtual inline const std::string& ShortToken() const noexcept = 0;
 
-		virtual const std::vector<std::string>& LongTokens() const noexcept = 0;
+		virtual inline const std::vector<std::string>& LongTokens() const noexcept = 0;
 
-		virtual bool ArgumentSet() const noexcept = 0;
+		virtual inline bool ArgumentSet() const noexcept = 0;
 
-		virtual const flag_argument& FlagArgument() const noexcept = 0;
+		virtual inline const flag_argument& FlagArgument() const noexcept = 0;
 
-		virtual const std::string& FlagDescription() const noexcept = 0;
+		virtual inline const std::string& FlagDescription() const noexcept = 0;
 
 		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) = 0;
 
@@ -144,7 +144,7 @@ namespace CmdLineParser
 		{}
 
 		explicit Flag(Tokens&& flagTokens, std::string&& flagDesc, Flag_Argument&& flagArg,
-			bool argRequired = false, bool flagRequired = false) noexcept
+			bool argRequired = true, bool flagRequired = false) noexcept
 			: flag_interface(flagRequired, argRequired), _tokens(std::move(flagTokens)), _flagDesc(std::move(flagDesc)), _flagArg(std::move(flagArg)), _argSet(true)
 		{}
 
@@ -176,21 +176,21 @@ namespace CmdLineParser
 			return *this;
 		}
 
-		Flag& SetFlagRequired(bool required) noexcept final
+		inline Flag& SetFlagRequired(bool required) noexcept final
 		{
 			const_cast<bool&>(FlagRequired) = required;
 
 			return *this;
 		}
 
-		Flag& SetFlagArgRequired(bool required) noexcept final
+		inline Flag& SetFlagArgRequired(bool required) noexcept final
 		{
 			const_cast<bool&>(ArgRequired) = required;
 
 			return *this;
 		}
 
-		Flag& SetFlagIsPosParsable(bool posParsable) noexcept final
+		inline Flag& SetFlagIsPosParsable(bool posParsable) noexcept final
 		{
 			const_cast<bool&>(PosParsable) = posParsable;
 
@@ -203,7 +203,7 @@ namespace CmdLineParser
 			return *this;
 		}
 
-		Flag& SetFlagArgument(flag_argument&& flagArg)
+		inline Flag& SetFlagArgument(flag_argument&& flagArg)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
@@ -220,27 +220,27 @@ namespace CmdLineParser
 			return *this;
 		}
 
-		const std::string& ShortToken() const noexcept final
+		inline const std::string& ShortToken() const noexcept final
 		{
 			return _tokens._shortToken;
 		}
 
-		const std::vector<std::string>& LongTokens() const noexcept final
+		inline const std::vector<std::string>& LongTokens() const noexcept final
 		{
 			return _tokens._longTokens;
 		}
 
-		bool ArgumentSet() const noexcept final
+		inline bool ArgumentSet() const noexcept final
 		{
 			return _argSet;
 		}
 
-		const Flag_Argument& FlagArgument() const noexcept final
+		inline const Flag_Argument& FlagArgument() const noexcept final
 		{
 			return _flagArg;
 		}
 
-		const std::string& FlagDescription() const noexcept final
+		inline const std::string& FlagDescription() const noexcept final
 		{
 			return _flagDesc;
 		}
@@ -251,7 +251,7 @@ namespace CmdLineParser
 				throw std::logic_error("Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.");
 
 			if (itr == end && ArgRequired)
-				throw std::logic_error("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
+				throw std::invalid_argument("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
 			else if (itr == end && !ArgRequired)
 				return;
 
@@ -345,4 +345,4 @@ namespace CmdLineParser
 	}
 	//************************************************************************************************
 }
-#endif // !CMD_LINE_PARSER_FLAGS_H
+#endif // !TOKEN_VALUE_PARSER_FLAG_H

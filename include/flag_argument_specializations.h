@@ -4,7 +4,7 @@
 #include <flag_argument.h>
 #include <parse_functions.h>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	//Flag Aggregate Specializations
 	//************************************************************************************************

@@ -6,7 +6,7 @@
 #include <tuple>
 #include <utility>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	class flag_event
 	{

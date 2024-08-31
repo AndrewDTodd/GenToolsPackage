@@ -1,4 +1,4 @@
-#CmdLineParser tests target section
+#TokenValueParser tests target section
 ################################################################################################################################################################
 #installation and setup of the gTest suite
 #build a tests executable for the execution of the projects tests
@@ -21,8 +21,10 @@ endif()
 enable_testing()
 include(GoogleTest)
 
-#create a set for build all tests
-set(TEST_TARGETS)
+#create a set for build all unit tests
+set(UNIT_TEST_TARGETS)
+#get a list of all the test related .cpp files in the unit tests subdirectory
+file(GLOB_RECURSE UNIT_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/*.cpp")
 
 #create a set for the Flag aggregate types unit tests
 set(FLAG_AGGREGATE_TYPES_TARGETS)
@@ -33,9 +35,9 @@ file(GLOB FLAG_AGGREGATE_TYPES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/Flag/fl
 foreach(TEST_SOURCE ${FLAG_AGGREGATE_TYPES_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
-	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main CmdLineParser)
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main TokenValueParser)
 	target_include_directories(${TEST_NAME} PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
-	target_include_directories(${TEST_NAME} PRIVATE ${CmdLineParser_SOURCE_DIR}/include)
+	target_include_directories(${TEST_NAME} PRIVATE ${TokenValueParser_SOURCE_DIR}/include)
 	list(APPEND FLAG_AGGREGATE_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND TEST_TARGETS ${TEST_NAME})
 	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "FlagAggregates")
@@ -51,9 +53,9 @@ file(GLOB PARSE_FUNCTIONS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/Flag/parse_f
 foreach(TEST_SOURCE ${PARSE_FUNCTIONS_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
-	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main CmdLineParser)
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main TokenValueParser)
 	target_include_directories(${TEST_NAME} PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
-	target_include_directories(${TEST_NAME} PRIVATE ${CmdLineParser_SOURCE_DIR}/include)
+	target_include_directories(${TEST_NAME} PRIVATE ${TokenValueParser_SOURCE_DIR}/include)
 	list(APPEND PARSE_FUNCTIONS_TARGETS ${TEST_NAME})
 	list(APPEND TEST_TARGETS ${TEST_NAME})
 	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "ParseFunctions")
@@ -69,9 +71,9 @@ file(GLOB_RECURSE FLAG_TYPES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/Flag/Flag
 foreach(TEST_SOURCE ${FLAG_TYPES_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
-	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main CmdLineParser)
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main TokenValueParser)
 	target_include_directories(${TEST_NAME} PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
-	target_include_directories(${TEST_NAME} PRIVATE ${CmdLineParser_SOURCE_DIR}/include)
+	target_include_directories(${TEST_NAME} PRIVATE ${TokenValueParser_SOURCE_DIR}/include)
 	list(APPEND FLAG_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND TEST_TARGETS ${TEST_NAME})
 	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "FlagTypes")
@@ -80,15 +82,31 @@ endforeach()
 
 #create a custom target for the flag_aggregate_types tests
 add_custom_target(flag_aggregate_tests DEPENDS ${FLAG_AGGREGATE_TYPES_TARGETS})
+#create an executable for the custom target, such that the IDEs can see it as a runnable target
+add_executable(run_flag_aggregate_tests EXCLUDE_FROM_ALL ${FLAG_AGGREGATE_TYPES_SOURCES})
+#link the executable with GTest and the TokenValueParser library
+target_link_libraries(run_flag_aggregate_tests PRIVATE GTest::gtest_main TokenValueParser)
 
 #create a custom target for the parse_functions tests
-add_custom_target(parse_function_tests DEPENDS ${PARSE_FUNCTIONS_TARGETS})
+add_custom_target(parse_functions_tests DEPENDS ${PARSE_FUNCTIONS_TARGETS})
+#create an executable for the custom target, such that the IDEs can see it as a runnable target
+add_executable(run_parse_functions_tests EXCLUDE_FROM_ALL ${PARSE_FUNCTIONS_SOURCES})
+#link the executable with GTest and the TokenValueParser library
+target_link_libraries(run_parse_functions_tests PRIVATE GTest::gtest_main TokenValueParser)
 
 #create a custom target for the flags types
 add_custom_target(flags_tests DEPENDS ${FLAG_TYPES_TARGETS})
+#create an executable for the custom target, such that the IDEs can see it as a runnable target
+add_executable(run_flags_tests EXCLUDE_FROM_ALL ${FLAG_TYPES_SOURCES})
+#link the executable with GTest and the TokenValueParser library
+target_link_libraries(run_flags_tests PRIVATE GTest::gtest_main TokenValueParser)
 
 #create a custom target for all tests
-add_custom_target(build_all_tests DEPENDS ${TEST_TARGETS})
+add_custom_target(all_unit_tests DEPENDS ${UNIT_TEST_TARGETS})
+#create an executable for the custom target, such that the IDEs can see it as a runnable target
+add_executable(run_all_unit_tests EXCLUDE_FROM_ALL ${UNIT_TEST_SOURCES})
+#link the executable with GTest and the TokenValueParser library
+target_link_libraries(run_all_unit_tests PRIVATE GTest::gtest_main TokenValueParser)
 ################################################################################################################################################################
 
 #add tests to be discoverable by ctest *Note this is only necessary when not using gtest_discover. The tests are automatically added by gtest

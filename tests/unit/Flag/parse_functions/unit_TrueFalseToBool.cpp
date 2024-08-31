@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <parse_functions.h>
 
-using namespace CmdLineParser;
+using namespace TokenValueParser;
 
 TEST(TrueFalseToBool, Parse_true)
 {

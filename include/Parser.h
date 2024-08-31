@@ -7,7 +7,7 @@
 
 #include "Flags.h"
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	class Parser
 	{

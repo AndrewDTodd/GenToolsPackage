@@ -5,7 +5,7 @@
 #include <flag_event.h>
 #include <concepts>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	template<typename T>
 	concept IsFlagEvent = std::is_base_of_v<flag_event, T> && std::movable<T>;
@@ -14,7 +14,7 @@ namespace CmdLineParser
 	class TriggerFlag : virtual public Flag<Flag_Argument>
 	{
 	protected:
-		const Flag_Event _triggeredFunc;
+		Flag_Event _triggeredFunc;
 		bool _triggerSet = false;
 
 	public:
@@ -23,19 +23,19 @@ namespace CmdLineParser
 			: Flag<Flag_Argument>(std::move(flagTokens), std::move(flagDesc), flagRequired)
 		{}
 
-		explicit TriggerFlag(Tokens&& flagTokens, std::string&& flagDesc, const Flag_Event&& triggeredFunc,
+		explicit TriggerFlag(Tokens&& flagTokens, std::string&& flagDesc, Flag_Event&& triggeredFunc,
 			bool flagRequired = false) noexcept
 			: Flag<Flag_Argument>(std::move(flagTokens), std::move(flagDesc), flagRequired), _triggeredFunc(std::move(triggeredFunc)), _triggerSet(true)
 		{}
 
-		explicit TriggerFlag(Tokens&& flagTokens, std::string&& flagDesc, const Flag_Event&& triggeredFunc, const Flag_Argument&& flagArg,
+		explicit TriggerFlag(Tokens&& flagTokens, std::string&& flagDesc, Flag_Event&& triggeredFunc, Flag_Argument&& flagArg,
 			bool argRequired = false, bool flagRequired = false) noexcept
 			: Flag<Flag_Argument>(std::move(flagTokens), std::move(flagDesc), std::move(flagArg), argRequired, flagRequired), _triggeredFunc(std::move(triggeredFunc)), _triggerSet(true)
 		{}
 
-		TriggerFlag& SetFlagEvent(const Flag_Event&& triggeredFunc) noexcept
+		TriggerFlag& SetFlagEvent(Flag_Event&& triggeredFunc) noexcept
 		{
-			const_cast<Flag_Event&>(_triggeredFunc) = std::move(triggeredFunc);
+			_triggeredFunc = std::move(triggeredFunc);
 
 			_triggerSet = true;
 
@@ -49,7 +49,7 @@ namespace CmdLineParser
 			Flag<Flag_Argument>::Raise(itr, end);
 		}
 
-		inline bool TriggerFlag::TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept override
+		inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept override
 		{
 			if (!_triggeredFunc.TryRun(errorMsg))
 				return false;

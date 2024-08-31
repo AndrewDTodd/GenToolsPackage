@@ -6,7 +6,7 @@
 #include <concepts>
 #include <utility>
 
-namespace CmdLineParser
+namespace TokenValueParser
 {
 	//Flag Aggregate Types
 	//************************************************************************************************
