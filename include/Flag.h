@@ -80,8 +80,8 @@ namespace TokenValueParser
 			(token_sort(std::move(tokens)), ...);
 		}
 
-		Tokens(Tokens&& other);
-		Tokens& operator=(Tokens&& other);
+		Tokens(Tokens&& other) noexcept;
+		Tokens& operator=(Tokens&& other) noexcept;
 
 		Tokens(const Tokens&) = delete;
 		Tokens& operator=(const Tokens&) = delete;

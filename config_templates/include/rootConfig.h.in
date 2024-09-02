@@ -1,7 +1,7 @@
 //rootConfig.h.in, used for configuration defintions in project scope
 
-#ifndef ROOT_CONFIG_CMDLINEPARSER_H
-#define ROOT_CONFIG_CMDLINEPARSER_H
+#ifndef ROOT_CONFIG_TOKENVALUEPARSER_H
+#define ROOT_CONFIG_TOKENVALUEPARSER_H
 
 #include <iostream>
 
@@ -33,7 +33,6 @@
 #endif
 
 #if defined(_WIN_TARGET)
-#include <windows.h>
 #define CLEAR_TERMINAL std::system("cls");
 
 void init_windows_terminal();
@@ -55,4 +54,4 @@ void init_windows_terminal();
 	} while(0)
 #endif
 
-#endif //!ROOT_CONFIG_CMDLINEPARSER_H
+#endif //!ROOT_CONFIG_TOKENVALUEPARSER_H

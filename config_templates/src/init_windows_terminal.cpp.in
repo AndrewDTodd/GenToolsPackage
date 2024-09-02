@@ -1,6 +1,6 @@
-#include <rootConfig.h>
-
 #if defined(_WIN_TARGET)
+#include <windows.h>
+
 void init_windows_terminal()
 {
 	static bool windows_terminal_initialized = false;

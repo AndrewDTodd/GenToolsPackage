@@ -75,7 +75,7 @@ TEST(BranchFlagConstructor2, VerifySubFlags)
 	ASSERT_TRUE(_optionalFlags.contains("-d"));
 	ASSERT_TRUE(_optionalFlags.contains("--debug"));
 	ASSERT_TRUE(_optionalFlags.contains("--debug-mode"));
-	auto flagOne = _optionalFlags.at("-d");
+	auto& flagOne = _optionalFlags.at("-d");
 	EXPECT_EQ(flagOne->FlagDescription(), "Set the operation to perform debug features");
 
 	ASSERT_TRUE(_optionalFlags.contains("--help"));
@@ -84,13 +84,15 @@ TEST(BranchFlagConstructor2, VerifySubFlags)
 	ASSERT_TRUE(_requiredFlags.contains("-m"));
 	ASSERT_TRUE(_requiredFlags.contains("--msg"));
 	ASSERT_TRUE(_requiredFlags.contains("--message"));
-	auto flagTwo = _requiredFlags.at("-m");
+	auto& flagTwo = _requiredFlags.at("-m");
 	EXPECT_EQ(flagTwo->FlagDescription(), "The message to associate with the commit");
 
 	EXPECT_TRUE(_posParseableFlags.size() == 1);
 	EXPECT_EQ(_posParseableFlags[0]->FlagDescription(), "The user and hostname (user:host-ip/name) to connect too");
 }
 
+#pragma warning(push)
+#pragma warning(disable:26800)
 TEST(BranchFlagMoveConstructor, ValidateMove)
 {
 	Flag posParseable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_String() };
@@ -119,7 +121,10 @@ TEST(BranchFlagMoveConstructor, ValidateMove)
 	EXPECT_TRUE(_requiredFlagsTwo.size() == 3);
 	EXPECT_TRUE(_posParseableFlagsTwo.size() == 1);
 }
+#pragma warning(pop)
 
+#pragma warning(push)
+#pragma warning(disable:26800)
 TEST(BranchFlagMoveAssignment, ValidateMove)
 {
 	Flag posParseable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_String() };
@@ -148,6 +153,7 @@ TEST(BranchFlagMoveAssignment, ValidateMove)
 	EXPECT_TRUE(_requiredFlagsTwo.size() == 3);
 	EXPECT_TRUE(_posParseableFlagsTwo.size() == 1);
 }
+#pragma warning(pop)
 
 TEST(BranchFlagMethods, SetSubFlags)
 {
@@ -168,7 +174,7 @@ TEST(BranchFlagMethods, SetSubFlags)
 	ASSERT_TRUE(_optionalFlags.contains("-d"));
 	ASSERT_TRUE(_optionalFlags.contains("--debug"));
 	ASSERT_TRUE(_optionalFlags.contains("--debug-mode"));
-	auto flagOne = _optionalFlags.at("-d");
+	auto& flagOne = _optionalFlags.at("-d");
 	EXPECT_EQ(flagOne->FlagDescription(), "Set the operation to perform debug features");
 
 	ASSERT_TRUE(_optionalFlags.contains("--help"));
@@ -177,7 +183,7 @@ TEST(BranchFlagMethods, SetSubFlags)
 	ASSERT_TRUE(_requiredFlags.contains("-m"));
 	ASSERT_TRUE(_requiredFlags.contains("--msg"));
 	ASSERT_TRUE(_requiredFlags.contains("--message"));
-	auto flagTwo = _requiredFlags.at("-m");
+	auto& flagTwo = _requiredFlags.at("-m");
 	EXPECT_EQ(flagTwo->FlagDescription(), "The message to associate with the commit");
 
 	EXPECT_TRUE(_posParseableFlags.size() == 1);
