@@ -48,13 +48,14 @@ namespace TokenValueParser
 	protected:
 		std::unordered_map<std::string, std::shared_ptr<flag_interface>> _optionalFlags;
 		std::unordered_map<std::string, std::shared_ptr<flag_interface>> _requiredFlags;
-		std::vector<std::shared_ptr<flag_interface>> _posParseableFlags;
+		std::vector<std::shared_ptr<flag_interface>> _posParsableFlags;
 
+		uint32_t _reqFlagsCount = 0;
 		uint32_t _detectedReqFlags = 0;
 		std::string _requiredFlagsExpectedTokens;
 
-		std::string _posParseableLeftDelimiter = "{";
-		std::string _posParseableRightDelimiter = "}";
+		std::string _posParsableLeftDelimiter = "{";
+		std::string _posParsableRightDelimiter = "}";
 
 		static void DefaultHelpDialog(BranchFlag* instance)
 		{
@@ -75,11 +76,7 @@ namespace TokenValueParser
 			}
 			else
 			{
-				if (newFlag->PosParsable)
-				{
-					_posParseableFlags.emplace_back(std::move(newFlag));
-				}
-				else if (!newFlag->FlagRequired)
+				if (!newFlag->FlagRequired)
 				{
 					if (!newFlag->ShortToken().empty())
 					{
@@ -90,6 +87,9 @@ namespace TokenValueParser
 					{
 						_optionalFlags.emplace("--" + longToken, newFlag);
 					}
+
+					if (newFlag->PosParsable)
+						_posParsableFlags.emplace_back(newFlag);
 				}
 				else
 				{
@@ -103,7 +103,11 @@ namespace TokenValueParser
 						_requiredFlags.emplace("--" + longToken, newFlag);
 					}
 
+					if (newFlag->PosParsable)
+						_posParsableFlags.emplace_back(newFlag);
+
 					_requiredFlagsExpectedTokens += std::string(" (-") + newFlag->ShortToken() + std::string(", --") + newFlag->LongTokens()[0] + std::string("),");
+					_reqFlagsCount++;
 				}
 			}
 		}
@@ -155,31 +159,20 @@ namespace TokenValueParser
 						}
 						catch (const std::exception& e)
 						{
-							std::string errorMsg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError" + e.what();
+							std::string errorMsg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + e.what();
 							PRINT_WARNING(errorMsg);
 						}
 					}
 				}
-				/*else
-				{
-					if constexpr (ParseMode == ParsingMode::Strict)
-					{
-						throw std::invalid_argument("Unknown token \'" + key + "\' provided")
-					}
-					else if constexpr (Verbosity == VerbositySetting::Verbose)
-					{
-						std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided.";
-						PRINT_WARNING(message)
-					}
-				}*/
 			}
 		}
 
-		inline void ParsePositionParseableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end)
+		inline void ParsePositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end)
 		{
 			std::vector<std::string_view>::const_iterator itr = leftDelimiter;
 			uint32_t arguments = 0;
-			while (itr != end && *itr != _posParseableRightDelimiter)
+			itr++;
+			while (itr != end && *itr != _posParsableRightDelimiter)
 			{
 				itr++;
 				arguments++;
@@ -187,15 +180,15 @@ namespace TokenValueParser
 
 			if constexpr (ParseMode == ParsingMode::Strict || Verbosity == VerbositySetting::Verbose)
 			{
-				if (arguments > _posParseableFlags.size())
+				if (arguments > _posParsableFlags.size())
 				{
 					if constexpr (ParseMode == ParsingMode::Strict)
 					{
-						throw std::invalid_argument("Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParseableFlags.size()) + " position parseable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parseable sequence.");
+						throw std::invalid_argument("Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence.");
 					}
 					else
 					{
-						PRINT_WARNING("Warning: Options branch " + this->_tokens._longTokens[0] + " ignoring excess arguments in the position parseable sequence.");
+						PRINT_WARNING("Warning: Options branch " + this->_tokens._longTokens[0] + " ignoring excess arguments in the position parsable sequence.");
 					}
 				}
 			}
@@ -204,16 +197,18 @@ namespace TokenValueParser
 			{
 				leftDelimiter++;
 
-				uint32_t iterations = _posParseableFlags.size() > arguments ? arguments : _posParseableFlags.size();
+				uint32_t iterations = _posParsableFlags.size() > arguments ? arguments : _posParsableFlags.size();
 
 				for (uint32_t i = 0; i < iterations; i++)
 				{
-					_posParseableFlags[i]->Raise(leftDelimiter, end);
+					_posParsableFlags[i]->Raise(leftDelimiter, end);
+					if(_posParsableFlags[i]->ArgRequired)
+						_detectedReqFlags++;
 				}
 			}
 			else
 			{
-				throw std::runtime_error("Expected matching right delimiter \'" + _posParseableRightDelimiter + "\' to the left delimiter \'" + _posParseableLeftDelimiter + "\' that denote the boundries of the position parseable flags arguments.");
+				throw std::runtime_error("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundries of the position parseable flags arguments.");
 			}
 		}
 
@@ -265,28 +260,16 @@ namespace TokenValueParser
 						_detectedReqFlags++;
 					}
 				}
-				/*else
-				{
-					if constexpr (ParseMode == ParsingMode::Strict)
-					{
-						throw std::invalid_argument("Unknown token \'" + key + "\' provided")
-					}
-					else if constexpr (Verbosity == VerbositySetting::Verbose)
-					{
-						std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided.";
-						PRINT_WARNING(message)
-					}
-				}*/
 			}
 
 			return true;
 		}
 
-		inline bool TryParsePositionParseableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg)
+		inline bool TryParsePositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg)
 		{
 			std::vector<std::string_view>::const_iterator itr = leftDelimiter;
 			uint32_t arguments = 0;
-			while (itr != end && *itr != _posParseableRightDelimiter)
+			while (itr != end && *itr != _posParsableRightDelimiter)
 			{
 				itr++;
 				arguments++;
@@ -294,21 +277,21 @@ namespace TokenValueParser
 
 			if constexpr (ParseMode == ParsingMode::Strict || Verbosity == VerbositySetting::Verbose)
 			{
-				if (arguments > _posParseableFlags.size())
+				if (arguments > _posParsableFlags.size())
 				{
 					if constexpr (ParseMode == ParsingMode::Strict)
 					{
 						if (errorMsg)
-							*errorMsg = "Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParseableFlags.size()) + " position parseable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parseable sequence.";
+							*errorMsg = "Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence.";
 
 #if defined(_DEBUG) or RELEASE_ERROR_MSG
-						PRINT_ERROR("Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParseableFlags.size()) + " position parseable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parseable sequence.");
+						PRINT_ERROR("Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence.");
 #endif
 						return false;
 					}
 					else
 					{
-						PRINT_WARNING("Warning: Options branch " + this->_tokens._longTokens[0] + " ignoring excess arguments in the position parseable sequence.");
+						PRINT_WARNING("Warning: Options branch " + this->_tokens._longTokens[0] + " ignoring excess arguments in the position parsable sequence.");
 					}
 				}
 			}
@@ -317,21 +300,23 @@ namespace TokenValueParser
 			{
 				leftDelimiter++;
 
-				uint32_t iterations = _posParseableFlags.size() > arguments ? arguments : _posParseableFlags.size();
+				uint32_t iterations = _posParsableFlags.size() > arguments ? arguments : _posParsableFlags.size();
 
 				for (uint32_t i = 0; i < iterations; i++)
 				{
-					if (!_posParseableFlags[i]->TryRaise(leftDelimiter, end, errorMsg))
+					if (!_posParsableFlags[i]->TryRaise(leftDelimiter, end, errorMsg))
 						return false;
+					if(_posParsableFlags[i]->ArgRequired)
+						_detectedReqFlags++;
 				}
 			}
 			else
 			{
 				if (errorMsg)
-					*errorMsg = "Expected matching right delimiter \'" + _posParseableRightDelimiter + "\' to the left delimiter \'" + _posParseableLeftDelimiter + "\' that denote the boundries of the position parseable flags arguments.";
+					*errorMsg = "Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundries of the position parsable flags arguments.";
 
 #if defined(_DEBUG) or RELEASE_ERROR_MSG
-				PRINT_ERROR("Expected matching right delimiter \'" + _posParseableRightDelimiter + "\' to the left delimiter \'" + _posParseableLeftDelimiter + "\' that denote the boundries of the position parseable flags arguments.");
+				PRINT_ERROR("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundries of the position parsable flags arguments.");
 #endif
 
 				return false;
@@ -393,9 +378,9 @@ namespace TokenValueParser
 			Flag<Arg_Bool>(std::move(other)),
 			_optionalFlags(std::move(other._optionalFlags)),
 			_requiredFlags(std::move(other._requiredFlags)),
-			_posParseableFlags(std::move(other._posParseableFlags)),
-			_posParseableLeftDelimiter(std::move(other._posParseableLeftDelimiter)),
-			_posParseableRightDelimiter(std::move(other._posParseableRightDelimiter)),
+			_posParsableFlags(std::move(other._posParsableFlags)),
+			_posParsableLeftDelimiter(std::move(other._posParsableLeftDelimiter)),
+			_posParsableRightDelimiter(std::move(other._posParsableRightDelimiter)),
 			_detectedReqFlags(std::exchange(other._detectedReqFlags, 0)),
 			_requiredFlagsExpectedTokens(std::move(other._requiredFlagsExpectedTokens))
 		{}
@@ -408,9 +393,9 @@ namespace TokenValueParser
 
 				_optionalFlags = std::move(other._optionalFlags);
 				_requiredFlags = std::move(other._requiredFlags);
-				_posParseableFlags = std::move(other._posParseableFlags);
-				_posParseableLeftDelimiter = std::move(other._posParseableLeftDelimiter);
-				_posParseableRightDelimiter = std::move(other._posParseableRightDelimiter);
+				_posParsableFlags = std::move(other._posParsableFlags);
+				_posParsableLeftDelimiter = std::move(other._posParsableLeftDelimiter);
+				_posParsableRightDelimiter = std::move(other._posParsableRightDelimiter);
 				_detectedReqFlags = std::exchange(other._detectedReqFlags, 0);
 				_requiredFlagsExpectedTokens = std::move(other._requiredFlagsExpectedTokens);
 			}
@@ -423,7 +408,7 @@ namespace TokenValueParser
 		{
 			_optionalFlags.clear();
 			_requiredFlags.clear();
-			_posParseableFlags.clear();
+			_posParsableFlags.clear();
 			_detectedReqFlags = 0;
 			_requiredFlagsExpectedTokens.clear();
 
@@ -441,8 +426,8 @@ namespace TokenValueParser
 
 		BranchFlag& SetPosParseableDelimiters(std::string&& leftDelimiter, std::string&& rightDelimiter) noexcept
 		{
-			_posParseableLeftDelimiter = std::move(leftDelimiter);
-			_posParseableRightDelimiter = std::move(rightDelimiter);
+			_posParsableLeftDelimiter = std::move(leftDelimiter);
+			_posParsableRightDelimiter = std::move(rightDelimiter);
 
 			return *this;
 		}
@@ -459,40 +444,53 @@ namespace TokenValueParser
 
 		const std::vector<std::shared_ptr<flag_interface>>& PosParseableFlags() const noexcept
 		{
-			return _posParseableFlags;
+			return _posParsableFlags;
 		}
 
 		void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override
 		{
-			std::string key(itr->begin(), itr->end());
-
 			while (itr != end)
 			{
-				if (key != _posParseableLeftDelimiter)
+				std::string key(itr->begin(), itr->end());
+
+				if (key != _posParsableLeftDelimiter)
 				{
 					std::vector<std::string_view>::const_iterator beforeItr = itr;
 					ParseTokenFlags(key, itr, end);
 					if (itr == beforeItr)
+					{
+						if constexpr (Verbosity == VerbositySetting::Verbose)
+						{
+							std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided";
+							PRINT_WARNING(message);
+						}
+
+						if constexpr (ParseMode == ParsingMode::Strict)
+						{
+							throw std::invalid_argument("Unknown token \'" + key + "\' provided");
+						}
+
 						break;
+					}
 				}
 				else
 				{
-					ParsePositionParseableFlags(itr, end);
-					break;
+					ParsePositionParsableFlags(itr, end);
+					itr++;
 				}
 			}
 
-			if (_detectedReqFlags != _requiredFlags.size())
+			if (_detectedReqFlags != _reqFlagsCount)
 				throw std::invalid_argument(this->_tokens._longTokens[0] + " options branch requires that the ," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments.");
 		}
 
 		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override
 		{
-			std::string key(itr->begin(), itr->end());
-
 			while (itr != end)
 			{
-				if (key != _posParseableLeftDelimiter)
+				std::string key(itr->begin(), itr->end());
+
+				if (key != _posParsableLeftDelimiter)
 				{
 					std::vector<std::string_view>::const_iterator beforeItr = itr;
 
@@ -500,18 +498,31 @@ namespace TokenValueParser
 						return false;
 
 					if (itr == beforeItr)
+					{
+						if constexpr (Verbosity == VerbositySetting::Verbose)
+						{
+							std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided";
+							PRINT_WARNING(message);
+						}
+
+						if constexpr (ParseMode == ParsingMode::Strict)
+						{
+							throw std::invalid_argument("Unknown token \'" + key + "\' provided");
+						}
+
 						break;
+					}
 				}
 				else
 				{
-					if (!TryParsePositionParseableFlags(itr, end, errorMsg))
+					if (!TryParsePositionParsableFlags(itr, end, errorMsg))
 						return false;
 					
 					break;
 				}
 			}
 
-			if (_detectedReqFlags != _requiredFlags.size())
+			if (_detectedReqFlags != _reqFlagsCount)
 			{
 				std::string msg = this->_tokens._longTokens[0] + " options branch requires that the ," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments.";
 				if (errorMsg)

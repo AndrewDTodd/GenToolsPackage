@@ -98,13 +98,13 @@ namespace TokenValueParser
 
 		virtual ~flag_interface() = default;
 
-		virtual inline flag_interface& SetFlagRequired(bool required) noexcept = 0;
+		virtual inline flag_interface&& SetFlagRequired(bool required) noexcept = 0;
 
-		virtual inline flag_interface& SetFlagArgRequired(bool required) noexcept = 0;
+		virtual inline flag_interface&& SetFlagArgRequired(bool required) noexcept = 0;
 
-		virtual inline flag_interface& SetFlagIsPosParsable(bool posParsable) noexcept = 0;
+		virtual inline flag_interface&& SetFlagIsPosParsable(bool posParsable) noexcept = 0;
 
-		virtual inline flag_interface& SetFlagArgument(flag_argument&& flagArg)
+		virtual inline flag_interface&& SetFlagArgument(flag_argument&& flagArg)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
@@ -144,8 +144,8 @@ namespace TokenValueParser
 		{}
 
 		explicit Flag(Tokens&& flagTokens, std::string&& flagDesc, Flag_Argument&& flagArg,
-			bool argRequired = true, bool flagRequired = false) noexcept
-			: flag_interface(flagRequired, argRequired), _tokens(std::move(flagTokens)), _flagDesc(std::move(flagDesc)), _flagArg(std::move(flagArg)), _argSet(true)
+			bool argRequired = true, bool flagRequired = false, bool posParsable = false) noexcept
+			: flag_interface(flagRequired, argRequired, posParsable), _tokens(std::move(flagTokens)), _flagDesc(std::move(flagDesc)), _flagArg(std::move(flagArg)), _argSet(true)
 		{}
 
 		Flag(Flag&& other) noexcept :
@@ -176,21 +176,21 @@ namespace TokenValueParser
 			return *this;
 		}
 
-		inline Flag& SetFlagRequired(bool required) noexcept final
+		inline Flag&& SetFlagRequired(bool required) noexcept final
 		{
 			const_cast<bool&>(FlagRequired) = required;
 
-			return *this;
+			return std::move(*this);
 		}
 
-		inline Flag& SetFlagArgRequired(bool required) noexcept final
+		inline Flag&& SetFlagArgRequired(bool required) noexcept final
 		{
 			const_cast<bool&>(ArgRequired) = required;
 
-			return *this;
+			return std::move(*this);
 		}
 
-		inline Flag& SetFlagIsPosParsable(bool posParsable) noexcept final
+		inline Flag&& SetFlagIsPosParsable(bool posParsable) noexcept final
 		{
 			const_cast<bool&>(PosParsable) = posParsable;
 
@@ -200,10 +200,10 @@ namespace TokenValueParser
 					const_cast<bool&>(ArgRequired) = true;
 			}
 
-			return *this;
+			return std::move(*this);
 		}
 
-		inline Flag& SetFlagArgument(flag_argument&& flagArg)
+		inline Flag&& SetFlagArgument(flag_argument&& flagArg)
 #ifndef _DEBUG
 			noexcept
 #endif // !_DEBUG
@@ -217,7 +217,7 @@ namespace TokenValueParser
 
 			_argSet = true;
 
-			return *this;
+			return std::move(*this);
 		}
 
 		inline const std::string& ShortToken() const noexcept final
