@@ -35,7 +35,7 @@ namespace TokenValueParser
 
 	long double ParseLongDouble(const char* str);
 
-	std::string ParseStringDilimited(const char* str);
+	std::string ParseStringDelimited(const char* str);
 
 	std::string ParseString(const char* str);
 	//************************************************************************************************

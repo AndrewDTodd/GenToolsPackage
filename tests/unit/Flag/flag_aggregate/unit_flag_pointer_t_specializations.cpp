@@ -55,4 +55,4 @@ CREATE_SPEC_TESTS(Ptr_LongDouble, 3.14159L, long double);
 
 CREATE_SPEC_TESTS(Ptr_String, "Test string", std::string);
 
-CREATE_SPEC_TESTS(Ptr_DilString, "Test string", std::string);
+CREATE_SPEC_TESTS(Ptr_DelString, "Test string", std::string);

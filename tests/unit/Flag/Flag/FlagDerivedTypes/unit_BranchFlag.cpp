@@ -59,17 +59,30 @@ TEST(BranchFlagConstructor2, VerifyThrowOnInvalid)
 
 TEST(BranchFlagConstructor2, VerifySubFlags)
 {
-	Flag posParseable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_String() };
-	posParseable.SetFlagIsPosParsable(true);
+	Flag posParsable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_String() };
+	posParsable.SetFlagIsPosParsable(true);
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
 
 	BranchFlag branch("test", "Test branch",
 		Flag{ {"d", "debug", "debug-mode"}, "Set the operation to perform debug features", Arg_Bool() },
 		Flag{ {"m", "msg", "message"}, "The message to associate with the commit", Arg_String(), true, true },
-		std::move(posParseable));
+		std::move(posParsable));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name \'test\'\n >>>Flag with \'Arg_String\' argument type may cause ambiguous parsing when used in non-delimited position parsable sequences. It is recommended to use the \'Arg_DelString\' type instead\n");
+#else
+	EXPECT_EQ(output, "");
+#endif
 
 	auto& _optionalFlags = branch.OptionalFlags();
 	auto& _requiredFlags = branch.RequiredFlags();
-	auto& _posParseableFlags = branch.PosParseableFlags();
+	auto& _posParsableFlags = branch.PosParsableFlags();
 
 	EXPECT_TRUE(_optionalFlags.size() == 6);
 	ASSERT_TRUE(_optionalFlags.contains("-d"));
@@ -89,39 +102,48 @@ TEST(BranchFlagConstructor2, VerifySubFlags)
 	auto& flagTwo = _requiredFlags.at("-m");
 	EXPECT_EQ(flagTwo->FlagDescription(), "The message to associate with the commit");
 
-	EXPECT_TRUE(_posParseableFlags.size() == 1);
-	EXPECT_EQ(_posParseableFlags[0]->FlagDescription(), "The user and hostname (user:host-ip/name) to connect too");
+	EXPECT_TRUE(_posParsableFlags.size() == 1);
+	EXPECT_EQ(_posParsableFlags[0]->FlagDescription(), "The user and hostname (user:host-ip/name) to connect too");
 }
 
 #pragma warning(push)
 #pragma warning(disable:26800)
 TEST(BranchFlagMoveConstructor, ValidateMove)
 {
-	Flag posParseable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_String() };
-	posParseable.SetFlagIsPosParsable(true);
+	Flag posParsable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_DelString() };
+	posParsable.SetFlagIsPosParsable(true);
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
 
 	BranchFlag flagOne("test", "Test branch",
 		Flag{ {"d", "debug", "debug-mode"}, "Set the operation to perform debug features", Arg_Bool() },
 		Flag{ {"m", "msg", "message"}, "The message to associate with the commit", Arg_String(), true, true },
-		std::move(posParseable));
+		std::move(posParsable));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "");
 
 	BranchFlag flagTwo(std::move(flagOne));
 
 	auto& _optionalFlagsOne = flagOne.OptionalFlags();
 	auto& _requiredFlagsOne = flagOne.RequiredFlags();
-	auto& _posParseableFlagsOne = flagOne.PosParseableFlags();
+	auto& _posParsableFlagsOne = flagOne.PosParsableFlags();
 
 	auto& _optionalFlagsTwo = flagTwo.OptionalFlags();
 	auto& _requiredFlagsTwo = flagTwo.RequiredFlags();
-	auto& _posParseableFlagsTwo = flagTwo.PosParseableFlags();
+	auto& _posParsableFlagsTwo = flagTwo.PosParsableFlags();
 
 	EXPECT_TRUE(_optionalFlagsOne.size() == 0);
 	EXPECT_TRUE(_requiredFlagsOne.size() == 0);
-	EXPECT_TRUE(_posParseableFlagsOne.size() == 0);
+	EXPECT_TRUE(_posParsableFlagsOne.size() == 0);
 
 	EXPECT_TRUE(_optionalFlagsTwo.size() == 6);
 	EXPECT_TRUE(_requiredFlagsTwo.size() == 3);
-	EXPECT_TRUE(_posParseableFlagsTwo.size() == 1);
+	EXPECT_TRUE(_posParsableFlagsTwo.size() == 1);
 }
 #pragma warning(pop)
 
@@ -129,31 +151,31 @@ TEST(BranchFlagMoveConstructor, ValidateMove)
 #pragma warning(disable:26800)
 TEST(BranchFlagMoveAssignment, ValidateMove)
 {
-	Flag posParseable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_String() };
-	posParseable.SetFlagIsPosParsable(true);
+	Flag posParsable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_DelString() };
+	posParsable.SetFlagIsPosParsable(true);
 
 	BranchFlag flagOne("test", "Test branch",
 		Flag{ {"d", "debug", "debug-mode"}, "Set the operation to perform debug features", Arg_Bool() },
 		Flag{ {"m", "msg", "message"}, "The message to associate with the commit", Arg_String(), true, true },
-		std::move(posParseable));
+		std::move(posParsable));
 
 	BranchFlag flagTwo = std::move(flagOne);
 
 	auto& _optionalFlagsOne = flagOne.OptionalFlags();
 	auto& _requiredFlagsOne = flagOne.RequiredFlags();
-	auto& _posParseableFlagsOne = flagOne.PosParseableFlags();
+	auto& _posParsableFlagsOne = flagOne.PosParsableFlags();
 
 	auto& _optionalFlagsTwo = flagTwo.OptionalFlags();
 	auto& _requiredFlagsTwo = flagTwo.RequiredFlags();
-	auto& _posParseableFlagsTwo = flagTwo.PosParseableFlags();
+	auto& _posParsableFlagsTwo = flagTwo.PosParsableFlags();
 
 	EXPECT_TRUE(_optionalFlagsOne.size() == 0);
 	EXPECT_TRUE(_requiredFlagsOne.size() == 0);
-	EXPECT_TRUE(_posParseableFlagsOne.size() == 0);
+	EXPECT_TRUE(_posParsableFlagsOne.size() == 0);
 
 	EXPECT_TRUE(_optionalFlagsTwo.size() == 6);
 	EXPECT_TRUE(_requiredFlagsTwo.size() == 3);
-	EXPECT_TRUE(_posParseableFlagsTwo.size() == 1);
+	EXPECT_TRUE(_posParsableFlagsTwo.size() == 1);
 }
 #pragma warning(pop)
 
@@ -161,16 +183,16 @@ TEST(BranchFlagMethods, SetSubFlags)
 {
 	BranchFlag branch("test", "Test branch");
 
-	Flag posParseable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_String() };
-	posParseable.SetFlagIsPosParsable(true);
+	Flag posParsable{ {"r", "recipient"}, "The user and hostname (user:host-ip/name) to connect too", Arg_DelString() };
+	posParsable.SetFlagIsPosParsable(true);
 
 	branch.SetSubFlags(Flag{ {"d", "debug", "debug-mode"}, "Set the operation to perform debug features", Arg_Bool() },
 		Flag{ {"m", "msg", "message"}, "The message to associate with the commit", Arg_String(), true, true },
-		std::move(posParseable));
+		std::move(posParsable));
 
 	auto& _optionalFlags = branch.OptionalFlags();
 	auto& _requiredFlags = branch.RequiredFlags();
-	auto& _posParseableFlags = branch.PosParseableFlags();
+	auto& _posParsableFlags = branch.PosParsableFlags();
 
 	EXPECT_TRUE(_optionalFlags.size() == 6);
 	ASSERT_TRUE(_optionalFlags.contains("-d"));
@@ -190,8 +212,8 @@ TEST(BranchFlagMethods, SetSubFlags)
 	auto& flagTwo = _requiredFlags.at("-m");
 	EXPECT_EQ(flagTwo->FlagDescription(), "The message to associate with the commit");
 
-	EXPECT_TRUE(_posParseableFlags.size() == 1);
-	EXPECT_EQ(_posParseableFlags[0]->FlagDescription(), "The user and hostname (user:host-ip/name) to connect too");
+	EXPECT_TRUE(_posParsableFlags.size() == 1);
+	EXPECT_EQ(_posParsableFlags[0]->FlagDescription(), "The user and hostname (user:host-ip/name) to connect too");
 }
 
 TEST(LenientStrictVerbose_BranchFlag_Raise, VerifySuccessOnValid_OptionalFlag)
@@ -368,7 +390,7 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyValidPosParsable)
 	std::vector<std::string_view>::const_iterator itr = args.begin();
 	itr++;
 
-	BranchFlag<ParsingMode::Lenient, ExceptionMode::Lenient, VerbositySetting::Verbose> branch("test", "test branch",
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
 		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
 		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
 		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
@@ -385,7 +407,7 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyValidPosParsable_LimitedSet_Sp
 	std::vector<std::string_view>::const_iterator itr = args.begin();
 	itr++;
 
-	BranchFlag<ParsingMode::Lenient, ExceptionMode::Lenient, VerbositySetting::Verbose> branch("test", "test branch",
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
 		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
 		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
 		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
@@ -402,7 +424,7 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyValidPosParsable_LimitedSet_Sp
 	std::vector<std::string_view>::const_iterator itr = args.begin();
 	itr++;
 
-	BranchFlag<ParsingMode::Lenient, ExceptionMode::Lenient, VerbositySetting::Verbose> branch("test", "test branch",
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
 		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
 		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
 		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
@@ -410,4 +432,158 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyValidPosParsable_LimitedSet_Sp
 		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
 
 	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
+}
+
+TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyWarningPosParsable_ExcessArgs)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", ".56", "2", "Sven", "}" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+	std::string truncOutput = output.substr(0, 92);
+
+	EXPECT_EQ(truncOutput, "Warning: Options branch \'test\' ignoring excess arguments in the position parsable sequence.\n");
+}
+
+TEST(StrictStrictVerbose_BranchFlag_Raise, VerifyThrowPosParsable_ExcessArgs)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", ".56", "2", "Sven", "}" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Strict, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+
+	ASSERT_THROW(branch.Raise(itr, args.end()), std::invalid_argument);
+}
+
+TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyThrowPosParsable_MissingRightDelimiter)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", ".56", "2", "Sven" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	ASSERT_THROW(branch.Raise(itr, args.end()), std::runtime_error);
+}
+
+TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyThrowOnMissingRequiredFlag)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "--strength", ".56", "{", "55.6", "234.78", "}"};
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	ASSERT_THROW(branch.Raise(itr, args.end()), std::invalid_argument);
+}
+
+TEST(BranchFlag_Raise, VerifyParseNonDelimitedPosParse_OnlyPosParseStream)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "22.5", "54.2", "12.345", ".56", "12" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
+
+	auto& flags = branch.PosParsableFlags();
+
+	EXPECT_EQ(flags[0]->FlagArgument().as<float>(), 22.5f);
+	EXPECT_EQ(flags[1]->FlagArgument().as<float>(), 54.2f);
+	EXPECT_EQ(flags[2]->FlagArgument().as<float>(), 12.345f);
+	EXPECT_EQ(flags[3]->FlagArgument().as<float>(), .56f);
+	EXPECT_EQ(flags[4]->FlagArgument().as<uint32_t>(), 12);
+}
+
+TEST(BranchFlag_Raise, VerifyParseNonDelimitedPosParse_PartialPosParseStream)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "22.5", "54.2", "12.345", ".56" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, false, true));
+
+	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
+
+	auto& flags = branch.PosParsableFlags();
+
+	EXPECT_EQ(flags[0]->FlagArgument().as<float>(), 22.5f);
+	EXPECT_EQ(flags[1]->FlagArgument().as<float>(), 54.2f);
+	EXPECT_EQ(flags[2]->FlagArgument().as<float>(), 12.345f);
+	EXPECT_EQ(flags[3]->FlagArgument().as<float>(), .56f);
+	EXPECT_EQ(flags[4]->FlagArgument().as<uint32_t>(), 0);
+}
+
+TEST(BranchFlag_Raise, VerifyParseNonDelimitedPosParse_MixedArgs)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "22.5", "54.2", "}","--depth", "12.345", "30", "55", "25", ".56", "-i", "12"};
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, false, true));
+
+	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
+
+	auto& flags = branch.PosParsableFlags();
+
+	EXPECT_EQ(flags[0]->FlagArgument().as<float>(), 30.0f);
+	EXPECT_EQ(flags[1]->FlagArgument().as<float>(), 55.0f);
+	EXPECT_EQ(flags[2]->FlagArgument().as<float>(), 25.0f);
+	EXPECT_EQ(flags[3]->FlagArgument().as<float>(), .56f);
+	EXPECT_EQ(flags[4]->FlagArgument().as<uint32_t>(), 12);
 }

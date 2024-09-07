@@ -68,14 +68,14 @@ namespace TokenValueParser
 	{
 	public:
 		Arg_String() : flag_argument_t<std::string>("", ParseString) {}
-		Arg_String(std::string&& defalutValue) : flag_argument_t<std::string>(std::move(defalutValue), ParseString) {}
+		Arg_String(std::string&& defaultValue) : flag_argument_t<std::string>(std::move(defaultValue), ParseString) {}
 	};
 
-	class Arg_DilString : public flag_argument_t<std::string>
+	class Arg_DelString : public flag_argument_t<std::string>
 	{
 	public:
-		Arg_DilString() : flag_argument_t<std::string>("", ParseStringDilimited) {}
-		Arg_DilString(std::string&& defalutValue) : flag_argument_t<std::string>(std::move(defalutValue), ParseStringDilimited) {}
+		Arg_DelString() : flag_argument_t<std::string>("", ParseStringDelimited) {}
+		Arg_DelString(std::string&& defaultValue) : flag_argument_t<std::string>(std::move(defaultValue), ParseStringDelimited) {}
 	};
 
 	class Ptr_Bool : public flag_pointer_t<bool>
@@ -141,11 +141,11 @@ namespace TokenValueParser
 		Ptr_String(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseString) {}
 	};
 
-	class Ptr_DilString : public flag_pointer_t<std::string>
+	class Ptr_DelString : public flag_pointer_t<std::string>
 	{
 	public:
-		Ptr_DilString() : flag_pointer_t<std::string>(ParseStringDilimited) {}
-		Ptr_DilString(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseStringDilimited) {}
+		Ptr_DelString() : flag_pointer_t<std::string>(ParseStringDelimited) {}
+		Ptr_DelString(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseStringDelimited) {}
 	};
 	//************************************************************************************************
 }

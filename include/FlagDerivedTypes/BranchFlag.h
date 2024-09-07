@@ -5,6 +5,7 @@
 #include <memory>
 #include <iostream>
 #include <string>
+#include <typeinfo>
 
 #include <Flag.h>
 #include <TriggerSwitch.h>
@@ -34,6 +35,12 @@ namespace TokenValueParser
 		Verbose
 	};
 
+	enum class PosParsingSetting
+	{
+		AssertDelimited,
+		AllowNonDelimited
+	};
+
 	template<typename T>
 	concept IsBranchFlag = requires() {
 		typename T::ParsingMode;
@@ -42,7 +49,12 @@ namespace TokenValueParser
 		{ std::is_base_of<Flag<Arg_Bool>, T>::value } -> std::same_as<bool>;
 	};
 
-	template<ParsingMode ParseMode = ParsingMode::Lenient, ExceptionMode ExcMode = ExceptionMode::Strict, VerbositySetting Verbosity = VerbositySetting::Verbose>
+	template<
+		ParsingMode ParseMode = ParsingMode::Lenient, 
+		ExceptionMode ExcMode = ExceptionMode::Strict, 
+		VerbositySetting Verbosity = VerbositySetting::Verbose, 
+		PosParsingSetting PosParse = PosParsingSetting::AllowNonDelimited
+	>
 	class BranchFlag : virtual public Flag<Arg_Bool>
 	{
 	protected:
@@ -76,6 +88,23 @@ namespace TokenValueParser
 			}
 			else
 			{
+				if (newFlag->PosParsable)
+				{
+					_posParsableFlags.emplace_back(newFlag);
+
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
+					if constexpr (PosParse == PosParsingSetting::AllowNonDelimited)
+					{
+						if (typeid(newFlag->FlagArgument()) == typeid(Arg_String))
+						{
+							std::string warning = "Warning: In BranchFlag instance with name \'" + this->_tokens._longTokens[0] + "\'\n" +
+								" >>>Flag with \'Arg_String\' argument type may cause ambiguous parsing when used in non-delimited position parsable sequences. It is recommended to use the \'Arg_DelString\' type instead";
+							PRINT_WARNING(warning);
+						}
+					}
+#endif
+				}
+
 				if (!newFlag->FlagRequired)
 				{
 					if (!newFlag->ShortToken().empty())
@@ -87,9 +116,6 @@ namespace TokenValueParser
 					{
 						_optionalFlags.emplace("--" + longToken, newFlag);
 					}
-
-					if (newFlag->PosParsable)
-						_posParsableFlags.emplace_back(newFlag);
 				}
 				else
 				{
@@ -102,9 +128,6 @@ namespace TokenValueParser
 					{
 						_requiredFlags.emplace("--" + longToken, newFlag);
 					}
-
-					if (newFlag->PosParsable)
-						_posParsableFlags.emplace_back(newFlag);
 
 					_requiredFlagsExpectedTokens += std::string(" (-") + newFlag->ShortToken() + std::string(", --") + newFlag->LongTokens()[0] + std::string("),");
 					_reqFlagsCount++;
@@ -137,37 +160,35 @@ namespace TokenValueParser
 					}
 				}
 			}
-			else
+			
+			auto itrRequiredFlags = _requiredFlags.find(key);
+			if (itrRequiredFlags != _requiredFlags.end())
 			{
-				auto itrRequiredFlags = _requiredFlags.find(key);
-				if (itrRequiredFlags != _requiredFlags.end())
-				{
-					std::shared_ptr<flag_interface> flag = itrRequiredFlags->second;
-					itr++;
+				std::shared_ptr<flag_interface> flag = itrRequiredFlags->second;
+				itr++;
 
-					if constexpr (ExcMode == ExceptionMode::Strict)
+				if constexpr (ExcMode == ExceptionMode::Strict)
+				{
+					flag->Raise(itr, end);
+					_detectedReqFlags++;
+				}
+				else
+				{
+					try
 					{
 						flag->Raise(itr, end);
 						_detectedReqFlags++;
 					}
-					else
+					catch (const std::exception& e)
 					{
-						try
-						{
-							flag->Raise(itr, end);
-							_detectedReqFlags++;
-						}
-						catch (const std::exception& e)
-						{
-							std::string errorMsg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + e.what();
-							PRINT_WARNING(errorMsg);
-						}
+						std::string errorMsg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + e.what();
+						PRINT_WARNING(errorMsg);
 					}
 				}
 			}
 		}
 
-		inline void ParsePositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end)
+		inline void ParseDelPositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end)
 		{
 			std::vector<std::string_view>::const_iterator itr = leftDelimiter;
 			uint32_t arguments = 0;
@@ -177,6 +198,9 @@ namespace TokenValueParser
 				itr++;
 				arguments++;
 			}
+
+			if(itr == end)
+				throw std::runtime_error("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments.");
 
 			if constexpr (ParseMode == ParsingMode::Strict || Verbosity == VerbositySetting::Verbose)
 			{
@@ -188,31 +212,24 @@ namespace TokenValueParser
 					}
 					else
 					{
-						PRINT_WARNING("Warning: Options branch " + this->_tokens._longTokens[0] + " ignoring excess arguments in the position parsable sequence.");
+						PRINT_WARNING("Warning: Options branch \'" + this->_tokens._longTokens[0] + "\' ignoring excess arguments in the position parsable sequence.");
 					}
 				}
 			}
 
-			if (itr != end)
-			{
-				leftDelimiter++;
+			leftDelimiter++;
 
-				uint32_t iterations = _posParsableFlags.size() > arguments ? arguments : _posParsableFlags.size();
+			uint32_t iterations = _posParsableFlags.size() > arguments ? arguments : _posParsableFlags.size();
 
-				for (uint32_t i = 0; i < iterations; i++)
-				{
-					_posParsableFlags[i]->Raise(leftDelimiter, end);
-					if(_posParsableFlags[i]->ArgRequired)
-						_detectedReqFlags++;
-				}
-			}
-			else
+			for (uint32_t i = 0; i < iterations; i++)
 			{
-				throw std::runtime_error("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundries of the position parseable flags arguments.");
+				_posParsableFlags[i]->Raise(leftDelimiter, end);
+				if (_posParsableFlags[i]->ArgRequired)
+					_detectedReqFlags++;
 			}
 		}
 
-		inline bool TryParseTokenFlags(const std::string& key, std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg)
+		inline bool TryParseTokenFlags(const std::string& key, std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
 		{
 			auto itrOptionalFlags = _optionalFlags.find(key);
 			if (itrOptionalFlags != _optionalFlags.end())
@@ -265,7 +282,7 @@ namespace TokenValueParser
 			return true;
 		}
 
-		inline bool TryParsePositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg)
+		inline bool TryParsePositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
 		{
 			std::vector<std::string_view>::const_iterator itr = leftDelimiter;
 			uint32_t arguments = 0;
@@ -313,16 +330,34 @@ namespace TokenValueParser
 			else
 			{
 				if (errorMsg)
-					*errorMsg = "Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundries of the position parsable flags arguments.";
+					*errorMsg = "Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments.";
 
 #if defined(_DEBUG) or RELEASE_ERROR_MSG
-				PRINT_ERROR("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundries of the position parsable flags arguments.");
+				PRINT_ERROR("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments.");
 #endif
 
 				return false;
 			}
 
 			return true;
+		}
+
+		inline void ParsePositionParsableFlags(std::vector<std::string_view>::const_iterator& sequenceStart, const std::vector<std::string_view>::const_iterator end) noexcept
+		{
+			if (_posParsableFlags.empty())
+				return;
+
+			size_t i = 0;
+			while (sequenceStart != end)
+			{
+				if (!_posParsableFlags[i]->TryRaise(sequenceStart, end))
+					return;
+
+				if (_posParsableFlags[i]->ArgRequired)
+					_detectedReqFlags++;
+
+				i++;
+			}
 		}
 
 	public:
@@ -404,7 +439,7 @@ namespace TokenValueParser
 		}
 
 		template<FlagType... Flags>
-		BranchFlag& SetSubFlags(Flags&&... subFlags) noexcept
+		BranchFlag&& SetSubFlags(Flags&&... subFlags) noexcept
 		{
 			_optionalFlags.clear();
 			_requiredFlags.clear();
@@ -421,28 +456,28 @@ namespace TokenValueParser
 				_optionalFlags.emplace(std::string("--help"), flag);
 			}
 
-			return *this;
+			return std::move(*this);
 		}
 
-		BranchFlag& SetPosParseableDelimiters(std::string&& leftDelimiter, std::string&& rightDelimiter) noexcept
+		BranchFlag&& SetPosParsableDelimiters(std::string&& leftDelimiter, std::string&& rightDelimiter) noexcept
 		{
 			_posParsableLeftDelimiter = std::move(leftDelimiter);
 			_posParsableRightDelimiter = std::move(rightDelimiter);
 
-			return *this;
+			return std::move(*this);
 		}
 
-		const std::unordered_map<std::string, std::shared_ptr<flag_interface>>& OptionalFlags() const noexcept
+		inline const std::unordered_map<std::string, std::shared_ptr<flag_interface>>& OptionalFlags() const noexcept
 		{
 			return _optionalFlags;
 		}
 
-		const std::unordered_map<std::string, std::shared_ptr<flag_interface>>& RequiredFlags() const noexcept
+		inline const std::unordered_map<std::string, std::shared_ptr<flag_interface>>& RequiredFlags() const noexcept
 		{
 			return _requiredFlags;
 		}
 
-		const std::vector<std::shared_ptr<flag_interface>>& PosParseableFlags() const noexcept
+		inline const std::vector<std::shared_ptr<flag_interface>>& PosParsableFlags() const noexcept
 		{
 			return _posParsableFlags;
 		}
@@ -459,6 +494,15 @@ namespace TokenValueParser
 					ParseTokenFlags(key, itr, end);
 					if (itr == beforeItr)
 					{
+						if constexpr (PosParse == PosParsingSetting::AllowNonDelimited)
+						{
+							ParsePositionParsableFlags(itr, end);
+							if (itr != beforeItr)
+							{
+								continue;
+							}
+						}
+
 						if constexpr (Verbosity == VerbositySetting::Verbose)
 						{
 							std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided";
@@ -475,12 +519,12 @@ namespace TokenValueParser
 				}
 				else
 				{
-					ParsePositionParsableFlags(itr, end);
+					ParseDelPositionParsableFlags(itr, end);
 					itr++;
 				}
 			}
 
-			if (_detectedReqFlags != _reqFlagsCount)
+			if (_detectedReqFlags < _reqFlagsCount)
 				throw std::invalid_argument(this->_tokens._longTokens[0] + " options branch requires that the ," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments.");
 		}
 
@@ -499,6 +543,15 @@ namespace TokenValueParser
 
 					if (itr == beforeItr)
 					{
+						if constexpr (PosParse == PosParsingSetting::AllowNonDelimited)
+						{
+							ParsePositionParsableFlags(itr, end);
+							if (itr != beforeItr)
+							{
+								continue;
+							}
+						}
+
 						if constexpr (Verbosity == VerbositySetting::Verbose)
 						{
 							std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided";
@@ -507,7 +560,15 @@ namespace TokenValueParser
 
 						if constexpr (ParseMode == ParsingMode::Strict)
 						{
-							throw std::invalid_argument("Unknown token \'" + key + "\' provided");
+							std::string msg = "Unknown token \'" + key + "\' provided";
+							if (errorMsg)
+								*errorMsg = msg;
+
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
+							PRINT_ERROR(msg);
+#endif
+
+							return false;
 						}
 
 						break;
@@ -522,7 +583,7 @@ namespace TokenValueParser
 				}
 			}
 
-			if (_detectedReqFlags != _reqFlagsCount)
+			if (_detectedReqFlags < _reqFlagsCount)
 			{
 				std::string msg = this->_tokens._longTokens[0] + " options branch requires that the ," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments.";
 				if (errorMsg)

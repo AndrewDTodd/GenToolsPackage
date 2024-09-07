@@ -147,7 +147,7 @@ namespace TokenValueParser
 		return value;
 	}
 
-	std::string ParseStringDilimited(const char* str)
+	std::string ParseStringDelimited(const char* str)
 	{
 		std::string s(str);
 		if (s.size() < 2 || s.front() != '"' || s.back() != '"')
