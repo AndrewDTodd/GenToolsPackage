@@ -25,7 +25,7 @@ TEST(BranchFlagConstructor1, VerifyThrowOnInvalid)
 
 	std::string output = buffer.str();
 
-	EXPECT_EQ(output, "Error: A Branch Flag should have one recognizable token that is a long token, not a single character short token\n");
+	EXPECT_EQ(output, "Error: In BranchFlag instance with description 'The file to output the operation too'\n >>>A Branch Flag should have one recognizable token that is a long token, not a single character short token\n");
 #elif !defined(_DEBUG) && !RELEASE_ERROR_MSG
 	EXPECT_NO_THROW(BranchFlag("o", "The file to output the operation too"));
 #endif // RELEASE_ERROR_MSG
@@ -51,7 +51,7 @@ TEST(BranchFlagConstructor2, VerifyThrowOnInvalid)
 
 	std::string output = buffer.str();
 
-	EXPECT_EQ(output, "Error: A Branch Flag should have one recognizable token that is a long token, not a single character short token\n");
+	EXPECT_EQ(output, "Error: In BranchFlag instance with description 'commit the staged changes'\n >>>A Branch Flag should have one recognizable token that is a long token, not a single character short token\n");
 #elif !defined(_DEBUG) && !RELEASE_ERROR_MSG
 	EXPECT_NO_THROW(BranchFlag("c", "commit the staged changes", Flag({ "m", "msg", "message" }, "The message to associate with the commit", Arg_String())));
 #endif // RELEASE_ERROR_MSG
@@ -231,7 +231,7 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifySuccessOnValid_OptionalFlag)
 	EXPECT_EQ(branch.OptionalFlags().at("-f")->FlagArgument().as<std::string>(), "/.ssh/named_key");
 }
 
-TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
+TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyWarningOnInvalid_OptionalFlag)
 {
 	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -249,10 +249,10 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
 
 	std::string output = buffer.str();
 
-	EXPECT_EQ(output, "Warning: Ignoring unknown token \'--object\' provided\n");
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name \'test\'\n >>>Ignoring unknown token \'--object\' provided\n");
 }
 
-TEST(StrictStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
+TEST(StrictStrictVerbose_BranchFlag_Raise, VerifyThrowOnInvalid_OptionalFlag)
 {
 	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -261,19 +261,10 @@ TEST(StrictStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
 
 	BranchFlag<ParsingMode::Strict> branch("test", "test branch", Flag({ "f", "out-file" }, "Specify where to make the key files, and what name to give the key", Arg_String(), true));
 
-	std::stringstream buffer;
-	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
-
 	ASSERT_THROW(branch.Raise(itr, args.end()), std::invalid_argument);
-
-	std::cerr.rdbuf(oldCerr);
-
-	std::string output = buffer.str();
-
-	EXPECT_EQ(output, "Warning: Ignoring unknown token \'--object\' provided\n");
 }
 
-TEST(StrictStrictSilent_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
+TEST(StrictStrictSilent_BranchFlag_Raise, VerifyThrowOnInvalid_OptionalFlag)
 {
 	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -294,7 +285,7 @@ TEST(StrictStrictSilent_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
 	EXPECT_EQ(output, "");
 }
 
-TEST(LenientStrictSilent_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
+TEST(LenientStrictSilent_BranchFlag_Raise, VerifySuccessOnInvalid_OptionalFlag)
 {
 	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -315,7 +306,7 @@ TEST(LenientStrictSilent_BranchFlag_Raise, VerifyFailOnInvalid_OptionalFlag)
 	EXPECT_EQ(output, "");
 }
 
-TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_OptionalFlag)
+TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyThrowOnInvalidFlagArg_OptionalFlag)
 {
 	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero"};
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -327,7 +318,7 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_OptionalF
 	ASSERT_THROW(branch.Raise(itr, args.end()), std::invalid_argument);
 }
 
-TEST(LenientLenientVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_OptionalFlag)
+TEST(LenientLenientVerbose_BranchFlag_Raise, VerifyWarningOnInvalidFlagArg_OptionalFlag)
 {
 	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -344,12 +335,11 @@ TEST(LenientLenientVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_Optional
 	std::cerr.rdbuf(oldCerr);
 
 	std::string output = buffer.str();
-	std::string truncOutput = output.substr(0, 107);
 
-	EXPECT_EQ(truncOutput, "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'-w\'.\nError: ");
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name 'test'\n >>>Ignoring parsing error from options branch sub-option. Thrown from option with token '-w'.\nError: stof\nWarning: In BranchFlag instance with name 'test'\n >>>Ignoring unknown token 'Fifty Five Point Zero' provided\n");
 }
 
-TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_RequiredFlag)
+TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyThrowOnInvalidFlagArg_RequiredFlag)
 {
 	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -361,7 +351,7 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_RequiredF
 	ASSERT_THROW(branch.Raise(itr, args.end()), std::invalid_argument);
 }
 
-TEST(LenientLenientVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_RequiredFlag)
+TEST(LenientLenientVerbose_BranchFlag_Raise, VerifyThrowOnInvalidFlagArg_RequiredFlag)
 {
 	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -378,9 +368,8 @@ TEST(LenientLenientVerbose_BranchFlag_Raise, VerifyFailOnInvalidFlagArg_Required
 	std::cerr.rdbuf(oldCerr);
 
 	std::string output = buffer.str();
-	std::string truncOutput = output.substr(0, 107);
 
-	EXPECT_EQ(truncOutput, "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'-w\'.\nError: ");
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name 'test'\n >>>Ignoring parsing error from options branch sub - option.Thrown from option with token '-w'.\nError: stof\nWarning: In BranchFlag instance with name 'test'\n >>>Ignoring unknown token 'Fifty Five Point Zero' provided\n");
 }
 
 TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyValidPosParsable)
@@ -456,9 +445,8 @@ TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyWarningPosParsable_ExcessArgs)
 	std::cerr.rdbuf(oldCerr);
 
 	std::string output = buffer.str();
-	std::string truncOutput = output.substr(0, 92);
 
-	EXPECT_EQ(truncOutput, "Warning: Options branch \'test\' ignoring excess arguments in the position parsable sequence.\n");
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name 'test'\n >>>Ignoring excess arguments in the position parsable sequence\n");
 }
 
 TEST(StrictStrictVerbose_BranchFlag_Raise, VerifyThrowPosParsable_ExcessArgs)
@@ -578,6 +566,402 @@ TEST(BranchFlag_Raise, VerifyParseNonDelimitedPosParse_MixedArgs)
 		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, false, true));
 
 	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
+
+	auto& flags = branch.PosParsableFlags();
+
+	EXPECT_EQ(flags[0]->FlagArgument().as<float>(), 30.0f);
+	EXPECT_EQ(flags[1]->FlagArgument().as<float>(), 55.0f);
+	EXPECT_EQ(flags[2]->FlagArgument().as<float>(), 25.0f);
+	EXPECT_EQ(flags[3]->FlagArgument().as<float>(), .56f);
+	EXPECT_EQ(flags[4]->FlagArgument().as<uint32_t>(), 12);
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifySuccessOnValid_OptionalFlag)
+{
+	const char* cmdArgs[] = { "ssh-keygen.exe", "-f", "/.ssh/named_key" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag branch("test", "test branch", Flag({ "f", "out-file" }, "Specify where to make the key files, and what name to give the key", Arg_String(), true));
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	EXPECT_EQ(itr, args.end());
+	EXPECT_EQ(branch.OptionalFlags().at("-f")->FlagArgument().as<std::string>(), "/.ssh/named_key");
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyWarningOnInvalid_OptionalFlag)
+{
+	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag branch("test", "test branch", Flag({ "f", "out-file" }, "Specify where to make the key files, and what name to give the key", Arg_String(), true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name \'test\'\n >>>Ignoring unknown token \'--object\' provided\n");
+}
+
+TEST(StrictStrictVerbose_BranchFlag_TryRaise, VerifyFailOnInvalid_OptionalFlag)
+{
+	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Strict> branch("test", "test branch", Flag({ "f", "out-file" }, "Specify where to make the key files, and what name to give the key", Arg_String(), true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_FALSE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Error: In BranchFlag instance with name \'test\'\n >>>Unknown token \'--object\' provided\n");
+}
+
+TEST(StrictStrictSilent_BranchFlag_TryRaise, VerifyFailOnInvalid_OptionalFlag)
+{
+	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Strict, ExceptionMode::Strict, VerbositySetting::Silent> branch("test", "test branch", Flag({ "f", "out-file" }, "Specify where to make the key files, and what name to give the key", Arg_String(), true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_FALSE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Error: In BranchFlag instance with name \'test\'\n >>>Unknown token \'--object\' provided\n");
+}
+
+TEST(LenientStrictSilent_BranchFlag_TryRaise, VerifySuccessOnInvalid_OptionalFlag)
+{
+	const char* cmdArgs[] = { "ssh-keygen.exe", "--object", "/.ssh/obj_file.obj" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Silent> branch("test", "test branch", Flag({ "f", "out-file" }, "Specify where to make the key files, and what name to give the key", Arg_String(), true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "");
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyFailOnInvalidFlagArg_OptionalFlag)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag branch("test", "test branch", Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true));
+
+	ASSERT_NO_THROW(ASSERT_FALSE(branch.TryRaise(itr, args.end())));
+}
+
+TEST(LenientLenientVerbose_BranchFlag_TryRaise, VerifyFailOnInvalidFlagArg_OptionalFlag)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Lenient, VerbositySetting::Verbose> branch("test", "test branch", Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name 'test'\n >>>Ignoring parsing error from options branch sub-option. Thrown from option with token '-w'\nWarning: In BranchFlag instance with name 'test'\n >>>Ignoring unknown token 'Fifty Five Point Zero' provided\n");
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyFailOnInvalidFlagArg_RequiredFlag)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag branch("test", "test branch", Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true));
+
+	ASSERT_NO_THROW(ASSERT_FALSE(branch.TryRaise(itr, args.end())));
+}
+
+TEST(LenientLenientVerbose_BranchFlag_TryRaise, VerifyFailOnInvalidFlagArg_RequiredFlag)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Lenient, VerbositySetting::Verbose> branch("test", "test branch", Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name 'test'\n >>>Ignoring parsing error from options branch sub-option. Thrown from option with token '-w'\nWarning: In BranchFlag instance with name 'test'\n >>>Ignoring unknown token 'Fifty Five Point Zero' provided\n");
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyValidPosParsable)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", ".56", "2", "}" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyValidPosParsable_LimitedSet_SpecificsPrepend)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "--strength", ".56", "-i", "2", "{", "55.6", "234.78", "43.0", "}" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyValidPosParsable_LimitedSet_SpecificsApend)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", "}", "--strength", ".56", "-i", "2" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyWarningPosParsable_ExcessArgs)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", ".56", "2", "Sven", "}" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Warning: In BranchFlag instance with name \'test\'\n >>>Ignoring excess arguments in the position parsable sequence\n");
+}
+
+TEST(StrictStrictVerbose_BranchFlag_TryRaise, VerifyFailPosParsable_ExcessArgs)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", ".56", "2", "Sven", "}" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Strict, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_FALSE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Error: In BranchFlag instance with name \'test\'\n >>>Excess arguments will not be ignored. Options branch has 5 position parsable flags configured. 6 arguments were provided in the position parsable sequence\n");
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyFailPosParsable_MissingRightDelimiter)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "55.6", "234.78", "43.0", ".56", "2", "Sven" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_FALSE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+
+	EXPECT_EQ(output, "Error: In BranchFlag instance with name \'test\'\n >>>Expected matching right delimiter \'}\' to the left delimiter \'{\' that denote the boundaries of the position parsable flags arguments\n");
+}
+
+TEST(LenientStrictVerbose_BranchFlag_TryRaise, VerifyFailOnMissingRequiredFlag)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "--strength", ".56", "{", "55.6", "234.78", "}" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	std::stringstream buffer;
+	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
+
+	ASSERT_NO_THROW(ASSERT_FALSE(branch.TryRaise(itr, args.end())));
+
+	std::cerr.rdbuf(oldCerr);
+
+	std::string output = buffer.str();
+	std::string truncOutput = output.substr(0, 92);
+
+	EXPECT_EQ(output, "Error: In BranchFlag instance with name \'test\'\n >>>Options branch requires that the, (-w, --width), (-h, --height), (-d, --depth), (-s, --strength), (-i, --iterations), flag tokens all be set with valid arguments\n");
+}
+
+TEST(BranchFlag_TryRaise, VerifyParseNonDelimitedPosParse_OnlyPosParseStream)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "22.5", "54.2", "12.345", ".56", "12" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, true, true));
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	auto& flags = branch.PosParsableFlags();
+
+	EXPECT_EQ(flags[0]->FlagArgument().as<float>(), 22.5f);
+	EXPECT_EQ(flags[1]->FlagArgument().as<float>(), 54.2f);
+	EXPECT_EQ(flags[2]->FlagArgument().as<float>(), 12.345f);
+	EXPECT_EQ(flags[3]->FlagArgument().as<float>(), .56f);
+	EXPECT_EQ(flags[4]->FlagArgument().as<uint32_t>(), 12);
+}
+
+TEST(BranchFlag_TryRaise, VerifyParseNonDelimitedPosParse_PartialPosParseStream)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "22.5", "54.2", "12.345", ".56" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, false, true));
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
+
+	auto& flags = branch.PosParsableFlags();
+
+	EXPECT_EQ(flags[0]->FlagArgument().as<float>(), 22.5f);
+	EXPECT_EQ(flags[1]->FlagArgument().as<float>(), 54.2f);
+	EXPECT_EQ(flags[2]->FlagArgument().as<float>(), 12.345f);
+	EXPECT_EQ(flags[3]->FlagArgument().as<float>(), .56f);
+	EXPECT_EQ(flags[4]->FlagArgument().as<uint32_t>(), 0);
+}
+
+TEST(BranchFlag_TryRaise, VerifyParseNonDelimitedPosParse_MixedArgs)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "{", "22.5", "54.2", "}","--depth", "12.345", "30", "55", "25", ".56", "-i", "12" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, false, true));
+
+	ASSERT_NO_THROW(ASSERT_TRUE(branch.TryRaise(itr, args.end())));
 
 	auto& flags = branch.PosParsableFlags();
 

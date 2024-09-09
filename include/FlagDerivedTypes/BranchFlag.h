@@ -97,7 +97,7 @@ namespace TokenValueParser
 					{
 						if (typeid(newFlag->FlagArgument()) == typeid(Arg_String))
 						{
-							std::string warning = "Warning: In BranchFlag instance with name \'" + this->_tokens._longTokens[0] + "\'\n" +
+							std::string warning = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" +
 								" >>>Flag with \'Arg_String\' argument type may cause ambiguous parsing when used in non-delimited position parsable sequences. It is recommended to use the \'Arg_DelString\' type instead";
 							PRINT_WARNING(warning);
 						}
@@ -155,7 +155,8 @@ namespace TokenValueParser
 					}
 					catch (const std::exception& e)
 					{
-						std::string errorMsg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + e.what();
+						std::string errorMsg = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+							" >>>Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + e.what();
 						PRINT_WARNING(errorMsg);
 					}
 				}
@@ -181,7 +182,8 @@ namespace TokenValueParser
 					}
 					catch (const std::exception& e)
 					{
-						std::string errorMsg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + e.what();
+						std::string errorMsg = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+							" >>>Ignoring parsing error from options branch sub - option.Thrown from option with token \'" + key + "\'.\nError: " + e.what();
 						PRINT_WARNING(errorMsg);
 					}
 				}
@@ -200,7 +202,8 @@ namespace TokenValueParser
 			}
 
 			if(itr == end)
-				throw std::runtime_error("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments.");
+				throw std::runtime_error("Error: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+					" >>>Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments");
 
 			if constexpr (ParseMode == ParsingMode::Strict || Verbosity == VerbositySetting::Verbose)
 			{
@@ -208,11 +211,12 @@ namespace TokenValueParser
 				{
 					if constexpr (ParseMode == ParsingMode::Strict)
 					{
-						throw std::invalid_argument("Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence.");
+						throw std::invalid_argument("Error: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+							" >>>Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence");
 					}
 					else
 					{
-						PRINT_WARNING("Warning: Options branch \'" + this->_tokens._longTokens[0] + "\' ignoring excess arguments in the position parsable sequence.");
+						PRINT_WARNING("Warning: In BranchFlag instance with name \'" + _flagName + "\'\n >>>Ignoring excess arguments in the position parsable sequence");
 					}
 				}
 			}
@@ -227,6 +231,9 @@ namespace TokenValueParser
 				if (_posParsableFlags[i]->ArgRequired)
 					_detectedReqFlags++;
 			}
+
+			leftDelimiter = itr;
+			leftDelimiter++;
 		}
 
 		inline bool TryParseTokenFlags(const std::string& key, std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
@@ -246,7 +253,10 @@ namespace TokenValueParser
 				{
 					if (!flag->TryRaise(itr, end, errorMsg))
 					{
-						std::string msg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + *errorMsg;
+						std::string msg = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+							" >>>Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'";
+						if (errorMsg)
+							msg += ".\nError: " + *errorMsg;
 						PRINT_WARNING(msg);
 					}
 				}
@@ -270,7 +280,10 @@ namespace TokenValueParser
 					{
 						if (!flag->TryRaise(itr, end, errorMsg))
 						{
-							std::string msg = "Warning: Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'.\nError: " + *errorMsg;
+							std::string msg = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+								" >>>Ignoring parsing error from options branch sub-option. Thrown from option with token \'" + key + "\'";
+							if (errorMsg)
+								msg += ".\nError: " + *errorMsg;
 							PRINT_WARNING(msg);
 						}
 						
@@ -282,14 +295,25 @@ namespace TokenValueParser
 			return true;
 		}
 
-		inline bool TryParsePositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
+		inline bool TryParseDelPositionParsableFlags(std::vector<std::string_view>::const_iterator& leftDelimiter, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg) noexcept
 		{
 			std::vector<std::string_view>::const_iterator itr = leftDelimiter;
 			uint32_t arguments = 0;
+			itr++;
 			while (itr != end && *itr != _posParsableRightDelimiter)
 			{
 				itr++;
 				arguments++;
+			}
+
+			if (itr == end)
+			{
+				std::string msg = "Error: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+					" >>>Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments";
+
+				PRINT_ERROR(msg);
+
+				return false;
 			}
 
 			if constexpr (ParseMode == ParsingMode::Strict || Verbosity == VerbositySetting::Verbose)
@@ -298,46 +322,36 @@ namespace TokenValueParser
 				{
 					if constexpr (ParseMode == ParsingMode::Strict)
 					{
-						if (errorMsg)
-							*errorMsg = "Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence.";
+						std::string msg = "Error: In BranchFlag instance with name \'" + _flagName + "\'\n" +
+							" >>>Excess arguments will not be ignored. Options branch has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence";
 
-#if defined(_DEBUG) or RELEASE_ERROR_MSG
-						PRINT_ERROR("Excess arguments will not be ignored.\nOptions branch " + this->_tokens._longTokens[0] + " has " + std::to_string(_posParsableFlags.size()) + " position parsable flags configured. " + std::to_string(arguments) + " arguments were provided in the position parsable sequence.");
-#endif
+						PRINT_ERROR(msg);
+
 						return false;
 					}
 					else
 					{
-						PRINT_WARNING("Warning: Options branch " + this->_tokens._longTokens[0] + " ignoring excess arguments in the position parsable sequence.");
+						std::string msg = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" +
+							" >>>Ignoring excess arguments in the position parsable sequence";
+						PRINT_WARNING(msg);
 					}
 				}
 			}
 
-			if (itr != end)
+			leftDelimiter++;
+
+			uint32_t iterations = _posParsableFlags.size() > arguments ? arguments : _posParsableFlags.size();
+
+			for (uint32_t i = 0; i < iterations; i++)
 			{
-				leftDelimiter++;
-
-				uint32_t iterations = _posParsableFlags.size() > arguments ? arguments : _posParsableFlags.size();
-
-				for (uint32_t i = 0; i < iterations; i++)
-				{
-					if (!_posParsableFlags[i]->TryRaise(leftDelimiter, end, errorMsg))
-						return false;
-					if(_posParsableFlags[i]->ArgRequired)
-						_detectedReqFlags++;
-				}
+				if (!_posParsableFlags[i]->TryRaise(leftDelimiter, end, errorMsg))
+					return false;
+				if (_posParsableFlags[i]->ArgRequired)
+					_detectedReqFlags++;
 			}
-			else
-			{
-				if (errorMsg)
-					*errorMsg = "Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments.";
 
-#if defined(_DEBUG) or RELEASE_ERROR_MSG
-				PRINT_ERROR("Expected matching right delimiter \'" + _posParsableRightDelimiter + "\' to the left delimiter \'" + _posParsableLeftDelimiter + "\' that denote the boundaries of the position parsable flags arguments.");
-#endif
-
-				return false;
-			}
+			leftDelimiter = itr;
+			leftDelimiter++;
 
 			return true;
 		}
@@ -371,10 +385,10 @@ namespace TokenValueParser
 			if (this->_tokens._shortToken.length() != 0)
 			{
 #ifdef _DEBUG
-				throw std::invalid_argument("Error: A Branch Flag should have one recognizable token that is a long token, not a single character short token");
+				throw std::invalid_argument("Error: In BranchFlag instance with description \'" + _flagDesc + "\'\n >>>A Branch Flag should have one recognizable token that is a long token, not a single character short token");
 #endif // _DEBUG
 #if RELEASE_ERROR_MSG
-				PRINT_ERROR("Error: A Branch Flag should have one recognizable token that is a long token, not a single character short token");
+				PRINT_ERROR("Error: In BranchFlag instance with description \'" + _flagDesc + "\'\n >>>A Branch Flag should have one recognizable token that is a long token, not a single character short token");
 #endif // RELEASE_ERROR_MSG
 			}
 #endif
@@ -391,10 +405,10 @@ namespace TokenValueParser
 			if (this->_tokens._shortToken.length() != 0)
 			{
 #ifdef _DEBUG
-				throw std::invalid_argument("Error: A Branch Flag should have one recognizable token that is a long token, not a single character short token");
+				throw std::invalid_argument("Error: In BranchFlag instance with description \'" + _flagDesc +"\'\n >>>A Branch Flag should have one recognizable token that is a long token, not a single character short token");
 #endif // _DEBUG
 #if RELEASE_ERROR_MSG
-				PRINT_ERROR("Error: A Branch Flag should have one recognizable token that is a long token, not a single character short token");
+				PRINT_ERROR("Error: In BranchFlag instance with description \'" + _flagDesc + "\'\n >>>A Branch Flag should have one recognizable token that is a long token, not a single character short token");
 #endif // RELEASE_ERROR_MSG
 			}
 #endif
@@ -503,15 +517,16 @@ namespace TokenValueParser
 							}
 						}
 
-						if constexpr (Verbosity == VerbositySetting::Verbose)
-						{
-							std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided";
-							PRINT_WARNING(message);
-						}
-
 						if constexpr (ParseMode == ParsingMode::Strict)
 						{
-							throw std::invalid_argument("Unknown token \'" + key + "\' provided");
+							throw std::invalid_argument("Error: In BranchFlag instance with name \'" + _flagName + "\'\n" +
+								" >>>Unknown token \'" + key + "\' provided");
+						}
+						else if constexpr (Verbosity == VerbositySetting::Verbose)
+						{
+							std::string message = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+								" >>>Ignoring unknown token \'" + key + "\' provided";
+							PRINT_WARNING(message);
 						}
 
 						break;
@@ -520,12 +535,12 @@ namespace TokenValueParser
 				else
 				{
 					ParseDelPositionParsableFlags(itr, end);
-					itr++;
 				}
 			}
 
 			if (_detectedReqFlags < _reqFlagsCount)
-				throw std::invalid_argument(this->_tokens._longTokens[0] + " options branch requires that the ," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments.");
+				throw std::invalid_argument("Error: In BranchFlag instance with name \'" + _flagName + "\'\n" +
+					" >>>Options branch requires that the," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments");
 		}
 
 		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override
@@ -552,23 +567,20 @@ namespace TokenValueParser
 							}
 						}
 
-						if constexpr (Verbosity == VerbositySetting::Verbose)
-						{
-							std::string message = "Warning: Ignoring unknown token \'" + key + "\' provided";
-							PRINT_WARNING(message);
-						}
-
 						if constexpr (ParseMode == ParsingMode::Strict)
 						{
-							std::string msg = "Unknown token \'" + key + "\' provided";
-							if (errorMsg)
-								*errorMsg = msg;
+							std::string msg = "Error: In BranchFlag instance with name \'" + _flagName + "\'\n" +
+								" >>>Unknown token \'" + key + "\' provided";
 
-#if defined(_DEBUG) or RELEASE_ERROR_MSG
 							PRINT_ERROR(msg);
-#endif
 
 							return false;
+						}
+						else if constexpr (Verbosity == VerbositySetting::Verbose)
+						{
+							std::string message = "Warning: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+								" >>>Ignoring unknown token \'" + key + "\' provided";
+							PRINT_WARNING(message);
 						}
 
 						break;
@@ -576,22 +588,17 @@ namespace TokenValueParser
 				}
 				else
 				{
-					if (!TryParsePositionParsableFlags(itr, end, errorMsg))
+					if (!TryParseDelPositionParsableFlags(itr, end, errorMsg))
 						return false;
-					
-					break;
 				}
 			}
 
 			if (_detectedReqFlags < _reqFlagsCount)
 			{
-				std::string msg = this->_tokens._longTokens[0] + " options branch requires that the ," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments.";
-				if (errorMsg)
-					*errorMsg = msg;
+				std::string msg = "Error: In BranchFlag instance with name \'" + _flagName + "\'\n" + 
+					" >>>Options branch requires that the," + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments";
 
-#if defined(_DEBUG) or RELEASE_ERROR_MSG
 				PRINT_ERROR(msg);
-#endif
 
 				return false;
 			}

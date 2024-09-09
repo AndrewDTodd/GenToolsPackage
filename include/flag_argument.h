@@ -104,18 +104,18 @@ namespace TokenValueParser
 			return *this;
 		}
 
-		const flag_argument_t& SetDefaultValue(ArgType&& defaultValue) const noexcept
+		const flag_argument_t&& SetDefaultValue(ArgType&& defaultValue) const noexcept
 		{
 			argument = std::move(defaultValue);
 
-			return *this;
+			return std::move(*this);
 		}
 
-		const flag_argument_t& SetParseFunction(ArgType(*parseFunction)(const char*)) const noexcept
+		const flag_argument_t&& SetParseFunction(ArgType(*parseFunction)(const char*)) const noexcept
 		{
 			parseFunc = parseFunction;
 
-			return *this;
+			return std::move(*this);
 		}
 
 		void Parse(const char* str) const override
@@ -186,18 +186,18 @@ namespace TokenValueParser
 			return *this;
 		}
 
-		const flag_pointer_t& SetLinkedValue(ArgType* linkedValue) const noexcept
+		const flag_pointer_t&& SetLinkedValue(ArgType* linkedValue) const noexcept
 		{
 			argument = linkedValue;
 
-			return *this;
+			return std::move(*this);
 		}
 
-		const flag_pointer_t& SetParseFunction(ArgType(*parseFunction)(const char*)) const noexcept
+		const flag_pointer_t&& SetParseFunction(ArgType(*parseFunction)(const char*)) const noexcept
 		{
 			parseFunc = parseFunction;
 
-			return *this;
+			return std::move(*this);
 		}
 
 		void Parse(const char* str) const override

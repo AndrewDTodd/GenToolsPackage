@@ -68,12 +68,17 @@ add_definitions(-DVERSION_BUILD=${VERSION_BUILD})
 # Create a CMake option variable used to trigger settings for the special Release-Dev build mode of this project
 option(RELEASE_ERROR_MSG "Include release error messages in the build" OFF)
 
-# Create a list of the build modes for this project
+# Define custom configuration types for Debug, Release, and Release-Dev
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Release-Dev" CACHE STRING "List of supported build modes." FORCE)
 
-# Set compiler and linker options for the Release-Dev build mode
-set(CMAKE_CXX_FLAGS_RELEASE-DEV "${CMAKE_CXX_FLAGS_RELEASE} -DRELEASE_ERROR_MSG=ON")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE-DEV "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+# Set compiler and linker flags for the Release-Dev build mode
+if(CMAKE_BUILD_TYPE STREQUAL "Release-Dev")
+	# Set RELEASE_ERROR_MSG to 1 in the Release-Dev mode
+	add_compile_definitions(RELEASE_ERROR_MSG=1)
+else()
+	# Set RELEASE_ERROR_MSG to 0 in other modes if not explicitly set
+	add_compile_definitions(RELEASE_ERROR_MSG=0)
+endif()
 
 # ***************************************************************************************************************************************************
 # Begin Target Configuration

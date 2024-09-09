@@ -19,7 +19,7 @@ namespace TokenValueParser
 
 		/*
 		* Yes, this looks like a double move. It's actually not.
-		* The Flag derived types SwitchFlag and TriggerFlag both just pass the references on to the Flag constructor too.
+		* The Flag derived types, SwitchFlag and TriggerFlag, both just pass the references on to the Flag constructor too.
 		* It's only the Flag constructor that ends up using the flagTokens and flagDesc
 		*/
 #pragma warning(push)

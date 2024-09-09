@@ -7,10 +7,12 @@ namespace TokenValueParser
 		static const std::unordered_map<std::string, bool> map = {
 			{"yes", true}, {"no", false},
 			{"true", true}, {"false", false},
+			{"y", true}, {"n", false},
 			{"t", true}, {"f", false},
 			{"1", true}, {"0", false},
 			{"Yes", true}, {"No", false},
 			{"True", true}, {"False", false},
+			{"Y", true}, {"N", false},
 			{"T", true}, {"F", false},
 			{"YES", true}, {"NO", false},
 			{"TRUE", true}, {"FALSE", false}
@@ -22,7 +24,7 @@ namespace TokenValueParser
 		if (it != map.end())
 			return it->second;
 		else
-			throw std::invalid_argument("Could not parse " + s + " to bool value");
+			throw std::invalid_argument("Error: Expected boolean parsable value. Could not parse \'" + s + "\'");
 	}
 
 	bool YesNoToBool(const char* str)
@@ -30,7 +32,9 @@ namespace TokenValueParser
 		static const std::unordered_map<std::string, bool> map = {
 			{"yes", true}, {"no", false},
 			{"Yes", true}, {"No", false},
-			{"YES", true}, {"NO", false}
+			{"YES", true}, {"NO", false},
+			{"y", true}, {"n", false},
+			{"Y", true}, {"N", false}
 		};
 
 		std::string s(str);
@@ -39,7 +43,7 @@ namespace TokenValueParser
 		if (it != map.end())
 			return it->second;
 		else
-			throw std::invalid_argument("Could not parse " + s + " to bool value");
+			throw std::invalid_argument("Error: Expected yes or no value. Could not parse \'" + s + "\'");
 	}
 
 	bool TrueFalseToBool(const char* str)
@@ -56,7 +60,7 @@ namespace TokenValueParser
 		if (it != map.end())
 			return it->second;
 		else
-			throw std::invalid_argument("Could not parse " + s + " to bool value");
+			throw std::invalid_argument("Error: Expected true or false. Could not parse \'" + s + "\'");
 	}
 
 	bool TFToBool(const char* str)
@@ -72,7 +76,7 @@ namespace TokenValueParser
 		if (it != map.end())
 			return it->second;
 		else
-			throw std::invalid_argument("Could not parse " + s + " to bool value");
+			throw std::invalid_argument("Error: Expected t or f. Could not parse \'" + s + "\'");
 	}
 
 	bool OneZeroToBool(const char* str)
@@ -87,7 +91,7 @@ namespace TokenValueParser
 		if (it != map.end())
 			return it->second;
 		else
-			throw std::invalid_argument("Could not parse " + s + " to bool value");
+			throw std::invalid_argument("Error: Expected 1 or 0. Could not parse \'" + s + "\'");
 	}
 
 	int32_t ParseInt32(const char* str)
@@ -100,12 +104,12 @@ namespace TokenValueParser
 	uint32_t ParseUInt32(const char* str)
 	{
 		if (str[0] == '-')
-			throw std::out_of_range("Cannot parse negative value into unsinged integer 32");
+			throw std::out_of_range("Error: Cannot parse negative value into unsinged integer 32");
 
 		std::string s(str);
 		unsigned long value = std::stoul(s, nullptr, 0);
 		if (value > UINT32_MAX)
-			throw std::out_of_range("Value " + std::to_string(value) + " is out of range for unsigned integer 32");
+			throw std::out_of_range("Error: Value " + std::to_string(value) + " is out of range for unsigned integer 32");
 		return static_cast<uint32_t>(value);
 	}
 
@@ -119,7 +123,7 @@ namespace TokenValueParser
 	uint64_t ParseUInt64(const char* str)
 	{
 		if (str[0] == '-')
-			throw std::out_of_range("Cannot parse negative value into an unsinged integer 64");
+			throw std::out_of_range("Error: Cannot parse negative value into an unsinged integer 64");
 
 		std::string s(str);
 		unsigned long long value = std::stoull(s, nullptr, 0);
@@ -151,7 +155,7 @@ namespace TokenValueParser
 	{
 		std::string s(str);
 		if (s.size() < 2 || s.front() != '"' || s.back() != '"')
-			throw std::invalid_argument("Could not parse " + s + " to string value");
+			throw std::invalid_argument("Error: Expecting string value delimited by \" characters. Could not parse \'" + s + "\'");
 		return s.substr(1, s.size() - 2);
 	}
 

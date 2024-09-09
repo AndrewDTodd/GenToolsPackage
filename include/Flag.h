@@ -58,7 +58,7 @@ namespace TokenValueParser
 #if defined(_DEBUG) or RELEASE_ERROR_MSG
 						if (_shortToken.size() != 0)
 						{
-							PRINT_WARNING("Short token has already been set. Another token argument is overriding previous short token.");
+							PRINT_WARNING("Warning: In Flag with short token \'" + _shortToken + "\'\n >>>Short token has already been set. Another token, \'" + str_token + "\', is overriding previous short token");
 						}
 #endif // _DEBUG
 						_shortToken = std::move(str_token);
@@ -72,7 +72,7 @@ namespace TokenValueParser
 					throw std::logic_error("Empty token provided");
 #endif // _DEBUG
 #if RELEASE_ERROR_MSG
-					PRINT_ERROR("Error: Empty token provided! Run in debug mode for more details on this error.");
+					PRINT_ERROR("Error: In Flag instantiation\n >>>Empty token provided! Run in debug mode for more details on this error");
 #endif // RELEASE_ERROR_MSG
 				}
 			};
@@ -133,23 +133,35 @@ namespace TokenValueParser
 	{
 	protected:
 		Tokens _tokens;
+		std::string _flagDesc;
+		std::string& _flagName;
 		Flag_Argument _flagArg;
 		bool _argSet = false;
-		std::string _flagDesc;
 
 	public:
 		Flag(Tokens&& flagTokens, std::string&& flagDesc,
 			bool flagRequired = false) noexcept
-			: flag_interface(flagRequired, false), _tokens(std::move(flagTokens)), _flagDesc(std::move(flagDesc))
-		{}
+			: flag_interface(flagRequired, false), 
+			_tokens(std::move(flagTokens)), 
+			_flagDesc(std::move(flagDesc)), 
+			_flagName(_tokens._longTokens.size() ? _tokens._longTokens[0] : _tokens._shortToken)
+		{
+		}
 
 		explicit Flag(Tokens&& flagTokens, std::string&& flagDesc, Flag_Argument&& flagArg,
 			bool argRequired = true, bool flagRequired = false, bool posParsable = false) noexcept
-			: flag_interface(flagRequired, argRequired, posParsable), _tokens(std::move(flagTokens)), _flagDesc(std::move(flagDesc)), _flagArg(std::move(flagArg)), _argSet(true)
-		{}
+			: flag_interface(flagRequired, argRequired, posParsable),
+			_tokens(std::move(flagTokens)),
+			_flagDesc(std::move(flagDesc)),
+			_flagName(_tokens._longTokens.size() ? _tokens._longTokens[0] : _tokens._shortToken),
+			_flagArg(std::move(flagArg)),
+			_argSet(true)
+		{
+		}
 
 		Flag(Flag&& other) noexcept :
 			flag_interface(other.FlagRequired, other.ArgRequired, other.PosParsable),
+			_flagName(other._flagName),
 			_tokens(std::move(other._tokens)),
 			_flagArg(std::move(other._flagArg)),
 			_argSet(true),
@@ -162,6 +174,7 @@ namespace TokenValueParser
 		{
 			if (this != &other)
 			{
+				_flagName = other._flagName;
 				_tokens = std::move(other._tokens);
 				_flagArg = std::move(other._flagArg);
 				_argSet = true;
@@ -247,11 +260,13 @@ namespace TokenValueParser
 
 		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override
 		{
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
 			if (!_argSet)
-				throw std::logic_error("Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.");
+				throw std::logic_error("Error: In Flag instance with name \'" + _flagName + "\'\n >>>The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument");
+#endif
 
 			if (itr == end && ArgRequired)
-				throw std::invalid_argument("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
+				throw std::invalid_argument("Error: In Flag instance with name \'" + _flagName + "\'\n >>>The iterator passed to the Flag is already pointing to the container's end. No item to parse, and argument is required for this flag");
 			else if (itr == end && !ArgRequired)
 				return;
 
@@ -272,26 +287,18 @@ namespace TokenValueParser
 
 		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept override
 		{
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
 			if (!_argSet)
 			{
-				if(errorMsg)
-					*errorMsg = "Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.";
-
-#if defined(_DEBUG) or RELEASE_ERROR_MSG
-				PRINT_ERROR("Error: The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument.");
-#endif
+				PRINT_ERROR("Error: In Flag instance with name \'" + _flagName + "\'\n >>>The Flag's argument has not been set. Only Switches can be Raised without having set an argument.\nSet the argument in a constructor, or by calling SetFlagArgument");
 
 				return false;
 			}
+#endif
 
 			if (itr == end && ArgRequired)
 			{
-				if (errorMsg)
-					*errorMsg = "Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse";
-
-#if defined(_DEBUG) or RELEASE_ERROR_MSG
-				PRINT_ERROR("Error: The iterator passed to the Flag is already pointing to the container's end. No item to parse");
-#endif
+				PRINT_ERROR("Error: In Flag instance with name \'" + _flagName + "\'\n >>>The iterator passed to the Flag is already pointing to the container's end. No item to parse, and argument is required for this flag");
 
 				return false;
 			}

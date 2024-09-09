@@ -39,7 +39,7 @@ TEST(TokensConstructor, MultiShortToken)
 
 	std::string output = buffer.str();
 
-	EXPECT_EQ(output, "Short token has already been set. Another token argument is overriding previous short token.\n");
+	EXPECT_EQ(output, "Warning: In Flag with short token 'd'\n >>>Short token has already been set. Another token, 'c', is overriding previous short token\n");
 
 #else
 	EXPECT_NO_THROW(Tokens("d", "c"));
@@ -61,7 +61,7 @@ TEST(TokensConstructor, ThrowOnEmptyToken)
 
 	std::string output = buffer.str();
 
-	EXPECT_EQ(output, "Error: Empty token provided! Run in debug mode for more details on this error.\n");
+	EXPECT_EQ(output, "Error: In Flag instantiation\n >>>Empty token provided! Run in debug mode for more details on this error\n");
 #elif !defined(_DEBUG) && !RELEASE_ERROR_MSG
 	EXPECT_NO_THROW(Tokens(""));
 #endif // RELEASE_ERROR_MSG
@@ -208,7 +208,7 @@ TEST(FlagRaise, VerifySuccessOnValid)
 	EXPECT_EQ(flag.FlagArgument().as<std::string>(), "/.ssh/named_key.pub");
 }
 
-TEST(FlagRaise, ThrowsOnNoArg)
+TEST(FlagRaise, OnNoArg)
 {
 	const char* cmdArgs[] = { "log.exe", "-f", "/.ssh/named_key.pub" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -217,7 +217,11 @@ TEST(FlagRaise, ThrowsOnNoArg)
 
 	Flag<Arg_String> flag({ "f", "out-file" }, "Specify what file to save to");
 
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
 	EXPECT_THROW(flag.Raise(itr, args.end()), std::logic_error);
+#else
+	EXPECT_NO_THROW(flag.Raise(itr, args.end()));
+#endif
 }
 
 TEST(FlagRaise, ThrowsOnEnd_ArgRequired)
@@ -290,7 +294,7 @@ TEST(FlagTryRaise, VerifySuccessOnValid)
 	EXPECT_EQ(flag.FlagArgument().as<std::string>(), "/.ssh/named_key.pub");
 }
 
-TEST(FlagTryRaise, ThrowsOnNoArg)
+TEST(FlagTryRaise, OnNoArg)
 {
 	const char* cmdArgs[] = { "log.exe", "-f", "/.ssh/named_key.pub" };
 	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
@@ -302,7 +306,11 @@ TEST(FlagTryRaise, ThrowsOnNoArg)
 	std::stringstream buffer;
 	std::streambuf* oldCerr = std::cerr.rdbuf(buffer.rdbuf());
 
+#if defined(_DEBUG) or RELEASE_ERROR_MSG
 	EXPECT_FALSE(flag.TryRaise(itr, args.end()));
+#else
+	EXPECT_TRUE(flag.TryRaise(itr, args.end()));
+#endif
 
 	std::cerr.rdbuf(oldCerr);
 }
