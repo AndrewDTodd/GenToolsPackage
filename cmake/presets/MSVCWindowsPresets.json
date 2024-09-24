@@ -6,6 +6,49 @@
   },
   "configurePresets": [
     {
+      "name": "Github-Win-MSVC-Debug",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Debug",
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Debug"
+    },
+    {
+      "name": "Github-Win-MSVC-Release_Dev",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/RelWithDebInfo",
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/RelWithDebInfo"
+    },
+    {
+      "name": "Github-Win-MSVC-Release",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Release",
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Release"
+    },
+
+    {
       "name": "Win-MSVC-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",

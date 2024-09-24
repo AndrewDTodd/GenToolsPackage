@@ -18,42 +18,34 @@ jobs:
 
       matrix:
         os: [ubuntu-latest, windows-latest]
-        configurePreset: [Linux-GCC-x86_64, Linux-Clang-x86_64, Win-MSVC-x86_64, Win-Clang-x86_64]
-        buildPreset: [
-            Linux-GCC-x86_64-Release_Dev,
-            Linux-GCC-x86_64-Release,
-            Linux-Clang-x86_64-Release_Dev,
-            Linux-Clang-x86_64-Release,
-            Win-MSVC-x86_64-Release_Dev,
-            Win-MSVC-x86_64-Release,
-            Win-Clang-x86_64-Release_Dev,
-            Win-Clang-x86_64-Release
+        configurePreset: [
+            Github-Linux-GCC-Release_Dev,
+            Github-Linux-GCC-Release,
+            Github-Linux-Clang-Release_Dev,
+            Github-Linux-Clang-Release,
+            Github-Win-MSVC-Release_Dev,
+            Github-Win-MSVC-Release,
+            Github-Win-Clang-Release_Dev,
+            Github-Win-Clang-Release
         ]
         exclude:
         - os: windows-latest
-          configurePreset: Linux-GCC-x86_64
+          configurePreset: Github-Linux-GCC-Release_Dev
         - os: windows-latest
-          configurePreset: Linux-Clang-x86_64
+          configurePreset: Github-Linux-GCC-Release
         - os: windows-latest
-          buildPreset: Linux-GCC-x86_64-Release_Dev
+          configurePreset: Github-Linux-Clang-Release_Dev
         - os: windows-latest
-          buildPreset: Linux-GCC-x86_64-Release
-        - os: windows-latest
-          buildPreset: Linux-Clang-x86_64-Release_Dev
-        - os: windows-latest
-          buildPreset: Linux-Clang-x86_64-Release_Dev
+          configurePreset: Github-Linux-Clang-Release
         - os: ubuntu-latest
-          configurePreset: Win-MSVC-x86_64
+          configurePreset: Github-Win-MSVC-Release_Dev
         - os: ubuntu-latest
-          configurePreset: Win-Clang-x86_64
+          configurePreset: Github-Win-MSVC-Release
         - os: ubuntu-latest
-          buildPreset: Win-MSVC-x86_64-Release_Dev
+          configurePreset: Github-Win-Clang-Release_Dev
         - os: ubuntu-latest
-          buildPreset: Win-MSVC-x86_64-Release
-        - os: ubuntu-latest
-          buildPreset: Win-Clang-x86_64-Release_Dev
-        - os: ubuntu-latest
-          buildPreset: Win-Clang-x86_64-Release_Dev
+          configurePreset: Github-Win-Clang-Release
+        
 
     steps:
     - uses: actions/checkout@v3
@@ -62,14 +54,14 @@ jobs:
       run: >
         cmake --preset ${{ matrix.configurePreset }}
 
-    - name: Build using Preset
+    - name: Build
       run: >
-        cmake --build --preset ${{ matrix.buildPreset }}
+        cmake --build --preset ${{ matrix.configurePreset }} --parallel 16 --clean-first
 
     - name: Built Tests
       run: >
-        cmake --build --preset ${{ matrix.buildPreset }} --target run_all_unit_tests
+        cmake --build --preset ${{ matrix.configurePreset }} --parallel 16 --clean-first --target run_all_unit_tests
 
     - name: Test
       run: >
-        ctest --preset ${{ matrix.buildPreset }}
+        ctest --preset ${{ matrix.configurePreset }}

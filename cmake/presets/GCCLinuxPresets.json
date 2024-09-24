@@ -6,6 +6,49 @@
   },
   "configurePresets": [
     {
+      "name": "Github-Linux-GCC-Debug",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "-flto=auto",
+        "CMAKE_CXX_FLAGS": "-flto=auto",
+        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
+      },
+      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/Debug",
+      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Debug"
+    },
+    {
+      "name": "Github-Linux-GCC-Release_Dev",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "-flto=auto",
+        "CMAKE_CXX_FLAGS": "-flto=auto",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
+      },
+      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/RelWithDebInfo",
+      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/RelWithDebInfo"
+    },
+    {
+      "name": "Github-Linux-GCC-Release",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "-flto=auto",
+        "CMAKE_CXX_FLAGS": "-flto=auto",
+        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
+      },
+      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/Release",
+      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Release"
+    },
+    
+    {
       "name": "Linux-GCC-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",

@@ -6,6 +6,49 @@
   },
   "configurePresets": [
     {
+      "name": "Github-Win-Clang-Debug",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Debug",
+      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/Debug"
+    },
+    {
+      "name": "Github-Win-Clang-Release_Dev",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/RelWithDebInfo",
+      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/RelWithDebInfo"
+    },
+    {
+      "name": "Github-Win-Clang-Release",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Release",
+      "installDir": "${sourceDir}/install/Linux/x86_64/CLang/Release"
+    },
+
+    {
       "name": "Win-Clang-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",
