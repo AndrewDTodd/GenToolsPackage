@@ -7,7 +7,6 @@
   "configurePresets": [
     {
       "name": "Github-Linux-GCC-Debug",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
@@ -17,11 +16,15 @@
       },
       "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/Debug",
-      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Debug"
+      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Debug",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Linux" ]
+        }
+      }
     },
     {
       "name": "Github-Linux-GCC-Release_Dev",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
@@ -31,11 +34,15 @@
       },
       "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/RelWithDebInfo",
-      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/RelWithDebInfo"
+      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/RelWithDebInfo",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Linux" ]
+        }
+      }
     },
     {
       "name": "Github-Linux-GCC-Release",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
@@ -45,7 +52,12 @@
       },
       "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/Release",
-      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Release"
+      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Release",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Linux" ]
+        }
+      }
     },
     
     {

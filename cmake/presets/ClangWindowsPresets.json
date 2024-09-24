@@ -7,7 +7,6 @@
   "configurePresets": [
     {
       "name": "Github-Win-Clang-Debug",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
@@ -17,11 +16,15 @@
       },
       "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Debug",
-      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/Debug"
+      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/Debug",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
     },
     {
       "name": "Github-Win-Clang-Release_Dev",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
@@ -31,11 +34,15 @@
       },
       "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/RelWithDebInfo",
-      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/RelWithDebInfo"
+      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/RelWithDebInfo",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
     },
     {
       "name": "Github-Win-Clang-Release",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
@@ -45,7 +52,12 @@
       },
       "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Release",
-      "installDir": "${sourceDir}/install/Linux/x86_64/CLang/Release"
+      "installDir": "${sourceDir}/install/Linux/x86_64/CLang/Release",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
     },
 
     {

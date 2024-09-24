@@ -7,7 +7,6 @@
   "configurePresets": [
     {
       "name": "Github-Win-MSVC-Debug",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
@@ -17,11 +16,15 @@
       },
       "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Debug",
-      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Debug"
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Debug",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
     },
     {
       "name": "Github-Win-MSVC-Release_Dev",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
@@ -31,11 +34,15 @@
       },
       "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/RelWithDebInfo",
-      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/RelWithDebInfo"
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/RelWithDebInfo",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
     },
     {
       "name": "Github-Win-MSVC-Release",
-      "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
@@ -45,7 +52,12 @@
       },
       "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Release",
-      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Release"
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Release",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
     },
 
     {
