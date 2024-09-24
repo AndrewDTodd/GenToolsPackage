@@ -1,57 +1,395 @@
 //rootConfig.h.in, used for configuration defintions in project scope
 
-#ifndef ROOT_CONFIG_TOKENVALUEPARSER_H
-#define ROOT_CONFIG_TOKENVALUEPARSER_H
+#ifndef ROOT_CONFIG_GEN_TOOLS_H
+#define ROOT_CONFIG_GEN_TOOLS_H
 
 #include <iostream>
 
-#define GREEN_TERMINAL std::cout << GREEN
-#define RED_TERMINAL std::cout << RED
-#define YELLOW_TERMINAL std::cout << YELLOW
-#define BLUE_TERMINAL std::cout << BLUE
-#define RESET_TERMINAL std::cout << RESET
-#define DIMB_TEXT std::cout << DIMB
-#define NORM_TEXT std::cout << NORM_TXT
+#if defined(__GNUC__) or defined(__clang__)
+#define FORCE_INLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#define FORCE_INLINE __forceinline
+#else
+#define FORCE_INLINE inline
+#endif
 
-#if defined(_LINUX_TARGET) || defined(_MAC_TARGET)
+#if defined(_LINUX_TARGET) or defined(_MAC_TARGET)
 #include <cstdlib>
-#define CLEAR_TERMINAL std::system("clear");
-
-#define PRINT_WARNING(message) \
-	do { \
-		YELLOW_TERMINAL; \
-		std::cerr << message << std::endl; \
-		RESET_TERMINAL; \
-	} while(0)
-
-#define PRINT_ERROR(message) \
-	do { \
-		RED_TERMINAL; \
-		std::cerr << message << std::endl; \
-		RESET_TERMINAL; \
-	} while(0)
+#elif defined(_WIN_TARGET)
+#include <windows.h>
 #endif
 
-#if defined(_WIN_TARGET)
-#define CLEAR_TERMINAL std::system("cls");
+namespace GenTools
+{
+	struct TERMINAL
+	{
+	private:
+#ifdef _WIN_TARGET
+		static FORCE_INLINE void init_windows_terminal()
+		{
+			static bool windows_terminal_initialized = false;
 
-void init_windows_terminal();
-
-#define PRINT_WARNING(message) \
-	do { \
-		init_windows_terminal(); \
-		YELLOW_TERMINAL; \
-		std::cerr << message << std::endl; \
-		RESET_TERMINAL; \
-	} while(0)
-
-#define PRINT_ERROR(message) \
-	do { \
-		init_windows_terminal(); \
-		RED_TERMINAL; \
-		std::cerr << message << std::endl; \
-		RESET_TERMINAL; \
-	} while(0)
+			if (!windows_terminal_initialized)
+			{
+				HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+				DWORD dwMode;
+				GetConsoleMode(hOut, &dwMode);
+				dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+				SetConsoleMode(hOut, dwMode);
+				windows_terminal_initialized = true;
+			}
+		}
 #endif
 
-#endif //!ROOT_CONFIG_TOKENVALUEPARSER_H
+	public:
+		static constexpr auto _BELL				= "\x07";
+		static constexpr auto _BACKSPACE		= "\x08";
+		static constexpr auto _HORIZONTAL_TAB	= "\x09";
+		static constexpr auto _LINEFEED			= "\x0A";
+		static constexpr auto _VERTICAL_TAB		= "\x0B";
+		static constexpr auto _FORMFEED			= "\x0C";
+		static constexpr auto _CARRIAGE_RETURN	= "\x0D";
+		static constexpr auto _ESCAPE_CHARACTER	= "\x1B[";
+		static constexpr auto _DELETE_CHARACTER	= "\x7F";
+
+		static constexpr auto _CURSOR_HOME		= "\x1B[H";
+		static FORCE_INLINE void _CURSOR_MOVE(const std::string& line, const std::string& column)
+		{
+			std::cout << _ESCAPE_CHARACTER << line << ";" << column << "H";
+		}
+		static FORCE_INLINE void _CURSOR_UP(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "A";
+		}
+		static FORCE_INLINE void _CURSOR_DOWN(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "B";
+		}
+		static FORCE_INLINE void _CURSOR_RIGHT(const std::string& columns)
+		{
+			std::cout << _ESCAPE_CHARACTER << columns << "C";
+		}
+		static FORCE_INLINE void _CURSOR_LEFT(const std::string& columns)
+		{
+			std::cout << _ESCAPE_CHARACTER << columns << "D";
+		}
+		static FORCE_INLINE void _CURSOR_LINE_DOWN(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "E";
+		}
+		static FORCE_INLINE void _CURSOR_LINE_UP(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "F";
+		}
+		static FORCE_INLINE void _CURSOR_TO_COLUMN(const std::string& column)
+		{
+			std::cout << _ESCAPE_CHARACTER << column << "G";
+		}
+		static constexpr auto _CURSOR_REQUEST_POS			= "\x1B[6n";
+		static constexpr auto _CURSOR_UP_LINE				= "\x1B M";
+		static constexpr auto _CURSOR_SAVEPOS				= "\x1B 7";
+		static constexpr auto _CURSOR_RESTORE				= "\x1B 8";
+
+		static constexpr auto _ERASE_TO_END_SCREEN			= "\x1B[0J";
+		static constexpr auto _ERASE_TO_BEGINNING_SCREEN	= "\x1B[1J";
+		static constexpr auto _ERASE_ALL					= "\x1B[2J";
+		static constexpr auto _ERASE_SAVED					= "\x1B[3J";
+		static constexpr auto _ERASE_TO_END_LINE			= "\x1B[0K";
+		static constexpr auto _ERASE_TO_BEGINNING_LINE		= "\x1B[1K";
+		static constexpr auto _ERASE_LINE					= "\x1B[2K";
+
+		template<typename... Cells>
+		static FORCE_INLINE void _SET_CELL_GRAPHIC_MODE(const std::string& mode, const Cells... cells)
+		{
+			std::cout << _ESCAPE_CHARACTER;
+
+			((std::cout << cells << ";"), ...);
+
+			std::cout << mode << "m";
+		}
+		static constexpr auto _GRAPHIC_MODE_RESET			= "\x1B[0m";
+		static constexpr auto _GRAPHIC_MODE_BOLD			= "\x1B[1m";
+		static constexpr auto _GRAPHIC_RESET_BOLD			= "\x1B[22m";
+		static constexpr auto _GRAPHIC_MODE_DIMB			= "\x1B[2m";
+		static constexpr auto _GRAPHIC_RESET_DIMB			= "\x1B[22m";
+		static constexpr auto _GRAPHIC_MODE_ITALIC			= "\x1B[3m";
+		static constexpr auto _GRAPHIC_RESET_ITALIC			= "\x1B[23m";
+		static constexpr auto _GRAPHIC_MODE_UNDR			= "\x1B[4m";
+		static constexpr auto _GRAPHIC_RESET_UNDR			= "\x1B[24m";
+		static constexpr auto _GRAPHIC_MODE_BLINK			= "\x1B[5m";
+		static constexpr auto _GRAPHIC_RESET_BLINK			= "\x1B[25m";
+		static constexpr auto _GRAPHIC_MODE_INVERSE			= "\x1B[7m";
+		static constexpr auto _GRAPHIC_RESET_INVERSE		= "\x1B[27m";
+		static constexpr auto _GRAPHIC_MODE_HIDDEN			= "\x1B[8m";
+		static constexpr auto _GRAPHIC_RESET_HIDDEN			= "\x1B[28m";
+		static constexpr auto _GRAPHIC_MODE_STRIKE			= "\x1B[9m";
+		static constexpr auto _GRAPHIC_RESET_STRIKE			= "\x1B[29m";
+		static constexpr auto _GRAPHIC_MODE_DBL_UNDR		= "\x1B[21m";
+		static constexpr auto _GRAPHIC_RESET_DBL_UNDR		= "\x1B[24m";
+
+		static constexpr auto _COLOR_BLACK_F				= "\x1B[30m";
+		static constexpr auto _COLOR_BLACK_B				= "\x1B[40m";
+		static constexpr auto _COLOR_RED_F					= "\x1B[31m";
+		static constexpr auto _COLOR_RED_B					= "\x1B[41m";
+		static constexpr auto _COLOR_GREEN_F				= "\x1B[32m";
+		static constexpr auto _COLOR_GREEN_B				= "\x1B[42m";
+		static constexpr auto _COLOR_YELLOW_F				= "\x1B[33m";
+		static constexpr auto _COLOR_YELLOW_B				= "\x1B[43m";
+		static constexpr auto _COLOR_BLUE_F					= "\x1B[34m";
+		static constexpr auto _COLOR_BLUE_B					= "\x1B[44m";
+		static constexpr auto _COLOR_MAG_F					= "\x1B[35m";
+		static constexpr auto _COLOR_MAG_B					= "\x1B[45m";
+		static constexpr auto _COLOR_CYAN_F					= "\x1B[36m";
+		static constexpr auto _COLOR_CYAN_B					= "\x1B[46m";
+		static constexpr auto _COLOR_WHITE_F				= "\x1B[37m";
+		static constexpr auto _COLOR_WHITE_B				= "\x1B[47m";
+		static constexpr auto _COLOR_DEFAULT_F				= "\x1B[39m";
+		static constexpr auto _COLOR_DEFAULT_B				= "\x1B[49m";
+
+		static FORCE_INLINE void BLACK_TEXT()
+		{
+			std::cout << _COLOR_BLACK_F;
+		}
+		static FORCE_INLINE void BLACK_BACKGROUND()
+		{
+			std::cout << _COLOR_BLACK_B;
+		}
+		static FORCE_INLINE void RED_TEXT()
+		{
+			std::cout << _COLOR_RED_F;
+		}
+		static FORCE_INLINE void RED_BACKGORUND()
+		{
+			std::cout << _COLOR_RED_B;
+		}
+		static FORCE_INLINE void GREEN_TEXT()
+		{
+			std::cout << _COLOR_GREEN_F;
+		}
+		static FORCE_INLINE void GREEN_BACKGROUND()
+		{
+			std::cout << _COLOR_GREEN_B;
+		}
+		static FORCE_INLINE void YELLOW_TEXT()
+		{
+			std::cout << _COLOR_YELLOW_F;
+		}
+		static FORCE_INLINE void YELLOW_BACKGROUND()
+		{
+			std::cout << _COLOR_YELLOW_B;
+		}
+		static FORCE_INLINE void BLUE_TEXT()
+		{
+			std::cout << _COLOR_BLUE_F;
+		}
+		static FORCE_INLINE void BLUE_BACKGROUND()
+		{
+			std::cout << _COLOR_BLUE_B;
+		}
+		static FORCE_INLINE void MAGENTA_TEXT()
+		{
+			std::cout << _COLOR_MAG_F;
+		}
+		static FORCE_INLINE void MAGENTA_BACKGROUND()
+		{
+			std::cout << _COLOR_MAG_B;
+		}
+		static FORCE_INLINE void CYAN_TEXT()
+		{
+			std::cout << _COLOR_CYAN_F;
+		}
+		static FORCE_INLINE void CYAN_BACKGROUND()
+		{
+			std::cout << _COLOR_CYAN_B;
+		}
+		static FORCE_INLINE void WHITE_TEXT()
+		{
+			std::cout << _COLOR_WHITE_F;
+		}
+		static FORCE_INLINE void WHITE_BACKGROUND()
+		{
+			std::cout << _COLOR_WHITE_B;
+		}
+		static FORCE_INLINE void DEFAULT_TEXT()
+		{
+			std::cout << _COLOR_DEFAULT_F;
+		}
+		static FORCE_INLINE void DEFAULT_BACKGROUND()
+		{
+			std::cout << _COLOR_DEFAULT_B;
+		}
+
+		static constexpr auto _BRIGHT_BLACK_F				= "\x1B[90m";
+		static constexpr auto _BRIGHT_BLACK_B				= "\x1B[100m";
+		static constexpr auto _BRIGHT_RED_F					= "\x1B[91m";
+		static constexpr auto _BRIGHT_RED_B					= "\x1B[101m";
+		static constexpr auto _BRIGHT_GREEN_F				= "\x1B[92m";
+		static constexpr auto _BRIGHT_GREEN_B				= "\x1B[102m";
+		static constexpr auto _BRIGHT_YELLOW_F				= "\x1B[93m";
+		static constexpr auto _BRIGHT_YELLOW_B				= "\x1B[103m";
+		static constexpr auto _BRIGHT_BLUE_F				= "\x1B[94m";
+		static constexpr auto _BRIGHT_BLUE_B				= "\x1B[104m";
+		static constexpr auto _BRIGHT_MAG_F					= "\x1B[95m";
+		static constexpr auto _BRIGHT_MAG_B					= "\x1B[105m";
+		static constexpr auto _BRIGHT_CYAN_F				= "\x1B[96m";
+		static constexpr auto _BRIGHT_CYAN_B				= "\x1B[106m";
+		static constexpr auto _BRIGHT_WHITE_F				= "\x1B[97m";
+		static constexpr auto _BRIGHT_WHITE_B				= "\x1B[107m";
+
+		static FORCE_INLINE void BLACK_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLACK_F;
+		}
+		static FORCE_INLINE void BLACK_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLACK_B;
+		}
+		static FORCE_INLINE void RED_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_RED_F;
+		}
+		static FORCE_INLINE void RED_BACKGORUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_RED_B;
+		}
+		static FORCE_INLINE void GREEN_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_GREEN_F;
+		}
+		static FORCE_INLINE void GREEN_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_GREEN_B;
+		}
+		static FORCE_INLINE void YELLOW_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_YELLOW_F;
+		}
+		static FORCE_INLINE void YELLOW_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_YELLOW_B;
+		}
+		static FORCE_INLINE void BLUE_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLUE_F;
+		}
+		static FORCE_INLINE void BLUE_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLUE_B;
+		}
+		static FORCE_INLINE void MAGENTA_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_MAG_F;
+		}
+		static FORCE_INLINE void MAGENTA_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_MAG_B;
+		}
+		static FORCE_INLINE void CYAN_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_CYAN_F;
+		}
+		static FORCE_INLINE void CYAN_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_CYAN_B;
+		}
+		static FORCE_INLINE void WHITE_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_WHITE_F;
+		}
+		static FORCE_INLINE void WHITE_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_WHITE_B;
+		}
+
+		static FORCE_INLINE void _SET_COLOR_256(const std::string& id)
+		{
+			std::cout << _ESCAPE_CHARACTER << "38;5;" << id << "m";
+		}
+		static FORCE_INLINE void _SET_BACKGROUND_256(const std::string& id)
+		{
+			std::cout << _ESCAPE_CHARACTER << "48;5;" << id << "m";
+		}
+
+		static FORCE_INLINE void _SET_COLOR_RGB(const std::string& r, const std::string& g, const std::string& b)
+		{
+			std::cout << _ESCAPE_CHARACTER << "38;2;" << r << ";" << g << ";" << b << "m";
+		}
+		static FORCE_INLINE void _SET_BACKGROUND_RGB(const std::string& r, const std::string& g, const std::string& b)
+		{
+			std::cout << _ESCAPE_CHARACTER << "48;2;" << r << ";" << g << ";" << b << "m";
+		}
+
+		static constexpr auto _SET_40x25_MONO				= "\x1B[=0h";
+		static constexpr auto _SET_40x25_COLOR				= "\x1B[=1h";
+		static constexpr auto _SET_80x25_MONO				= "\x1B[=2h";
+		static constexpr auto _SET_80x25_COLOR				= "\x1B[=3h";
+		static constexpr auto _SET_320x200_4COLOR			= "\x1B[=4h";
+		static constexpr auto _SET_320x200_MONO				= "\x1B[=5h";
+		static constexpr auto _SET_640x200_MONO				= "\x1B[=6h";
+		static constexpr auto _SET_ENABLE_LINE_WRAP			= "\x1B[=7h";
+		static constexpr auto _SET_320x200_COLOR			= "\x1B[=13h";
+		static constexpr auto _SET_640x200_16COLOR			= "\x1B[=14h";
+		static constexpr auto _SET_640x350_MONO				= "\x1B[=15h";
+		static constexpr auto _SET_640x350_16COLOR			= "\x1B[=16h";
+		static constexpr auto _SET_640x480_MONO				= "\x1B[=17h";
+		static constexpr auto _SET_640x480_16COLOR			= "\x1B[=18h";
+		static constexpr auto _SET_320x200_256COLOR			= "\x1B[=19h";
+
+		static constexpr auto _RESET_40x25_MONO				= "\x1B[=0l";
+		static constexpr auto _RESET_40x25_COLOR			= "\x1B[=1l";
+		static constexpr auto _RESET_80x25_MONO				= "\x1B[=2l";
+		static constexpr auto _RESET_80x25_COLOR			= "\x1B[=3l";
+		static constexpr auto _RESET_320x200_4COLOR			= "\x1B[=4l";
+		static constexpr auto _RESET_320x200_MONO			= "\x1B[=5l";
+		static constexpr auto _RESET_640x200_MONO			= "\x1B[=6l";
+		static constexpr auto _RESET_ENABLE_LINE_WRAP		= "\x1B[=7l";
+		static constexpr auto _RESET_320x200_COLOR			= "\x1B[=13l";
+		static constexpr auto _RESET_640x200_16COLOR		= "\x1B[=14l";
+		static constexpr auto _RESET_640x350_MONO			= "\x1B[=15l";
+		static constexpr auto _RESET_640x350_16COLOR		= "\x1B[=16l";
+		static constexpr auto _RESET_640x480_MONO			= "\x1B[=17l";
+		static constexpr auto _RESET_640x480_16COLOR		= "\x1B[=18l";
+		static constexpr auto _RESET_320x200_256COLOR		= "\x1B[=19l";
+
+		static constexpr auto _MODE_CURSOR_INVISIBLE		= "\x1B[?25l";
+		static constexpr auto _MODE_CURSOR_VISIBLE			= "\x1B[?25h";
+		static constexpr auto _MODE_RESTORE_SCREEN			= "\x1B[?47l";
+		static constexpr auto _MODE_SAVE_SCREEN				= "\x1B[?47h";
+		static constexpr auto _MODE_SET_ALT_BUFFER			= "\x1B[?1049h";
+		static constexpr auto _MODE_RESET_ALT_BUFFER		= "\x1B[?1049l";
+
+		static FORCE_INLINE void _SET_KEYBORD_STRING(const std::string& code, const std::string& string)
+		{
+			std::cout << _ESCAPE_CHARACTER << code << ";" << string << ";p";
+		}
+
+		static FORCE_INLINE void PRINT_WARNING(const std::string& message)
+		{
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			YELLOW_TEXT();
+			std::cerr << message << std::endl;
+			DEFAULT_TEXT();
+		}
+		static FORCE_INLINE void PRINT_ERROR(const std::string& message)
+		{
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			RED_TEXT();
+			std::cerr << message << std::endl;
+			DEFAULT_TEXT();
+		}
+
+		static FORCE_INLINE void CLEAR_TERMINAL()
+		{
+#if defined(_LINUX_TARGET) or defined(_MAC_TARGET)
+			std::system("clear");
+#elif defined(_WIN_TARGET)
+			std::system("cls");
+#endif
+		}
+	};
+}
+#endif //!ROOT_CONFIG_GEN_TOOLS_H
