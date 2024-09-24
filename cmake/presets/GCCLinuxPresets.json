@@ -79,24 +79,24 @@
       "displayName": "Debug",
       "configurePreset": "Linux-GCC-x86_64",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-x86_64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-GCC-x86_64",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-x86_64-Release",
       "displayName": "Release",
       "configurePreset": "Linux-GCC-x86_64",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -104,24 +104,24 @@
       "displayName": "Debug",
       "configurePreset": "Linux-GCC-x86",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-x86-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-GCC-x86",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-x86-Release",
       "displayName": "Release",
       "configurePreset": "Linux-GCC-x86",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -129,24 +129,24 @@
       "displayName": "Debug",
       "configurePreset": "Linux-GCC-arm",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-arm-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-GCC-arm",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-arm-Release",
       "displayName": "Release",
       "configurePreset": "Linux-GCC-arm",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -154,24 +154,24 @@
       "displayName": "Debug",
       "configurePreset": "Linux-GCC-arm64",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-arm64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-GCC-arm64",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Linux-GCC-arm64-Release",
       "displayName": "Release",
       "configurePreset": "Linux-GCC-arm64",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     }
   ]
 }
