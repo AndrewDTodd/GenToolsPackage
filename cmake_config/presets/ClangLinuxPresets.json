@@ -6,61 +6,6 @@
   },
   "configurePresets": [
     {
-      "name": "Github-Linux-Clang-Debug",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_FLAGS": "-flto=thin",
-        "CMAKE_CXX_FLAGS": "-flto=thin",
-        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
-      },
-      "toolchainFile": "cmake/toolchains/Linux/clang/toolchain-Linux_clang_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Debug",
-      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/Debug",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
-        }
-      }
-    },
-    {
-      "name": "Github-Linux-Clang-Release_Dev",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_C_FLAGS": "-flto=thin",
-        "CMAKE_CXX_FLAGS": "-flto=thin",
-        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
-      },
-      "toolchainFile": "cmake/toolchains/Linux/clang/toolchain-Linux_clang_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/RelWithDebInfo",
-      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/RelWithDebInfo",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
-        }
-      }
-    },
-    {
-      "name": "Github-Linux-Clang-Release",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_FLAGS": "-flto=thin",
-        "CMAKE_CXX_FLAGS": "-flto=thin",
-        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
-      },
-      "toolchainFile": "cmake/toolchains/Linux/clang/toolchain-Linux_clang_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Release",
-      "installDir": "${sourceDir}/install/Linux/x86_64/CLang/Release",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
-        }
-      }
-    },
-
-    {
       "name": "Linux-Clang-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",
@@ -81,7 +26,7 @@
       "displayName": "Clang x86_64",
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux x86_64 with Clang",
-      "toolchainFile": "cmake/toolchains/Linux/clang/toolchain-Linux_clang_x86_64.cmake",
+      "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang",
       "installDir": "${sourceDir}/install/Linux/x86_64/Clang"
     },
@@ -90,7 +35,7 @@
       "displayName": "Clang x86",
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux x86 with Clang",
-      "toolchainFile": "cmake/toolchains/Linux/clang/toolchain-Linux_clang_x86.cmake",
+      "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_x86.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86/Clang",
       "installDir": "${sourceDir}/install/Linux/x86/Clang"
     },
@@ -99,7 +44,7 @@
       "displayName": "Clang arm",
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux arm with Clang",
-      "toolchainFile": "cmake/toolchains/Linux/clang/toolchain-Linux_clang_arm.cmake",
+      "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_arm.cmake",
       "binaryDir": "${sourceDir}/build/Linux/arm/Clang",
       "installDir": "${sourceDir}/install/Linux/arm/Clang"
     },
@@ -108,7 +53,7 @@
       "displayName": "Clang arm64",
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux arm64 with Clang",
-      "toolchainFile": "cmake/toolchains/Linux/clang/toolchain-Linux_clang_arm64.cmake",
+      "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_arm64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/arm64/Clang",
       "installDir": "${sourceDir}/install/Linux/arm64/Clang"
     }

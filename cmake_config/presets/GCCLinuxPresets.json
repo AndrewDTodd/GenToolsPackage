@@ -6,61 +6,6 @@
   },
   "configurePresets": [
     {
-      "name": "Github-Linux-GCC-Debug",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_FLAGS": "-flto=auto",
-        "CMAKE_CXX_FLAGS": "-flto=auto",
-        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
-      },
-      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/Debug",
-      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Debug",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
-        }
-      }
-    },
-    {
-      "name": "Github-Linux-GCC-Release_Dev",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_C_FLAGS": "-flto=auto",
-        "CMAKE_CXX_FLAGS": "-flto=auto",
-        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
-      },
-      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/RelWithDebInfo",
-      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/RelWithDebInfo",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
-        }
-      }
-    },
-    {
-      "name": "Github-Linux-GCC-Release",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_FLAGS": "-flto=auto",
-        "CMAKE_CXX_FLAGS": "-flto=auto",
-        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
-      },
-      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC/Release",
-      "installDir": "${sourceDir}/install/Linux/x86_64/GCC/Release",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Linux" ]
-        }
-      }
-    },
-    
-    {
       "name": "Linux-GCC-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",
@@ -81,7 +26,7 @@
       "displayName": "GCC x86_64",
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux x86_64 with GCC",
-      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC",
       "installDir": "${sourceDir}/install/Linux/x86_64/GCC"
     },
@@ -90,12 +35,7 @@
       "displayName": "GCC x86",
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux x86 with GCC",
-      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_x86.cmake",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "intelliSenceMode": "linux-gcc-x86"
-        }
-      },
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_x86.cmake",
       "binaryDir": "${sourceDir}/build/Linux/x86/GCC",
       "installDir": "${sourceDir}/install/Linux/x86/GCC"
     },
@@ -104,12 +44,7 @@
       "displayName": "GCC arm",
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux arm with GCC",
-      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_arm.cmake",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "intelliSenceMode": "linux-gcc-arm"
-        }
-      },
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_arm.cmake",
       "binaryDir": "${sourceDir}/build/Linux/arm/GCC",
       "installDir": "${sourceDir}/install/Linux/arm/GCC"
     },
@@ -118,12 +53,7 @@
       "displayName": "GCC arm64",
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux arm64 with GCC",
-      "toolchainFile": "cmake/toolchains/Linux/gcc/toolchain-Linux_gcc_arm64.cmake",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "intelliSenceMode": "linux-gcc-arm"
-        }
-      },
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_arm64.cmake",
       "binaryDir": "${sourceDir}/build/Linux/arm64/GCC",
       "installDir": "${sourceDir}/install/Linux/arm64/GCC"
     }

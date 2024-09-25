@@ -6,61 +6,6 @@
   },
   "configurePresets": [
     {
-      "name": "Github-Win-MSVC-Debug",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_FLAGS": "/LTCG",
-        "CMAKE_CXX_FLAGS": "/LTCG",
-        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
-      },
-      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Debug",
-      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Debug",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Windows" ]
-        }
-      }
-    },
-    {
-      "name": "Github-Win-MSVC-Release_Dev",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_C_FLAGS": "/LTCG",
-        "CMAKE_CXX_FLAGS": "/LTCG",
-        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
-      },
-      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/RelWithDebInfo",
-      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/RelWithDebInfo",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Windows" ]
-        }
-      }
-    },
-    {
-      "name": "Github-Win-MSVC-Release",
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_FLAGS": "/LTCG",
-        "CMAKE_CXX_FLAGS": "/LTCG",
-        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
-      },
-      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Release",
-      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Release",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": [ "Windows" ]
-        }
-      }
-    },
-
-    {
       "name": "Win-MSVC-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",
@@ -81,7 +26,7 @@
       "displayName": "MSVC x86_64",
       "inherits": "Win-MSVC-default",
       "description": "Build for Win x86_64 with msvc",
-      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
+      "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
       "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC",
       "installDir": "${sourceDir}/install/Windows/x86_64/MSVC"
     },
@@ -90,7 +35,7 @@
       "displayName": "MSVC x86",
       "inherits": "Win-MSVC-default",
       "description": "Build for Win x86 with msvc",
-      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86.cmake",
+      "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_x86.cmake",
       "binaryDir": "${sourceDir}/build/Windows/x86/MSVC",
       "installDir": "${sourceDir}/install/Windows/x86/MSVC"
     },
@@ -99,7 +44,7 @@
       "displayName": "MSVC arm",
       "inherits": "Win-MSVC-default",
       "description": "Build for Win arm with msvc",
-      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_arm.cmake",
+      "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_arm.cmake",
       "binaryDir": "${sourceDir}/build/Windows/arm/MSVC",
       "installDir": "${sourceDir}/install/Windows/arm/MSVC"
     },
@@ -108,7 +53,7 @@
       "displayName": "MSVC arm64",
       "inherits": "Win-MSVC-default",
       "description": "Build for Win arm64 with msvc",
-      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_arm64.cmake",
+      "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_arm64.cmake",
       "binaryDir": "${sourceDir}/build/Windows/arm64/MSVC",
       "installDir": "${sourceDir}/install/Windows/arm64/MSVC"
     }

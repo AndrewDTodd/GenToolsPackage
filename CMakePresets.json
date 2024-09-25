@@ -5,9 +5,9 @@
     "minor": 20
   },
   "include": [
-    "cmake/presets/ClangLinuxPresets.json",
-    "cmake/presets/GCCLinuxPresets.json",
-    "cmake/presets/ClangWindowsPresets.json",
-    "cmake/presets/MSVCWindowsPresets.json"
+    "cmake_config/presets/ClangLinuxPresets.json",
+    "cmake_config/presets/GCCLinuxPresets.json",
+    "cmake_config/presets/ClangWindowsPresets.json",
+    "cmake_config/presets/MSVCWindowsPresets.json"
   ]
 }
