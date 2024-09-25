@@ -18,42 +18,32 @@ jobs:
 
       matrix:
         os: [ubuntu-latest, windows-latest]
-        configurePreset: [Linux-GCC-x86_64, Linux-Clang-x86_64, Win-MSVC-x86_64, Win-Clang-x86_64]
-        buildPreset: [
-            Linux-GCC-x86_64-Release_Dev,
-            Linux-GCC-x86_64-Release,
-            Linux-Clang-x86_64-Release_Dev,
-            Linux-Clang-x86_64-Release,
-            Win-MSVC-x86_64-Release_Dev,
-            Win-MSVC-x86_64-Release,
-            Win-Clang-x86_64-Release_Dev,
-            Win-Clang-x86_64-Release
-        ]
+        presetPairs:
+            - { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release_Dev }
+            - { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release }
+            - { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release_Dev }
+            - { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release }
+            - { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release_Dev }
+            - { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release }
+            - { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release_Dev }
+            - { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release }
         exclude:
         - os: windows-latest
-          configurePreset: Linux-GCC-x86_64
+          presetPairs: { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release_Dev }
         - os: windows-latest
-          configurePreset: Linux-Clang-x86_64
+          presetPairs: { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release }
         - os: windows-latest
-          buildPreset: Linux-GCC-x86_64-Release_Dev
+          presetPairs: { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release_Dev }
         - os: windows-latest
-          buildPreset: Linux-GCC-x86_64-Release
-        - os: windows-latest
-          buildPreset: Linux-Clang-x86_64-Release_Dev
-        - os: windows-latest
-          buildPreset: Linux-Clang-x86_64-Release_Dev
+          presetPairs: { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release }
         - os: ubuntu-latest
-          configurePreset: Win-MSVC-x86_64
+          presetPairs: { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release_Dev }
         - os: ubuntu-latest
-          configurePreset: Win-Clang-x86_64
+          presetPairs: { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release }
         - os: ubuntu-latest
-          buildPreset: Win-MSVC-x86_64-Release_Dev
+          presetPairs: { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release_Dev }
         - os: ubuntu-latest
-          buildPreset: Win-MSVC-x86_64-Release
-        - os: ubuntu-latest
-          buildPreset: Win-Clang-x86_64-Release_Dev
-        - os: ubuntu-latest
-          buildPreset: Win-Clang-x86_64-Release_Dev
+          presetPairs: { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release }
 
     steps:
     - uses: actions/checkout@v3
@@ -70,15 +60,15 @@ jobs:
 
     - name: Configure CMake using Preset
       run: >
-        cmake --preset ${{ matrix.configurePreset }}
+        cmake --preset ${{ matrix.presetPairs.configurePreset }}
 
     - name: Build using Preset
       run: >
-        cmake --build --preset ${{ matrix.buildPreset }}
+        cmake --build --preset ${{ matrix.presetPairs.buildPreset }}
 
     - name: Built Tests
       run: >
-        cmake --build --preset ${{ matrix.buildPreset }} --target run_all_unit_tests
+        cmake --build --preset ${{ matrix.presetPairs.buildPreset }} --target run_all_unit_tests
 
     - name: Test
       run: >
