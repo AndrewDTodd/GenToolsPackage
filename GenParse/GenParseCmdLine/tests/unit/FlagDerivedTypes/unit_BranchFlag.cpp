@@ -308,17 +308,17 @@ TEST(LenientStrictSilent_BranchFlag_Raise, VerifySuccessOnInvalid_OptionalFlag)
 	EXPECT_EQ(output, "");
 }
 
-//TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyThrowOnInvalidFlagArg_OptionalFlag)
-//{
-//	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero"};
-//	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
-//	std::vector<std::string_view>::const_iterator itr = args.begin();
-//	itr++;
-//
-//	BranchFlag branch("test", "test branch", Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true));
-//
-//	ASSERT_THROW(branch.Raise(itr, args.end()), std::invalid_argument);
-//}
+TEST(LenientStrictVerbose_BranchFlag_Raise, VerifyThrowOnInvalidFlagArg_OptionalFlag)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "-w", "Fifty Five Point Zero"};
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag branch("test", "test branch", Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true));
+
+	ASSERT_THROW(branch.Raise(itr, args.end()), std::invalid_argument);
+}
 
 TEST(LenientLenientVerbose_BranchFlag_Raise, VerifyWarningOnInvalidFlagArg_OptionalFlag)
 {
