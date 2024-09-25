@@ -72,4 +72,4 @@ jobs:
 
     - name: Test
       run: >
-        ctest --preset ${{ matrix.buildPreset }}
+        ctest --preset ${{ matrix.presetPairs.buildPreset }}
