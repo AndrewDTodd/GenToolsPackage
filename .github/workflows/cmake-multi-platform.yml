@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
-      fail-fast: false
+      fail-fast: true
 
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -68,7 +68,7 @@ jobs:
 
     - name: Built Tests
       run: >
-        cmake --build --preset ${{ matrix.presetPairs.buildPreset }} --target run_all_unit_tests
+        cmake --build --preset ${{ matrix.presetPairs.buildPreset }} --target all_unit_tests
 
     - name: Test
       run: >
