@@ -6,6 +6,61 @@
   },
   "configurePresets": [
     {
+      "name": "Github-Win-Clang-Debug",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Debug",
+      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/Debug",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "Github-Win-Clang-Release_Dev",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/RelWithDebInfo",
+      "installDir": "${sourceDir}/install/Linux/x86_64/Clang/RelWithDebInfo",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "Github-Win-Clang-Release",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang/Release",
+      "installDir": "${sourceDir}/install/Linux/x86_64/CLang/Release",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+
+    {
       "name": "Win-Clang-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",
@@ -64,24 +119,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-Clang-x86_64",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-x86_64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-Clang-x86_64",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-x86_64-Release",
       "displayName": "Release",
       "configurePreset": "Win-Clang-x86_64",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -89,24 +144,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-Clang-x86",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-x86-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-Clang-x86",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-x86-Release",
       "displayName": "Release",
       "configurePreset": "Win-Clang-x86",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -114,24 +169,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-Clang-arm",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-arm-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-Clang-arm",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-arm-Release",
       "displayName": "Release",
       "configurePreset": "Win-Clang-arm",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -139,24 +194,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-Clang-arm64",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-arm64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-Clang-arm64",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-Clang-arm64-Release",
       "displayName": "Release",
       "configurePreset": "Win-Clang-arm64",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     }
   ]
 }

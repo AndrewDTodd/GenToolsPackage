@@ -6,6 +6,61 @@
   },
   "configurePresets": [
     {
+      "name": "Github-Win-MSVC-Debug",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS_DEBUG": "-D_DEBUG"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Debug",
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Debug",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "Github-Win-MSVC-Release_Dev",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-D_RELEASE_DEV"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/RelWithDebInfo",
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/RelWithDebInfo",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "Github-Win-MSVC-Release",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS": "/LTCG",
+        "CMAKE_CXX_FLAGS_RELEASE": "-D_RELEASE"
+      },
+      "toolchainFile": "cmake/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC/Release",
+      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC/Release",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+
+    {
       "name": "Win-MSVC-default",
       "hidden": true,
       "generator": "Ninja Multi-Config",
@@ -64,24 +119,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-x86_64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-x86_64-Release",
       "displayName": "Release",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -89,24 +144,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-MSVC-x86",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-x86-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-MSVC-x86",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-x86-Release",
       "displayName": "Release",
       "configurePreset": "Win-MSVC-x86",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -114,24 +169,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-MSVC-arm",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-arm-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-MSVC-arm",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-arm-Release",
       "displayName": "Release",
       "configurePreset": "Win-MSVC-arm",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
 
     {
@@ -139,24 +194,24 @@
       "displayName": "Debug",
       "configurePreset": "Win-MSVC-arm64",
       "configuration": "Debug",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-arm64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Win-MSVC-arm64",
       "configuration": "RelWithDebInfo",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     },
     {
       "name": "Win-MSVC-arm64-Release",
       "displayName": "Release",
       "configurePreset": "Win-MSVC-arm64",
       "configuration": "Release",
-      "jobs": "16",
-      "cleanFirst": "True"
+      "jobs": 16,
+      "cleanFirst": true
     }
   ]
 }
