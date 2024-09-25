@@ -61,8 +61,7 @@ jobs:
     - name: Install Ninja Multi-Config on Linux
       if: runner.os == 'Linux'
       run: >
-        sudo apt-get update
-        sudo apt-get install ninja-build -y
+        sudo apt-get update && sudo apt-get install ninja-build -y
 
     - name: Install Ninja Multi-Config on Windows
       if: runner.os == 'Windows'
