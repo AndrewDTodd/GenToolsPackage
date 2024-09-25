@@ -5,6 +5,7 @@ cmake_minimum_required (VERSION 3.20)
 
 project(GenToolsPackage)
 
+enable_testing()
 #include(DetectArchitecture.cmake)
 
 #message(STATUS "Detected System Architecture: ${SYSTEM_ARCHITECTURE}")

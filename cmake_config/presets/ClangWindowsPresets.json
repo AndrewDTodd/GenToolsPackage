@@ -158,5 +158,22 @@
       "jobs": 16,
       "cleanFirst": true
     }
+  ],
+  "testPresets": [
+    {
+      "name": "Win-Clang-x86_64-Debug",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "Win-Clang-x86_64-Release_Dev",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "Win-Clang-x86_64-Release",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "Release"
+    }
   ]
 }

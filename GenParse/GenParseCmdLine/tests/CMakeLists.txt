@@ -9,14 +9,11 @@ FetchContent_Declare(
 	URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
 )
 
+# New format for including googletest subdirectory. To prevent googletest items being added to install
+FetchContent_MakeAvailable(googletest)
+
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-# New format for including googletest subdirectory. To prevent googletest items being added to install
-FetchContent_GetProperties(googletest)
-if(NOT googletest_POPULATED)
-	FetchContent_Populate(googletest)
-	add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
 
 enable_testing()
 include(GoogleTest)

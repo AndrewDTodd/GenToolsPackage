@@ -158,5 +158,24 @@
       "jobs": 16,
       "cleanFirst": true
     }
+  ],
+  "testPresets": [
+    {
+      "name": "Linux-Clang-x86_64-Debug",
+      "configurePreset": "Linux-Clang-x86_64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "Linux-Clang-x86_64-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Linux-Clang-x86_64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "Linux-Clang-x86_64-Release",
+      "displayName": "Release",
+      "configurePreset": "Linux-Clang-x86_64",
+      "configuration": "Release"
+    }
   ]
 }

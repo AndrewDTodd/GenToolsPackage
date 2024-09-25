@@ -158,5 +158,22 @@
       "jobs": 16,
       "cleanFirst": true
     }
+  ],
+  "testPresets": [
+    {
+      "name": "Linux-GCC-x86_64-Debug",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "Linux-GCC-x86_64-Release_Dev",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "Linux-GCC-x86_64-Release",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "Release"
+    }
   ]
 }
