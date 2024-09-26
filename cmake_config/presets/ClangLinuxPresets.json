@@ -64,24 +64,21 @@
       "displayName": "Debug",
       "configurePreset": "Linux-Clang-x86_64",
       "configuration": "Debug",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-x86_64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-Clang-x86_64",
       "configuration": "RelWithDebInfo",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-x86_64-Release",
       "displayName": "Release",
       "configurePreset": "Linux-Clang-x86_64",
       "configuration": "Release",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
 
     {
@@ -89,24 +86,21 @@
       "displayName": "Debug",
       "configurePreset": "Linux-Clang-x86",
       "configuration": "Debug",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-x86-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-Clang-x86",
       "configuration": "RelWithDebInfo",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-x86-Release",
       "displayName": "Release",
       "configurePreset": "Linux-Clang-x86",
       "configuration": "Release",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
 
     {
@@ -114,24 +108,21 @@
       "displayName": "Debug",
       "configurePreset": "Linux-Clang-arm",
       "configuration": "Debug",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-arm-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-Clang-arm",
       "configuration": "RelWithDebInfo",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-arm-Release",
       "displayName": "Release",
       "configurePreset": "Linux-Clang-arm",
       "configuration": "Release",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
 
     {
@@ -139,24 +130,21 @@
       "displayName": "Debug",
       "configurePreset": "Linux-Clang-arm64",
       "configuration": "Debug",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-arm64-Release_Dev",
       "displayName": "Release-Dev",
       "configurePreset": "Linux-Clang-arm64",
       "configuration": "RelWithDebInfo",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     },
     {
       "name": "Linux-Clang-arm64-Release",
       "displayName": "Release",
       "configurePreset": "Linux-Clang-arm64",
       "configuration": "Release",
-      "jobs": 16,
-      "cleanFirst": true
+      "jobs": 16
     }
   ],
   "testPresets": [

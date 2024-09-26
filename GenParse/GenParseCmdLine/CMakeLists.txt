@@ -12,7 +12,7 @@ add_library(GenParseCmdLine STATIC ${GenParseCmdLine_SOURCE})
 target_include_directories(GenParseCmdLine PUBLIC ${GenParseCmdLine_SOURCE_DIR}/include)
 target_include_directories(GenParseCmdLine PUBLIC ${GenParseCmdLine_SOURCE_DIR}/include/FlagDerivedTypes)
 # Include the generated headers in the generated directory
-target_include_directories(GenParseCmdLine PUBLIC ${CMAKE_SOURCE_DIR}/generated/include)
+target_include_directories(GenParseCmdLine PUBLIC ${GENERATED_INCLUDE_DIR})
 
 # Link GenParseCmdLine to GenParseBase
 target_link_libraries(GenParseCmdLine PUBLIC GenParseBase)
