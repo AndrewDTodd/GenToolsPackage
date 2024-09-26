@@ -46,7 +46,8 @@ jobs:
           presetPairs: { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release }
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1
   
     - name: Install Ninja Multi-Config on Linux
       if: runner.os == 'Linux'
