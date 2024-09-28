@@ -6,16 +6,16 @@ set(GenParseCmdLine_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 # Create list of all source files to be used in this target
 file(GLOB_RECURSE GenParseCmdLine_SOURCE "${GenParseCmdLine_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/generated/src/*.cpp")
 
-add_library(GenParseCmdLine STATIC ${GenParseCmdLine_SOURCE})
+add_library(GenParseCmdLine INTERFACE ${GenParseCmdLine_SOURCE})
 
 # Include the project header files in the include directory
-target_include_directories(GenParseCmdLine PUBLIC ${GenParseCmdLine_SOURCE_DIR}/include)
-target_include_directories(GenParseCmdLine PUBLIC ${GenParseCmdLine_SOURCE_DIR}/include/FlagDerivedTypes)
+target_include_directories(GenParseCmdLine INTERFACE ${GenParseCmdLine_SOURCE_DIR}/include)
+target_include_directories(GenParseCmdLine INTERFACE ${GenParseCmdLine_SOURCE_DIR}/include/FlagDerivedTypes)
 # Include the generated headers in the generated directory
-target_include_directories(GenParseCmdLine PUBLIC ${GENERATED_INCLUDE_DIR})
+target_include_directories(GenParseCmdLine INTERFACE ${GENERATED_INCLUDE_DIR})
 
 # Link GenParseCmdLine to GenParseBase
-target_link_libraries(GenParseCmdLine PUBLIC GenParseBase)
+target_link_libraries(GenParseCmdLine INTERFACE GenParseBase)
 
 # Install the static library/include the library binaries in the library package
 install(TARGETS GenParseCmdLine 

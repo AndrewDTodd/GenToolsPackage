@@ -120,6 +120,8 @@ namespace GenTools::GenParse
 
 		virtual inline const std::string& FlagDescription() const noexcept = 0;
 
+		virtual inline const std::string& FlagName() const noexcept = 0;
+
 		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) = 0;
 
 		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept = 0;
@@ -256,6 +258,11 @@ namespace GenTools::GenParse
 		inline const std::string& FlagDescription() const noexcept final
 		{
 			return _flagDesc;
+		}
+
+		inline const std::string& FlagName() const noexcept final
+		{
+			return _flagName;
 		}
 
 		virtual inline void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end) override

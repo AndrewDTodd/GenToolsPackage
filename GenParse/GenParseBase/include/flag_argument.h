@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <concepts>
 #include <utility>
+#include <typeinfo>
+#include <cxxabi.h>
 
 namespace GenTools::GenParse
 {
@@ -18,9 +20,20 @@ namespace GenTools::GenParse
 
 	class flag_argument
 	{
+	protected:
+		static std::string Demangle(const char* name)
+		{
+			int status = -1;
+			char* demangled = abi::__cxa_demangle(name, nullptr, nullptr, &status);
+			std::string result = (status == 0) ? demangled : name;
+			std::free(demangled);
+			return result;
+		}
+
 	public:
 		virtual void Parse(const char* str) const = 0;
 		virtual bool TryParse(const char* str, std::string* errorMsg = nullptr) const noexcept = 0;
+		virtual std::string GetArgType() const noexcept = 0;
 
 		template<typename ArgType>
 		auto as() const
@@ -57,6 +70,7 @@ namespace GenTools::GenParse
 	public:
 		void Parse(const char*) const final {}
 		bool TryParse(const char*, std::string* = nullptr) const noexcept final { return true; }
+		std::string GetArgType() const noexcept final { return ""; }
 	};
 
 	template<std::movable ArgType>
@@ -140,6 +154,11 @@ namespace GenTools::GenParse
 			return true;
 		}
 
+		std::string GetArgType() const noexcept override
+		{
+			return Demangle(typeid(ArgType).name());
+		}
+
 		flag_argument_t(const flag_argument_t&) = delete;
 
 		flag_argument_t& operator=(const flag_argument_t&) = delete;
@@ -220,6 +239,12 @@ namespace GenTools::GenParse
 			}
 
 			return true;
+		}
+
+		std::string GetArgType() const noexcept override
+		{
+			using NonPtrArgType = typename std::remove_pointer<ArgType>::type;
+			return Demangle(typeid(NonPtrArgType).name());
 		}
 
 		flag_pointer_t(const flag_pointer_t&) = delete;
