@@ -181,6 +181,8 @@ namespace GenTools::GenParse
 				PrintPosParsableFlagsDetails(_posParsableFlags);
 				std::cout << '\n';
 			}
+
+			std::cout << TERMINAL::_GRAPHIC_MODE_RESET;
 		}
 
 		template<FlagType F>

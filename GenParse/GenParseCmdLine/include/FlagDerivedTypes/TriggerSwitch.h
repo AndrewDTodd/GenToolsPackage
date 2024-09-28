@@ -17,12 +17,16 @@ namespace GenTools::GenParse
 			TriggerFlag<Arg_Bool, Flag_Event>(std::move(flagTokens), std::move(flagDesc), flagRequired)
 		{}
 
+		/*This looks like a double move, but it's not*/
+#pragma warning(push)
+#pragma warning(disable:26800)
 		explicit TriggerSwitch(Tokens&& flagTokens, std::string&& flagDesc, Flag_Event&& triggeredFunc,
 			bool defaultSwitchState = false, bool flagRequired = false) noexcept
 			: Flag<Arg_Bool>(std::move(flagTokens), std::move(flagDesc), flagRequired),
 			SwitchFlag(std::move(flagTokens), std::move(flagDesc), defaultSwitchState, flagRequired),
 			TriggerFlag<Arg_Bool, Flag_Event>(std::move(flagTokens), std::move(flagDesc), std::move(triggeredFunc), flagRequired)
 		{}
+#pragma warning (pop)
 
 		TriggerSwitch& SetFlagEvent(Flag_Event&& triggeredFunc) noexcept
 		{

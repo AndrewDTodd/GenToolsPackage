@@ -981,20 +981,20 @@ TEST(BranchFlag_TryRaise, VerifyParseNonDelimitedPosParse_MixedArgs)
 	EXPECT_EQ(flags[4]->FlagArgument().as<uint32_t>(), 12);
 }
 
-//#include <CmdLineParser.h>
-//TEST(BrachFlag, test)
-//{
-//	const char* cmdArgs[] = { "terrainGen.exe", "--help" };
-//	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
-//	std::vector<std::string_view>::const_iterator itr = args.begin();
-//	itr++;
-//
-//	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
-//		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
-//		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
-//		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
-//		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
-//		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, false, true));
-//
-//	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
-//}
+#include <CmdLineParser.h>
+TEST(BrachFlag, test)
+{
+	const char* cmdArgs[] = { "terrainGen.exe", "--help" };
+	std::vector<std::string_view> args{ cmdArgs, cmdArgs + sizeof(cmdArgs) / sizeof(cmdArgs[0]) };
+	std::vector<std::string_view>::const_iterator itr = args.begin();
+	itr++;
+
+	BranchFlag<ParsingMode::Lenient, ExceptionMode::Strict, VerbositySetting::Verbose> branch("test", "test branch",
+		Flag({ "w", "width" }, "Specify the width of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "h", "height" }, "Specify the height of the terrain generation field", Arg_Float(), true, true, true),
+		Flag({ "d", "depth" }, "Specify the depth of the terrain generation field", Arg_Float(), true, true).SetFlagIsPosParsable(true),
+		Flag({ "s", "strength", "noise-strength" }, "Specify the strength value for the noise function, 0-1", Arg_Float()).SetFlagArgRequired(true).SetFlagRequired(true).SetFlagIsPosParsable(true),
+		Flag({ "i", "iterations" }, "Set the number of iterations/passes for the generation", Arg_UInt32(), true, false, true));
+
+	ASSERT_NO_THROW(branch.Raise(itr, args.end()));
+}

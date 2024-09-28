@@ -6,7 +6,9 @@
 #include <concepts>
 #include <utility>
 #include <typeinfo>
+#if defined(_LINUX_TARGET)
 #include <cxxabi.h>
+#endif
 
 namespace GenTools::GenParse
 {
@@ -21,6 +23,7 @@ namespace GenTools::GenParse
 	class flag_argument
 	{
 	protected:
+#if defined(_LINUX_TARGET)
 		static std::string Demangle(const char* name)
 		{
 			int status = -1;
@@ -29,6 +32,7 @@ namespace GenTools::GenParse
 			std::free(demangled);
 			return result;
 		}
+#endif
 
 	public:
 		virtual void Parse(const char* str) const = 0;
@@ -156,7 +160,11 @@ namespace GenTools::GenParse
 
 		std::string GetArgType() const noexcept override
 		{
+#if defined(LINUX_TARGET)
 			return Demangle(typeid(ArgType).name());
+#elif defined(_WIN_TARGET)
+			return typeid(ArgType).name();
+#endif
 		}
 
 		flag_argument_t(const flag_argument_t&) = delete;
@@ -244,7 +252,11 @@ namespace GenTools::GenParse
 		std::string GetArgType() const noexcept override
 		{
 			using NonPtrArgType = typename std::remove_pointer<ArgType>::type;
+#if defined(_LINUX_TARGET)
 			return Demangle(typeid(NonPtrArgType).name());
+#elif defined(_WIN_TARGET)
+			return typeid(NonPtrArgType).name();
+#endif
 		}
 
 		flag_pointer_t(const flag_pointer_t&) = delete;
