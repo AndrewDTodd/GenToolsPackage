@@ -10,5 +10,6 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 /.vs
-/build/x64-debug
-/out/Ubuntu-22.04/build
+build/
+out/
+generated/

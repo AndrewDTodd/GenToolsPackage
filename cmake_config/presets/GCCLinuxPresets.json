@@ -1,0 +1,167 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20
+  },
+  "configurePresets": [
+    {
+      "name": "Linux-GCC-default",
+      "hidden": true,
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo;Release",
+        "CMAKE_C_FLAGS": "-flto=auto",
+        "CMAKE_CXX_FLAGS": "-flto=auto"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Linux" ]
+        }
+      }
+    },
+
+    {
+      "name": "Linux-GCC-x86_64",
+      "displayName": "GCC x86_64",
+      "inherits": "Linux-GCC-default",
+      "description": "Build for Linux x86_64 with GCC",
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC",
+      "installDir": "${sourceDir}/install/Linux/x86_64/GCC"
+    },
+    {
+      "name": "Linux-GCC-x86",
+      "displayName": "GCC x86",
+      "inherits": "Linux-GCC-default",
+      "description": "Build for Linux x86 with GCC",
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_x86.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/x86/GCC",
+      "installDir": "${sourceDir}/install/Linux/x86/GCC"
+    },
+    {
+      "name": "Linux-GCC-arm",
+      "displayName": "GCC arm",
+      "inherits": "Linux-GCC-default",
+      "description": "Build for Linux arm with GCC",
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_arm.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/arm/GCC",
+      "installDir": "${sourceDir}/install/Linux/arm/GCC"
+    },
+    {
+      "name": "Linux-GCC-arm64",
+      "displayName": "GCC arm64",
+      "inherits": "Linux-GCC-default",
+      "description": "Build for Linux arm64 with GCC",
+      "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_arm64.cmake",
+      "binaryDir": "${sourceDir}/build/Linux/arm64/GCC",
+      "installDir": "${sourceDir}/install/Linux/arm64/GCC"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Linux-GCC-x86_64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-x86_64-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-x86_64-Release",
+      "displayName": "Release",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "Release",
+      "jobs": 16
+    },
+
+    {
+      "name": "Linux-GCC-x86-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Linux-GCC-x86",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-x86-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Linux-GCC-x86",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-x86-Release",
+      "displayName": "Release",
+      "configurePreset": "Linux-GCC-x86",
+      "configuration": "Release",
+      "jobs": 16
+    },
+
+    {
+      "name": "Linux-GCC-arm-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Linux-GCC-arm",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-arm-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Linux-GCC-arm",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-arm-Release",
+      "displayName": "Release",
+      "configurePreset": "Linux-GCC-arm",
+      "configuration": "Release",
+      "jobs": 16
+    },
+
+    {
+      "name": "Linux-GCC-arm64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Linux-GCC-arm64",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-arm64-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Linux-GCC-arm64",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Linux-GCC-arm64-Release",
+      "displayName": "Release",
+      "configurePreset": "Linux-GCC-arm64",
+      "configuration": "Release",
+      "jobs": 16
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "Linux-GCC-x86_64-Debug",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "Linux-GCC-x86_64-Release_Dev",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "Linux-GCC-x86_64-Release",
+      "configurePreset": "Linux-GCC-x86_64",
+      "configuration": "Release"
+    }
+  ]
+}

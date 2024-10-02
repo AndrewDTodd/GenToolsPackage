@@ -1,0 +1,167 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20
+  },
+  "configurePresets": [
+    {
+      "name": "Win-Clang-default",
+      "hidden": true,
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo;Release",
+        "CMAKE_C_FLAGS": "-flto=thin",
+        "CMAKE_CXX_FLAGS": "-flto=thin"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+
+    {
+      "name": "Win-Clang-x86_64",
+      "displayName": "Clang x86_64",
+      "inherits": "Win-Clang-default",
+      "description": "Build for Win x86_64 with Clang",
+      "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86_64/Clang",
+      "installDir": "${sourceDir}/install/Windows/x86_64/Clang"
+    },
+    {
+      "name": "Win-Clang-x86",
+      "displayName": "Clang x86",
+      "inherits": "Win-Clang-default",
+      "description": "Build for Win x86 with Clang",
+      "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_x86.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/x86/Clang",
+      "installDir": "${sourceDir}/install/Windows/x86/Clang"
+    },
+    {
+      "name": "Win-Clang-arm",
+      "displayName": "Clang arm",
+      "inherits": "Win-Clang-default",
+      "description": "Build for Win arm with Clang",
+      "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_arm.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/arm/Clang",
+      "installDir": "${sourceDir}/install/Windows/arm/Clang"
+    },
+    {
+      "name": "Win-Clang-arm64",
+      "displayName": "Clang arm64",
+      "inherits": "Win-Clang-default",
+      "description": "Build for Win arm64 with Clang",
+      "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_arm64.cmake",
+      "binaryDir": "${sourceDir}/build/Windows/arm64/Clang",
+      "installDir": "${sourceDir}/install/Windows/arm64/Clang"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Win-Clang-x86_64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-x86_64-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-x86_64-Release",
+      "displayName": "Release",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "Release",
+      "jobs": 16
+    },
+
+    {
+      "name": "Win-Clang-x86-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Win-Clang-x86",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-x86-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Win-Clang-x86",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-x86-Release",
+      "displayName": "Release",
+      "configurePreset": "Win-Clang-x86",
+      "configuration": "Release",
+      "jobs": 16
+    },
+
+    {
+      "name": "Win-Clang-arm-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Win-Clang-arm",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-arm-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Win-Clang-arm",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-arm-Release",
+      "displayName": "Release",
+      "configurePreset": "Win-Clang-arm",
+      "configuration": "Release",
+      "jobs": 16
+    },
+
+    {
+      "name": "Win-Clang-arm64-Debug",
+      "displayName": "Debug",
+      "configurePreset": "Win-Clang-arm64",
+      "configuration": "Debug",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-arm64-Release_Dev",
+      "displayName": "Release-Dev",
+      "configurePreset": "Win-Clang-arm64",
+      "configuration": "RelWithDebInfo",
+      "jobs": 16
+    },
+    {
+      "name": "Win-Clang-arm64-Release",
+      "displayName": "Release",
+      "configurePreset": "Win-Clang-arm64",
+      "configuration": "Release",
+      "jobs": 16
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "Win-Clang-x86_64-Debug",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "Win-Clang-x86_64-Release_Dev",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "Win-Clang-x86_64-Release",
+      "configurePreset": "Win-Clang-x86_64",
+      "configuration": "Release"
+    }
+  ]
+}
