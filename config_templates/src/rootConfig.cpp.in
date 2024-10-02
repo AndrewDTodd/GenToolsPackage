@@ -1,0 +1,116 @@
+#include <rootConfig.h>
+
+#include <iostream>
+#include <string>
+
+#if defined(_LINUX_TARGET)
+#include <cstdio>
+#include <unistd.h>
+#include <termios.h>
+#elif defined(_WIN_TARGET)
+#include <windows.h>
+#include <conio.h>
+#endif
+
+namespace GenTools
+{
+#if defined(_LINUX_TARGET)
+	TERMINAL::CursorPosition GetCursorPosition() noexcept
+	{
+		std::cout << TERMINAL::_CURSOR_REQUEST_POS;
+		std::cout.flush();
+
+		char buf[32];
+		uint8_t i = 0;
+		while (i < sizeof(buf) - 1)
+		{
+			if (read(STDIN_FILENO, buf + i, 1) != 1) break;
+			if (buf[i] == 'R') break;
+			i++;
+		}
+		buf[i] = '\0';
+
+		int32_t row, column;
+		if (sscanf(buf, "\x1B[%d,%dR", &row, &column) != 2)
+		{
+			return { -1, -1 };
+		}
+
+		return { row, column };
+	}
+
+	void TERMINAL::SetNonCanonicalMode()
+	{
+		struct termios tty;
+		tcgetattr(STDIN_FILENO, &tty);
+
+		tty.c_lflag &= ~ICANON; // Disable canonical mode
+		tty.c_lflag &= ~ECHO; // Disable echo
+
+		tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+	}
+
+	void TERMINAL::SetCanonicalMode()
+	{
+		struct termios tty;
+		tcgetattr(STDIN_FILENO, &tty);
+
+		tty.c_lflag |= ICANON; // Enable canonical mode
+		tty.c_lflag |= ECHO; // Enable echo
+
+		tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+	}
+
+	uint32_t TERMINAL::ReadKey()
+	{
+		uint32_t ch = getchar();
+		if(ch == '\033')
+		{
+			uint32_t seq1 = getchar();
+			uint32_t seq2 = getchar();
+			return (ch << 16) | (seq1 << 8) | seq2;
+		}
+		return ch;
+	}
+#elif defined(_WIN_TARGET)
+	TERMINAL::CursorPosition GetCursorPosition()
+	{
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+		{
+			return { -1, -1 };
+		}
+
+		return { csbi.dwCursorPosition.Y + 1, csbi.dwCursorPosition.X + 1 };
+	}
+
+	void TERMINAL::SetNonCanonicalMode()
+	{
+		HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+		DWORD mode;
+
+		GetConsoleMode(hStdin, &mode);
+
+		mode &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
+
+		SetConsoleMode(hStdin, mode);
+	}
+
+	void TERMINAL::SetCanonicalMode()
+	{
+		HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+		DWORD mode;
+
+		GetConsoleMode(hStdin, &mode);
+
+		mode |= ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT;
+
+		SetConsoleMode(hStdin, mode);
+	}
+
+	uint32_t TERMINAL::ReadKey()
+	{
+		return _getch(); // No Enter key required, reads one key immediately
+	}
+#endif
+}

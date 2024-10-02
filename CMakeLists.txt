@@ -99,6 +99,7 @@ set_property(GLOBAL PROPERTY UNIT_TEST_SOURCES "")
 
 # include sub-directories
 add_subdirectory(GenParse)
+add_subdirectory(ConsoleUIToolkit)
 
 get_property(test_targets GLOBAL PROPERTY UNIT_TEST_TARGETS)
 if(test_targets)

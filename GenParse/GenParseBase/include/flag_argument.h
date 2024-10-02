@@ -160,7 +160,7 @@ namespace GenTools::GenParse
 
 		std::string GetArgType() const noexcept override
 		{
-#if defined(LINUX_TARGET)
+#if defined(_LINUX_TARGET)
 			return Demangle(typeid(ArgType).name());
 #elif defined(_WIN_TARGET)
 			return typeid(ArgType).name();
