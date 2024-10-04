@@ -88,7 +88,7 @@ jobs:
             with:
               script: |
                 const tag = context.ref.replace("refs/tags/", "");
-                const releases = await github.repos.listReleases({
+                const releases = await octokit.rest.repos.listReleases({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                 });
