@@ -164,8 +164,8 @@ jobs:
             env:
               GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-              upload_url: ${{ set_upload_url.upload_url }}
-              asset_path: ${{ find_zip.package_path }}
+              upload_url: ${{ steps.set_upload_url.upload_url }}
+              asset_path: ${{ steps.find_zip.package_path }}
               asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}.zip
               asset_content_type: application/zip
                     
