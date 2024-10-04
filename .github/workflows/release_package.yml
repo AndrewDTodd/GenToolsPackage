@@ -92,8 +92,17 @@ jobs:
                   repo: context.repo.repo,
                 });
                 const release = releases.find(release => release.tag_name === context.ref.replace('refs/tags/', ''));
+                console.log(`Release exists: ${release ? 'true' : 'false'}`);
+                console.log(`Release URL: ${release ? release.html_url : ''}`);
+                console.log(`Upload URL: ${release ? release.upload_url : ''}`);
                 return { release_exists: release ? 'true' : 'false', release_url: release ? release.html_url : '', upload_url: release ? release.upload_url : '' };
               result-encoding: string
+    
+          - name: Debug Check Release Outputs
+            run: |
+              echo "Release exists: ${{ steps.check_release.outputs.release_exists }}"
+              echo "Release URL: ${{ steps.check_release.outputs.release_url }}"
+              echo "Upload URL: ${{ steps.check_release.outputs.upload_url }}"
     
           - name: Create Release
             id: create_release
@@ -118,12 +127,20 @@ jobs:
                   repo: context.repo.repo,
                   tag: context.ref.replace('refs/tags/', ''),
                 });
+                console.log(`Upload URL from created release: ${release.upload_url}`);
                 return { upload_url: release.upload_url };
               result-encoding: string
+    
+          - name: Debug Get Upload URL Outputs
+            if: steps.check_release.outputs.release_exists == 'false'
+            run: echo "Upload URL from created release: ${{ steps.get_upload_url.outputs.upload_url }}"
     
           - name: Set Upload URL
             id: set_upload_url
             run: echo "UPLOAD_URL=${{ steps.check_release.outputs.upload_url || steps.get_upload_url.outputs.upload_url }}" >> $GITHUB_ENV
+    
+          - name: Debug Set Upload URL
+            run: echo "UPLOAD_URL=${{ env.UPLOAD_URL }}"
     
           - name: Create Release Asset
             id: upload-release-asset
