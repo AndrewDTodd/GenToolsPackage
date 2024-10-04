@@ -135,8 +135,10 @@ jobs:
                   tag: context.ref.replace('refs/tags/', ''),
                 });
                 console.log(`Upload URL from created release: ${release.upload_url}`);
-                return { upload_url: release.upload_url };
-              result-encoding: string
+                // Setting outputs explicitly
+                core.setOutput('upload_url', release.upload_url);
+            
+                console.log(`upload_url: ${upload_url}`);
     
           - name: Debug Get Upload URL Outputs
             if: steps.check_release.outputs.release_exists == 'false'
@@ -150,7 +152,10 @@ jobs:
             with:
                 script: |
                   const uploadUrl = "${{ steps.check_release.outputs.upload_url }}" || "${{ steps.get_upload_url.outputs.upload_url }}";
-                  return { upload_url: uploadUrl };
+                  // Setting outputs explicitly
+                  core.setOutput('upload_url', uploadUrl);
+            
+                  console.log(`Release exists: ${upload_url}`);
     
           - name: Debug Set Upload URL
             run: echo "UPLOAD_URL=${{ steps.set_upload_url.upload_url }}"
@@ -164,7 +169,10 @@ jobs:
                 script: |
                   const { execSync } = require('child_process');
                   const packagePath = execSync(`find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit`).toString().trim();
-                  return { package_path: packagePath };
+                  // Setting outputs explicitly
+                  core.setOutput('package_path', packagePath);
+            
+                  console.log(`Package path: ${package_path}`);
     
           - name: Create Release Asset
             id: upload-release-asset
