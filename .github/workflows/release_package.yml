@@ -80,37 +80,24 @@ jobs:
             run: >
                 cpack --preset ${{ matrix.config.buildPreset }}
 
-          - name: Find Generated ZIP Archive
-            id: find_zip
-            run: >
-                zip_file=$(find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name '*.zip')
-                echo "Found zip file: $zip_file"
-                echo "::set-output name=zip_file::$zip_file0"
-                zip_filename=$(basename "$zip_file")
-                echo "Extracted zip filename: $zip_filename"
-                echo "::set-output name=zip_file::$zip_file"
-                echo "::set-output name=zip_filename::$zip_filename"
-
           - name: Create Release
             id: create_release
             uses: actions/create-release@v1
             env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN  }}
             with:
                 tag_name: ${{ github.ref }}
                 release_name: Release ${{ github.ref }}
-                draft: false
-                prerelease: false
 
           - name: Create Release Asset
             id: upload-release-asset
             uses: actions/upload-release-asset@v1
             env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
                 upload_url: ${{ steps.create_release.outputs.upload_url }}
-                asset_path: ${{ steps.find_zip.outputs.zip_file }}
-                asset_name: ${{ steps.find_zip.outputs.zip_filename }}
+                asset_path: ./packages/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }}/*.zip
+                asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}
                 asset_content_type: application/zip
                     
                 
