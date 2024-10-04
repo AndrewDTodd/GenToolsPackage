@@ -164,7 +164,7 @@ jobs:
             with:
               upload_url: ${{ env.UPLOAD_URL }}
               asset_path: ${{ env.PACKAGE_PATH }}
-              asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}
+              asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}.zip
               asset_content_type: application/zip
                     
                 
