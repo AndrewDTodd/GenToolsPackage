@@ -4,8 +4,6 @@ on:
     push:
         tags:
             - 'v*' # Trigger on version tags
-        branches:
-            - main # Only run on commits to the main branch
 
 jobs:
     release:
@@ -73,6 +71,10 @@ jobs:
           - name: Configure CMake using Preset
             run: >
                 cmake --preset ${{ matrix.config.configurePreset }}
+
+          - name: Install using preset
+            run: >
+                cmake --build --preset ${{ matrix.presetPairs.buildPreset }} --target install
 
           - name: Build Package
             run: >
