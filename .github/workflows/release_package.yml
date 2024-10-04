@@ -133,7 +133,7 @@ jobs:
     
           - name: Debug Get Upload URL Outputs
             if: steps.check_release.outputs.release_exists == 'false'
-            run: echo "Upload URL from created release: ${{ steps.get_upload_url.outputs.upload_url }}"
+            run: echo "Upload URL from created release:${{ steps.get_upload_url.outputs.upload_url }}"
     
           - name: Set Upload URL
             id: set_upload_url
