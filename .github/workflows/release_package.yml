@@ -167,7 +167,16 @@ jobs:
             with:
                 script: |
                     const { execSync } = require('child_process');
-                    const packagePath = execSync(`find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit`).toString().trim();
+                    let packagePath;
+            
+                    if (process.platform === 'win32') {
+                        // Windows command to find ZIP files
+                        packagePath = execSync(`powershell -Command "Get-ChildItem -Path './package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }}' -Filter '*.zip' -Recurse | Select-Object -First 1 | ForEach-Object { $_.FullName }"`).toString().trim();
+                    } else {
+                        // Linux command to find ZIP files
+                        packagePath = execSync(`find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit`).toString().trim();
+                    }
+
                     // Setting outputs explicitly
                     core.setOutput('package_path', packagePath);
                     console.log(`Package path: ${packagePath}`);
