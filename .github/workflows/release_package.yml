@@ -80,41 +80,34 @@ jobs:
             run: >
                 cpack --preset ${{ matrix.config.buildPreset }}
 
-          - name: Check if Release Exists
+          - name: Check if release exists
             id: check_release
-            uses: actions/github-script@v6
+            uses: actions/github-script@v4
             env:
-                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-                script: |
-                    const { github, context, core } = require('@actions/github');
-            
-                    const octokit = github.getOctokit(process.env.GITHUB_TOKEN);  // Initialize octokit
-            
-                    const tag = context.ref.replace("refs/tags/", "");
-                    const releases = await octokit.rest.repos.listReleases({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                      });
+              script: |
+                const { data: releases } = await github.repos.listReleases({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                });
+                const release = releases.find(release => release.tag_name === context.ref);
+                return { release_exists: release ? 'true' : 'false', release_url: release ? release.html_url : '' };
+              result-encoding: string
 
-                    const existingRelease = releases.data.find(release => release.tag_name === tag);
-
-                    core.setOutput("release_exists", existingRelease ? "true" : "false");
-                    core.setOutput("upload_url", existingRelease ? existingRelease.upload_url : "");
-    
           - name: Create Release
             id: create_release
             if: steps.check_release.outputs.release_exists == 'false'
             uses: actions/create-release@v1
             env:
-                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN  }}
+              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-                tag_name: ${{ github.ref }}
-                release_name: Release ${{ github.ref }}
-
-          - name: Set Upload URL
-            id: set_upload_url
-            run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url != '' && steps.create_release.outputs.upload_url || steps.check_release.outputs.upload_url }}"
+              tag_name: ${{ github.ref }}
+              release_name: Release ${{ github.ref }}
+    
+          - name: Set release URL
+            if: steps.check_release.outputs.release_exists == 'true'
+            run: echo "RELEASE_URL=${{ steps.check_release.outputs.release_url }}" >> $GITHUB_ENV
 
           - name: Create Release Asset
             id: upload-release-asset
