@@ -74,7 +74,7 @@ jobs:
 
           - name: Install using preset
             run: >
-                cmake --build --preset ${{ matrix.presetPairs.buildPreset }} --target install
+                cmake --build --preset ${{ matrix.config.buildPreset }} --target install
 
           - name: Build Package
             run: >
