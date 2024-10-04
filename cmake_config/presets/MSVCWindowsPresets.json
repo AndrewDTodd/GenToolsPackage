@@ -1,8 +1,8 @@
 {
-  "version": 4,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20
+    "minor": 25
   },
   "configurePresets": [
     {
@@ -162,6 +162,41 @@
       "name": "Win-MSVC-x86_64-Release",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Release"
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "Win-MSVC-x86_64-Debug",
+      "configurePreset": "Win-MSVC-x86_64",
+      "generators": [
+        "ZIP"
+      ],
+      "configurations": [
+        "Debug"
+      ],
+      "packageDirectory": "${sourceDir}/package/Win/x86_64/MSVC/Debug"
+    },
+    {
+      "name": "Win-MSVC-x86_64-Release_Dev",
+      "configurePreset": "Win-MSVC-x86_64",
+      "generators": [
+        "ZIP"
+      ],
+      "configurations": [
+        "RelWithDebInfo"
+      ],
+      "packageDirectory": "${sourceDir}/package/Win/x86_64/MSVC/RelWithDebInfo"
+    },
+    {
+      "name": "Win-MSVC-x86_64-Release",
+      "configurePreset": "Win-MSVC-x86_64",
+      "generators": [
+        "ZIP"
+      ],
+      "configurations": [
+        "Release"
+      ],
+      "packageDirectory": "${sourceDir}/package/Win/x86_64/MSVC/Release"
     }
   ]
 }

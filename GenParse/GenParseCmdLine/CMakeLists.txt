@@ -29,11 +29,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
 DESTINATION GenParseCmdLine/include 
 FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
-# Configure CMake for testing. Needed for GTest features
-enable_testing()
-
 # Connect the tests subdirectory and its targets to the root target
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)
 
 # Add versioning info
 set(GenParseCmdLine_VERSION_MAJOR 1)
