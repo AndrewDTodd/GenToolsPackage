@@ -84,17 +84,23 @@ jobs:
             id: check_release
             uses: actions/github-script@v6
             env:
-              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-              script: |
-                const tag = context.ref.replace("refs/tags/", "");
-                const releases = await octokit.rest.repos.listReleases({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                });
-                const existingRelease = releases.data.find(release => release.tag_name === tag);
-                core.setOutput("release_exists", existingRelease ? "true" : "false");
-                core.setOutput("upload_url", existingRelease ? existingRelease.upload_url : "");
+                script: |
+                    const { github, context, core } = require('@actions/github');
+            
+                    const octokit = github.getOctokit(process.env.GITHUB_TOKEN);  // Initialize octokit
+            
+                    const tag = context.ref.replace("refs/tags/", "");
+                    const releases = await octokit.rest.repos.listReleases({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                      });
+
+                    const existingRelease = releases.data.find(release => release.tag_name === tag);
+
+                    core.setOutput("release_exists", existingRelease ? "true" : "false");
+                    core.setOutput("upload_url", existingRelease ? existingRelease.upload_url : "");
     
           - name: Create Release
             id: create_release
