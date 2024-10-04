@@ -144,20 +144,27 @@ jobs:
     
           - name: Set Upload URL
             id: set_upload_url
-            run: |
-                UPLOAD_URL=${{ steps.check_release.outputs.upload_url || steps.get_upload_url.outputs.upload_url }}
-                return { upload_url: UPLOAD_URL }
+            uses: actions/github-script@v4
+            env:
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+            with:
+                script: |
+                  const uploadUrl = "${{ steps.check_release.outputs.upload_url }}" || "${{ steps.get_upload_url.outputs.upload_url }}";
+                  return { upload_url: uploadUrl };
     
           - name: Debug Set Upload URL
             run: echo "UPLOAD_URL=${{ steps.set_upload_url.upload_url }}"
 
           - name: Find the ZIP file
             id: find_zip
-            run: |
-                PACKAGE_PATH=$(find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit)
-                echo "
-                return { package_path: PACKAGE_PATH }
-            shell: bash
+            uses: actions/github-script@v4
+            env:
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+            with:
+                script: |
+                  const { execSync } = require('child_process');
+                  const packagePath = execSync(`find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit`).toString().trim();
+                  return { package_path: packagePath };
     
           - name: Create Release Asset
             id: upload-release-asset
