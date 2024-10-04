@@ -9,6 +9,8 @@ FetchContent_Declare(
 	URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
 )
 
+set(INSTALL_GTEST OFF)
+
 # New format for including googletest subdirectory. To prevent googletest items being added to install
 FetchContent_MakeAvailable(googletest)
 
@@ -39,12 +41,10 @@ foreach(TEST_SOURCE ${FLAG_AGGREGATE_TYPES_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
 	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParseBase)
-	#target_include_directories(${TEST_NAME} PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
-	#target_include_directories(${TEST_NAME} PRIVATE ${GenParseBase_SOURCE_DIR}/include)
+	set_target_properties(${TEST_NAME} PROPERTIES INSTALLABLE OFF)
 	list(APPEND FLAG_AGGREGATE_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND UNIT_TEST_TARGETS ${TEST_NAME})
 	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "FlagAggregates")
-	#set_target_properties(${TEST_NAME} PROPERTIES FOLDER Tests/flag_aggregates)
 endforeach()
 
 # Create a set for the Flag aggregate types unit tests
@@ -57,12 +57,10 @@ foreach(TEST_SOURCE ${PARSE_FUNCTIONS_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
 	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParseBase)
-	#target_include_directories(${TEST_NAME} PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
-	#target_include_directories(${TEST_NAME} PRIVATE ${GenParseBase_SOURCE_DIR}/include)
+	set_target_properties(${TEST_NAME} PROPERTIES INSTALLABLE OFF)
 	list(APPEND PARSE_FUNCTIONS_TARGETS ${TEST_NAME})
 	list(APPEND UNIT_TEST_TARGETS ${TEST_NAME})
 	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "ParseFunctions")
-	#set_target_properties(${TEST_NAME} PROPERTIES FOLDER Tests/parse_functions)
 endforeach()
 
 # Create a set for the Flag aggregate types unit tests
@@ -75,12 +73,10 @@ foreach(TEST_SOURCE ${FLAG_TYPES_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
 	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParseBase)
-	#target_include_directories(${TEST_NAME} PRIVATE ${googletest_SOURCE_DIR}/googletest/include)
-	#target_include_directories(${TEST_NAME} PRIVATE ${GenParseBase_SOURCE_DIR}/include)
+	set_target_properties(${TEST_NAME} PROPERTIES INSTALLABLE OFF)
 	list(APPEND FLAG_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND UNIT_TEST_TARGETS ${TEST_NAME})
 	gtest_discover_tests(${TEST_NAME} PROPERTIES LABELS "FlagTypes")
-	#set_target_properties(${TEST_NAME} PROPERTIES FOLDER Tests/flags)
 endforeach()
 
 # Create a custom target for the flag_aggregate_types tests
@@ -89,6 +85,7 @@ add_custom_target(flag_aggregate_tests DEPENDS ${FLAG_AGGREGATE_TYPES_TARGETS})
 add_executable(run_flag_aggregate_tests EXCLUDE_FROM_ALL ${FLAG_AGGREGATE_TYPES_SOURCES})
 # Link the executable with GTest and the TokenValueParser library
 target_link_libraries(run_flag_aggregate_tests PRIVATE GTest::gtest_main GenParseBase)
+set_target_properties(run_flag_aggregate_tests PROPERTIES INSTALLABLE OFF)
 
 # Create a custom target for the parse_functions tests
 add_custom_target(parse_functions_tests DEPENDS ${PARSE_FUNCTIONS_TARGETS})
@@ -96,6 +93,7 @@ add_custom_target(parse_functions_tests DEPENDS ${PARSE_FUNCTIONS_TARGETS})
 add_executable(run_parse_functions_tests EXCLUDE_FROM_ALL ${PARSE_FUNCTIONS_SOURCES})
 # Link the executable with GTest and the TokenValueParser library
 target_link_libraries(run_parse_functions_tests PRIVATE GTest::gtest_main GenParseBase)
+set_target_properties(run_parse_functions_tests PROPERTIES INSTALLABLE OFF)
 
 # Create a custom target for the flags types
 add_custom_target(flags_tests DEPENDS ${FLAG_TYPES_TARGETS})
@@ -103,6 +101,7 @@ add_custom_target(flags_tests DEPENDS ${FLAG_TYPES_TARGETS})
 add_executable(run_flags_tests EXCLUDE_FROM_ALL ${FLAG_TYPES_SOURCES})
 # Link the executable with GTest and the TokenValueParser library
 target_link_libraries(run_flags_tests PRIVATE GTest::gtest_main GenParseBase)
+set_target_properties(run_flags_tests PROPERTIES INSTALLABLE OFF)
 
 set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS "${UNIT_TEST_TARGETS}")
 ################################################################################################################################################################

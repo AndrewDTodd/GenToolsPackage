@@ -1,0 +1,115 @@
+name: Release and Package
+
+on:
+    push:
+        tags:
+            - 'v*' # Trigger on version tags
+        branches:
+            - main # Only run on commits to the main branch
+
+jobs:
+    release:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+          # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+          fail-fast: false
+
+          matrix:
+            os: [ubuntu-latest, windows-latest]
+            config:
+                - { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Debug, OS: Linux, Compiler: GCC, Config: Debug}
+                - { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release_Dev, OS: Linux, Compiler: GCC, Config: RelWithDebInfo}
+                - { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release, OS: Linux, Compiler: GCC, Config: Release}
+                - { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Debug, OS: Linux, Compiler: Clang, Config: Debug}
+                - { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release_Dev, OS: Linux, Compiler: Clang, Config: RelWithDebInfo}
+                - { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release, OS: Linux, Compiler: Clang, Config: Release}
+                - { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Debug, OS: Win, Compiler: MSVC, Config: Debug}
+                - { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release_Dev, OS: Win, Compiler: MSVC, Config: RelWithDebInfo}
+                - { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release, OS: Win, Compiler: MSVC, Config: Release}
+                - { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Debug, OS: Win, Compiler: Clang, Config: Debug}
+                - { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release_Dev, OS: Win, Compiler: Clang, Config: RelWithDebInfo}
+                - { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release, OS: Win, Compiler: Clang, Config: Release}
+            exclude:
+            - os: windows-latest
+              config: { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Debug, OS: Linux, Compiler: GCC, Config: Debug}
+            - os: windows-latest
+              config: { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release_Dev, OS: Linux, Compiler: GCC, Config: RelWithDebInfo}
+            - os: windows-latest
+              config: { configurePreset: Linux-GCC-x86_64, buildPreset: Linux-GCC-x86_64-Release, OS: Linux, Compiler: GCC, Config: Release}
+            - os: windows-latest
+              config: { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Debug, OS: Linux, Compiler: Clang, Config: Debug}
+            - os: windows-latest
+              config: { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release_Dev, OS: Linux, Compiler: Clang, Config: RelWithDebInfo}
+            - os: windows-latest
+              config: { configurePreset: Linux-Clang-x86_64, buildPreset: Linux-Clang-x86_64-Release, OS: Linux, Compiler: Clang, Config: Release}
+            - os: ubuntu-latest
+              config: { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Debug, OS: Win, Compiler: MSVC, Config: Debug}
+            - os: ubuntu-latest
+              config: { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release_Dev, OS: Win, Compiler: MSVC, Config: RelWithDebInfo}
+            - os: ubuntu-latest
+              config: { configurePreset: Win-MSVC-x86_64, buildPreset: Win-MSVC-x86_64-Release, OS: Win, Compiler: MSVC, Config: Release}
+            - os: ubuntu-latest
+              config: { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Debug, OS: Win, Compiler: Clang, Config: Debug}
+            - os: ubuntu-latest
+              config: { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release_Dev, OS: Win, Compiler: Clang, Config: RelWithDebInfo}
+            - os: ubuntu-latest
+              config: { configurePreset: Win-Clang-x86_64, buildPreset: Win-Clang-x86_64-Release, OS: Win, Compiler: Clang, Config: Release}
+
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+  
+          - name: Install Ninja Multi-Config on Linux
+            if: runner.os == 'Linux'
+            run: >
+                sudo apt-get update && sudo apt-get install ninja-build -y
+
+          - name: Install Ninja Multi-Config on Windows
+            if: runner.os == 'Windows'
+            run: >
+                choco install ninja
+
+          - name: Configure CMake using Preset
+            run: >
+                cmake --preset ${{ matrix.config.configurePreset }}
+
+          - name: Build Package
+            run: >
+                cpack --preset ${{ matrix.config.buildPreset }}
+
+          - name: Find Generated ZIP Archive
+            id: find_zip
+            run: >
+                zip_file=$(find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name '*.zip')
+                echo "Found zip file: $zip_file"
+                echo "::set-output name=zip_file::$zip_file0"
+                zip_filename=$(basename "$zip_file")
+                echo "Extracted zip filename: $zip_filename"
+                echo "::set-output name=zip_file::$zip_file"
+                echo "::set-output name=zip_filename::$zip_filename"
+
+          - name: Create Release
+            id: create_release
+            uses: actions/create-release@v1
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+            with:
+                tag_name: ${{ github.ref }}
+                release_name: Release ${{ github.ref }}
+                draft: false
+                prerelease: false
+
+          - name: Create Release Asset
+            id: upload-release-asset
+            uses: actions/upload-release-asset@v1
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            with:
+                upload_url: ${{ steps.create_release.outputs.upload_url }}
+                asset_path: ${{ steps.find_zip.outputs.zip_file }}
+                asset_name: ${{ steps.find_zip.outputs.zip_filename }}
+                asset_content_type: application/zip
+                    
+                
+              
