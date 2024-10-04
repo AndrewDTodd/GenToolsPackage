@@ -146,16 +146,17 @@ jobs:
             id: set_upload_url
             run: |
                 UPLOAD_URL=${{ steps.check_release.outputs.upload_url || steps.get_upload_url.outputs.upload_url }}
-                echo "::set-output name=upload_url::$UPLOAD_URL"
+                return { upload_url: UPLOAD_URL }
     
           - name: Debug Set Upload URL
-            run: echo "UPLOAD_URL=${{ env.UPLOAD_URL }}"
+            run: echo "UPLOAD_URL=${{ steps.set_upload_url.upload_url }}"
 
           - name: Find the ZIP file
             id: find_zip
             run: |
                 PACKAGE_PATH=$(find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit)
-                echo "::set-output name=package_path::$PACKAGE_PATH"
+                echo "
+                return { package_path: PACKAGE_PATH }
             shell: bash
     
           - name: Create Release Asset
