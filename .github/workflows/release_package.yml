@@ -88,20 +88,14 @@ jobs:
             with:
               script: |
                 const tag = context.ref.replace("refs/tags/", "");
-                const existingRelease = await github.repos.getReleaseByTag({
+                const releases = await github.repos.listReleases({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  tag: tag,
-                }).catch(err => {
-                  if (err.status === 404) {
-                    return null;
-                  } else {
-                    throw err;
-                  }
                 });
+                const existingRelease = releases.data.find(release => release.tag_name === tag);
                 core.setOutput("release_exists", existingRelease ? "true" : "false");
-                core.setOutput("upload_url", existingRelease ? existingRelease.data.upload_url : "");
-
+                core.setOutput("upload_url", existingRelease ? existingRelease.upload_url : "");
+    
           - name: Create Release
             id: create_release
             if: steps.check_release.outputs.release_exists == 'false'
