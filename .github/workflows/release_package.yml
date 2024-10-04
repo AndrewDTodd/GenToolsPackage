@@ -157,7 +157,7 @@ jobs:
                     console.log(`Upload url: ${uploadUrl}`);
     
           - name: Debug Set Upload URL
-            run: echo "UPLOAD_URL=${{ steps.set_upload_url.output.upload_url }}"
+            run: echo "UPLOAD_URL=${{ steps.set_upload_url.outputs.upload_url }}"
 
           - name: Find the ZIP file
             id: find_zip
@@ -178,8 +178,8 @@ jobs:
             env:
                 GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-                upload_url: ${{ steps.set_upload_url.output.upload_url }}
-                asset_path: ${{ steps.find_zip.output.package_path }}
+                upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
+                asset_path: ${{ steps.find_zip.outputs.package_path }}
                 asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}.zip
                 asset_content_type: application/zip
                     
