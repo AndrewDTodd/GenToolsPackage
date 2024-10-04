@@ -1,8 +1,8 @@
 {
-  "version": 4,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20
+    "minor": 25
   },
   "configurePresets": [
     {
@@ -164,6 +164,41 @@
       "displayName": "Release",
       "configurePreset": "Linux-Clang-x86_64",
       "configuration": "Release"
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "Linux-Clang-x86_64-Debug",
+      "configurePreset": "Linux-Clang-x86_64",
+      "generators": [
+        "ZIP"
+      ],
+      "configurations": [
+        "Debug"
+      ],
+      "packageDirectory": "${sourceDir}/package/Linux/x86_64/Clang/Debug"
+    },
+    {
+      "name": "Linux-Clang-x86_64-Release_Dev",
+      "configurePreset": "Linux-Clang-x86_64",
+      "generators": [
+        "ZIP"
+      ],
+      "configurations": [
+        "RelWithDebInfo"
+      ],
+      "packageDirectory": "${sourceDir}/package/Linux/x86_64/Clang/RelWithDebInfo"
+    },
+    {
+      "name": "Linux-Clang-x86_64-Release",
+      "configurePreset": "Linux-Clang-x86_64",
+      "generators": [
+        "ZIP"
+      ],
+      "configurations": [
+        "Release"
+      ],
+      "packageDirectory": "${sourceDir}/package/Linux/x86_64/Clang/Release"
     }
   ]
 }

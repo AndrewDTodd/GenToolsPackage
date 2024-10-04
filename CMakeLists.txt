@@ -38,15 +38,15 @@ else()
 endif()
 
 # A significant release that likely includes new features, changes, and enhancements that may not be backward compatible with the previous version
-add_compile_definitions(PACKAGE_VERSION_MAJOR=1)
+set(PACKAGE_VERSION_MAJOR 0)
 # A release that may add new features but remains backward compatible with the previous version
-add_compile_definitions(PACKAGE_VERSION_MINOR=0)
+set(PACKAGE_VERSION_MINOR 1)
 # A release that includes minor changes, bug fixes, and patches without adding new features. It is typically backward and forward compatible with the corresponding minor version
-add_compile_definitions(PACKAGE_VERSION_PATCH=0)
+set(PACKAGE_VERSION_PATCH 0)
 # A version that is often used to denote a specific build of the software, including revisions, builds, or other metadata
-add_compile_definitions(PACKAGE_VERSION_BUILD=0)
+set(PACKAGE_VERSION_BUILD "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
 
-set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}.${PACKAGE_VERSION_BUILD}")
+set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}-${PACKAGE_VERSION_BUILD}")
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -113,4 +113,17 @@ if(test_source)
 	add_executable(run_all_unit_tests EXCLUDE_FROM_ALL ${test_source})
 	# Link the executable with GTest and the TokenValueParser library
 	target_link_libraries(run_all_unit_tests PRIVATE GTest::gtest_main GenParseBase GenParseCmdLine)
+	set_target_properties(run_all_unit_tests PROPERTIES INSTALLABLE OFF)
 endif()
+
+set(PACKAGE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/package")
+file(MAKE_DIRECTORY "${PACKAGE_DIRECTORY}")
+
+set(CPACK_PACKAGE_NAME "genToolsPackage")
+set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}")
+
+set(CPACK_PACKAGE_VENDOR "Andrew Todd")
+set(CPACK_PACKAGE_CONTACT "andrewdanieltodd@gmail.com")
+include(CPack)
+message(STATUS "PACKAGE_VERSION is: ${PACKAGE_VERSION}")
+message(STATUS "PACKAGE_FILE_NAME is: ${CPACK_PACKAGE_FILE_NAME}")
