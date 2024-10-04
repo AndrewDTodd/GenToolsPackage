@@ -148,6 +148,13 @@ jobs:
     
           - name: Debug Set Upload URL
             run: echo "UPLOAD_URL=${{ env.UPLOAD_URL }}"
+
+          - name: Find the ZIP file
+            id: find_zip
+            run: |
+                PACKAGE_PATH=$(find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip")
+                echo "PACKAGE_PATH=$PACKAGE_PATH" >> $GITHUB_ENV
+            shell: bash
     
           - name: Create Release Asset
             id: upload-release-asset
@@ -156,7 +163,7 @@ jobs:
               GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
               upload_url: ${{ env.UPLOAD_URL }}
-              asset_path: /packages/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }}/*.zip
+              asset_path: ${{ env.PACKAGE_PATH }}
               asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}
               asset_content_type: application/zip
                     
