@@ -92,7 +92,7 @@ jobs:
                   repo: context.repo.repo,
                 });
                 const release = releases.find(release => release.tag_name === context.ref);
-                return { release_exists: release ? 'true' : 'false', release_url: release ? release.html_url : '' };
+                return { release_exists: release ? 'true' : 'false', release_url: release ? release.html_url : '', upload_url: release ? release.upload_url : '' };
               result-encoding: string
 
           - name: Create Release
@@ -105,20 +105,41 @@ jobs:
               tag_name: ${{ github.ref }}
               release_name: Release ${{ github.ref }}
     
-          - name: Set release URL
+          - name: Set Upload URL
+            id: set_upload_url
             if: steps.check_release.outputs.release_exists == 'true'
-            run: echo "RELEASE_URL=${{ steps.check_release.outputs.release_url }}" >> $GITHUB_ENV
-
+            run: echo "UPLOAD_URL=${{ steps.check_release.outputs.upload_url }}" >> $GITHUB_ENV
+    
+          - name: Get Upload URL from Created Release
+            id: get_upload_url
+            if: steps.check_release.outputs.release_exists == 'false'
+            uses: actions/github-script@v4
+            env:
+              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+            with:
+              script: |
+                const { data: release } = await github.repos.getReleaseByTag({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  tag: context.ref,
+                });
+                return { upload_url: release.upload_url };
+              result-encoding: string
+    
+          - name: Set Upload URL from Created Release
+            if: steps.check_release.outputs.release_exists == 'false'
+            run: echo "UPLOAD_URL=${{ steps.get_upload_url.outputs.upload_url }}" >> $GITHUB_ENV
+    
           - name: Create Release Asset
             id: upload-release-asset
             uses: actions/upload-release-asset@v1
             env:
-                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-                upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
-                asset_path: ./packages/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }}/*.zip
-                asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}
-                asset_content_type: application/zip
+              upload_url: ${{ env.UPLOAD_URL }}
+              asset_path: ./packages/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }}/*.zip
+              asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}
+              asset_content_type: application/zip
                     
                 
               
