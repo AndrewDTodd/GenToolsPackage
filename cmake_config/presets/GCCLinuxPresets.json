@@ -27,8 +27,8 @@
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux x86_64 with GCC",
       "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/GCC",
-      "installDir": "${sourceDir}/install/Linux/x86_64/GCC"
+      "binaryDir": "${sourceDir}/out/build/Linux/x86_64/GCC",
+      "installDir": "${sourceDir}/out/install/Linux/x86_64/GCC"
     },
     {
       "name": "Linux-GCC-x86",
@@ -36,8 +36,8 @@
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux x86 with GCC",
       "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_x86.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86/GCC",
-      "installDir": "${sourceDir}/install/Linux/x86/GCC"
+      "binaryDir": "${sourceDir}/out/build/Linux/x86/GCC",
+      "installDir": "${sourceDir}/out/install/Linux/x86/GCC"
     },
     {
       "name": "Linux-GCC-arm",
@@ -45,8 +45,8 @@
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux arm with GCC",
       "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_arm.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/arm/GCC",
-      "installDir": "${sourceDir}/install/Linux/arm/GCC"
+      "binaryDir": "${sourceDir}/out/build/Linux/arm/GCC",
+      "installDir": "${sourceDir}/out/install/Linux/arm/GCC"
     },
     {
       "name": "Linux-GCC-arm64",
@@ -54,8 +54,8 @@
       "inherits": "Linux-GCC-default",
       "description": "Build for Linux arm64 with GCC",
       "toolchainFile": "cmake_config/toolchains/Linux/gcc/toolchain-Linux_gcc_arm64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/arm64/GCC",
-      "installDir": "${sourceDir}/install/Linux/arm64/GCC"
+      "binaryDir": "${sourceDir}/out/build/Linux/arm64/GCC",
+      "installDir": "${sourceDir}/out/install/Linux/arm64/GCC"
     }
   ],
   "buildPresets": [
@@ -174,7 +174,7 @@
       "configurations": [
         "Debug"
       ],
-      "packageDirectory": "${sourceDir}/package/Linux/x86_64/GCC/Debug"
+      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/GCC/Debug"
     },
     {
       "name": "Linux-GCC-x86_64-Release_Dev",
@@ -185,7 +185,7 @@
       "configurations": [
         "RelWithDebInfo"
       ],
-      "packageDirectory": "${sourceDir}/package/Linux/x86_64/GCC/RelWithDebInfo"
+      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/GCC/RelWithDebInfo"
     },
     {
       "name": "Linux-GCC-x86_64-Release",
@@ -196,7 +196,7 @@
       "configurations": [
         "Release"
       ],
-      "packageDirectory": "${sourceDir}/package/Linux/x86_64/GCC/Release"
+      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/GCC/Release"
     }
   ]
 }

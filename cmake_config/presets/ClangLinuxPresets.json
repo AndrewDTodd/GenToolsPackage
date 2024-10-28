@@ -27,8 +27,8 @@
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux x86_64 with Clang",
       "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86_64/Clang",
-      "installDir": "${sourceDir}/install/Linux/x86_64/Clang"
+      "binaryDir": "${sourceDir}/out/build/Linux/x86_64/Clang",
+      "installDir": "${sourceDir}/out/install/Linux/x86_64/Clang"
     },
     {
       "name": "Linux-Clang-x86",
@@ -36,8 +36,8 @@
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux x86 with Clang",
       "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_x86.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/x86/Clang",
-      "installDir": "${sourceDir}/install/Linux/x86/Clang"
+      "binaryDir": "${sourceDir}/out/build/Linux/x86/Clang",
+      "installDir": "${sourceDir}/out/install/Linux/x86/Clang"
     },
     {
       "name": "Linux-Clang-arm",
@@ -45,8 +45,8 @@
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux arm with Clang",
       "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_arm.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/arm/Clang",
-      "installDir": "${sourceDir}/install/Linux/arm/Clang"
+      "binaryDir": "${sourceDir}/out/build/Linux/arm/Clang",
+      "installDir": "${sourceDir}/out/install/Linux/arm/Clang"
     },
     {
       "name": "Linux-Clang-arm64",
@@ -54,8 +54,8 @@
       "inherits": "Linux-Clang-default",
       "description": "Build for Linux arm64 with Clang",
       "toolchainFile": "cmake_config/toolchains/Linux/clang/toolchain-Linux_clang_arm64.cmake",
-      "binaryDir": "${sourceDir}/build/Linux/arm64/Clang",
-      "installDir": "${sourceDir}/install/Linux/arm64/Clang"
+      "binaryDir": "${sourceDir}/out/build/Linux/arm64/Clang",
+      "installDir": "${sourceDir}/out/install/Linux/arm64/Clang"
     }
   ],
   "buildPresets": [
@@ -176,7 +176,7 @@
       "configurations": [
         "Debug"
       ],
-      "packageDirectory": "${sourceDir}/package/Linux/x86_64/Clang/Debug"
+      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/Clang/Debug"
     },
     {
       "name": "Linux-Clang-x86_64-Release_Dev",
@@ -187,7 +187,7 @@
       "configurations": [
         "RelWithDebInfo"
       ],
-      "packageDirectory": "${sourceDir}/package/Linux/x86_64/Clang/RelWithDebInfo"
+      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/Clang/RelWithDebInfo"
     },
     {
       "name": "Linux-Clang-x86_64-Release",
@@ -198,7 +198,7 @@
       "configurations": [
         "Release"
       ],
-      "packageDirectory": "${sourceDir}/package/Linux/x86_64/Clang/Release"
+      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/Clang/Release"
     }
   ]
 }

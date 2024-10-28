@@ -27,8 +27,8 @@
       "inherits": "Win-Clang-default",
       "description": "Build for Win x86_64 with Clang",
       "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/x86_64/Clang",
-      "installDir": "${sourceDir}/install/Windows/x86_64/Clang"
+      "binaryDir": "${sourceDir}/out/build/Windows/x86_64/Clang",
+      "installDir": "${sourceDir}/out/install/Windows/x86_64/Clang"
     },
     {
       "name": "Win-Clang-x86",
@@ -36,8 +36,8 @@
       "inherits": "Win-Clang-default",
       "description": "Build for Win x86 with Clang",
       "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_x86.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/x86/Clang",
-      "installDir": "${sourceDir}/install/Windows/x86/Clang"
+      "binaryDir": "${sourceDir}/out/build/Windows/x86/Clang",
+      "installDir": "${sourceDir}/out/install/Windows/x86/Clang"
     },
     {
       "name": "Win-Clang-arm",
@@ -45,8 +45,8 @@
       "inherits": "Win-Clang-default",
       "description": "Build for Win arm with Clang",
       "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_arm.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/arm/Clang",
-      "installDir": "${sourceDir}/install/Windows/arm/Clang"
+      "binaryDir": "${sourceDir}/out/build/Windows/arm/Clang",
+      "installDir": "${sourceDir}/out/install/Windows/arm/Clang"
     },
     {
       "name": "Win-Clang-arm64",
@@ -54,8 +54,8 @@
       "inherits": "Win-Clang-default",
       "description": "Build for Win arm64 with Clang",
       "toolchainFile": "cmake_config/toolchains/Windows/clang/toolchain-Win_clang_arm64.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/arm64/Clang",
-      "installDir": "${sourceDir}/install/Windows/arm64/Clang"
+      "binaryDir": "${sourceDir}/out/build/Windows/arm64/Clang",
+      "installDir": "${sourceDir}/out/install/Windows/arm64/Clang"
     }
   ],
   "buildPresets": [
@@ -174,7 +174,7 @@
       "configurations": [
         "Debug"
       ],
-      "packageDirectory": "${sourceDir}/package/Win/x86_64/Clang/Debug"
+      "packageDirectory": "${sourceDir}/out/package/Win/x86_64/Clang/Debug"
     },
     {
       "name": "Win-Clang-x86_64-Release_Dev",
@@ -185,7 +185,7 @@
       "configurations": [
         "RelWithDebInfo"
       ],
-      "packageDirectory": "${sourceDir}/package/Win/x86_64/Clang/RelWithDebInfo"
+      "packageDirectory": "${sourceDir}/out/package/Win/x86_64/Clang/RelWithDebInfo"
     },
     {
       "name": "Win-Clang-x86_64-Release",
@@ -196,7 +196,7 @@
       "configurations": [
         "Release"
       ],
-      "packageDirectory": "${sourceDir}/package/Win/x86_64/Clang/Release"
+      "packageDirectory": "${sourceDir}/out/package/Win/x86_64/Clang/Release"
     }
   ]
 }

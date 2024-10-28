@@ -11,8 +11,7 @@
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo;Release",
-        "CMAKE_C_FLAGS": "/LTCG",
-        "CMAKE_CXX_FLAGS": "/LTCG"
+        "CMAKE_CXX_STANDARD": "20"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -27,8 +26,8 @@
       "inherits": "Win-MSVC-default",
       "description": "Build for Win x86_64 with msvc",
       "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_x86_64.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/x86_64/MSVC",
-      "installDir": "${sourceDir}/install/Windows/x86_64/MSVC"
+      "binaryDir": "${sourceDir}/out/build/Windows/x86_64/MSVC",
+      "installDir": "${sourceDir}/out/install/Windows/x86_64/MSVC"
     },
     {
       "name": "Win-MSVC-x86",
@@ -36,8 +35,8 @@
       "inherits": "Win-MSVC-default",
       "description": "Build for Win x86 with msvc",
       "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_x86.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/x86/MSVC",
-      "installDir": "${sourceDir}/install/Windows/x86/MSVC"
+      "binaryDir": "${sourceDir}/out/build/Windows/x86/MSVC",
+      "installDir": "${sourceDir}/out/install/Windows/x86/MSVC"
     },
     {
       "name": "Win-MSVC-arm",
@@ -45,8 +44,8 @@
       "inherits": "Win-MSVC-default",
       "description": "Build for Win arm with msvc",
       "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_arm.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/arm/MSVC",
-      "installDir": "${sourceDir}/install/Windows/arm/MSVC"
+      "binaryDir": "${sourceDir}/out/build/Windows/arm/MSVC",
+      "installDir": "${sourceDir}/out/install/Windows/arm/MSVC"
     },
     {
       "name": "Win-MSVC-arm64",
@@ -54,8 +53,8 @@
       "inherits": "Win-MSVC-default",
       "description": "Build for Win arm64 with msvc",
       "toolchainFile": "cmake_config/toolchains/Windows/msvc/toolchain-Win_msvc_arm64.cmake",
-      "binaryDir": "${sourceDir}/build/Windows/arm64/MSVC",
-      "installDir": "${sourceDir}/install/Windows/arm64/MSVC"
+      "binaryDir": "${sourceDir}/out/build/Windows/arm64/MSVC",
+      "installDir": "${sourceDir}/out/install/Windows/arm64/MSVC"
     }
   ],
   "buildPresets": [
@@ -64,6 +63,9 @@
       "displayName": "Debug",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Debug",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS_DEBUG": "/ZI /Od /RTC1"
+      },
       "jobs": 16
     },
     {
@@ -71,6 +73,10 @@
       "displayName": "Release-Dev",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "RelWithDebInfo",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /DNDEBUG /EHsc",
+        "CMAKE_C_FLAGS_RELEASE":  "/O2 /GL /DNDEBUG"
+      },
       "jobs": 16
     },
     {
@@ -78,6 +84,10 @@
       "displayName": "Release",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Release",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /DNDEBUG /EHsc",
+        "CMAKE_C_FLAGS_RELEASE": "/O2 /GL /DNDEBUG"
+      },
       "jobs": 16
     },
 
@@ -174,7 +184,7 @@
       "configurations": [
         "Debug"
       ],
-      "packageDirectory": "${sourceDir}/package/Win/x86_64/MSVC/Debug"
+      "packageDirectory": "${sourceDir}/out/package/Win/x86_64/MSVC/Debug"
     },
     {
       "name": "Win-MSVC-x86_64-Release_Dev",
@@ -185,7 +195,7 @@
       "configurations": [
         "RelWithDebInfo"
       ],
-      "packageDirectory": "${sourceDir}/package/Win/x86_64/MSVC/RelWithDebInfo"
+      "packageDirectory": "${sourceDir}/out/package/Win/x86_64/MSVC/RelWithDebInfo"
     },
     {
       "name": "Win-MSVC-x86_64-Release",
@@ -196,7 +206,7 @@
       "configurations": [
         "Release"
       ],
-      "packageDirectory": "${sourceDir}/package/Win/x86_64/MSVC/Release"
+      "packageDirectory": "${sourceDir}/out/package/Win/x86_64/MSVC/Release"
     }
   ]
 }
