@@ -107,36 +107,38 @@ jobs:
     
           - name: Debug Check Release Outputs
             run: |
-              echo "Release exists: ${{ steps.check_release.outputs.release_exists }}"
-              echo "Release URL: ${{ steps.check_release.outputs.release_url }}"
-              echo "Upload URL: ${{ steps.check_release.outputs.upload_url }}"
+                echo "Release exists: ${{ steps.check_release.outputs.release_exists }}"
+                echo "Release URL: ${{ steps.check_release.outputs.release_url }}"
+                echo "Upload URL: ${{ steps.check_release.outputs.upload_url }}"
     
           - name: Create Release
             id: create_release
             if: steps.check_release.outputs.release_exists == 'false'
             uses: actions/create-release@v1
             env:
-              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-              tag_name: ${{ github.ref }}
-              release_name: Release ${{ github.ref }}
+                tag_name: ${{ github.ref }}
+                release_name: Release ${{ github.ref }}
     
           - name: Get Upload URL from Created Release
             id: get_upload_url
             if: steps.check_release.outputs.release_exists == 'false'
             uses: actions/github-script@v4
             env:
-              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-              script: |
-                const { data: release } = await github.repos.getReleaseByTag({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  tag: context.ref.replace('refs/tags/', ''),
-                });
-                console.log(`Upload URL from created release: ${release.upload_url}`);
-                return { upload_url: release.upload_url };
-              result-encoding: string
+                script: |
+                    const { data: release } = await github.repos.getReleaseByTag({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          tag: context.ref.replace('refs/tags/', ''),
+                        });
+                    console.log(`Upload URL from created release: ${release.upload_url}`);
+                    // Setting outputs explicitly
+                    core.setOutput('upload_url', release.upload_url);
+                
+                    console.log(`upload_url: ${release.upload_url}`);
     
           - name: Debug Get Upload URL Outputs
             if: steps.check_release.outputs.release_exists == 'false'
@@ -144,28 +146,51 @@ jobs:
     
           - name: Set Upload URL
             id: set_upload_url
-            run: echo "UPLOAD_URL=${{ steps.check_release.outputs.upload_url || steps.get_upload_url.outputs.upload_url }}" >> $GITHUB_ENV
+            uses: actions/github-script@v4
+            env:
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+            with:
+                script: |
+                    const uploadUrl = "${{ steps.check_release.outputs.upload_url }}" || "${{ steps.get_upload_url.outputs.upload_url }}";
+                    // Setting outputs explicitly
+                    core.setOutput('upload_url', uploadUrl);
+                    console.log(`Upload url: ${uploadUrl}`);
     
           - name: Debug Set Upload URL
-            run: echo "UPLOAD_URL=${{ env.UPLOAD_URL }}"
+            run: echo "UPLOAD_URL=${{ steps.set_upload_url.outputs.upload_url }}"
 
           - name: Find the ZIP file
             id: find_zip
-            run: |
-                PACKAGE_PATH=$(find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit)
-                echo "PACKAGE_PATH=${PACKAGE_PATH}" >> $GITHUB_ENV
-            shell: bash
+            uses: actions/github-script@v4
+            env:
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+            with:
+                script: |
+                    const { execSync } = require('child_process');
+                    let packagePath;
+            
+                    if (process.platform === 'win32') {
+                        // Windows command to find ZIP files
+                        packagePath = execSync(`powershell -Command "Get-ChildItem -Path './package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }}' -Filter '*.zip' -Recurse | Select-Object -First 1 | ForEach-Object { $_.FullName }"`).toString().trim();
+                    } else {
+                        // Linux command to find ZIP files
+                        packagePath = execSync(`find ./package/${{ matrix.config.OS }}/x86_64/${{ matrix.config.Compiler }}/${{ matrix.config.Config }} -name "*.zip" -print -quit`).toString().trim();
+                    }
+
+                    // Setting outputs explicitly
+                    core.setOutput('package_path', packagePath);
+                    console.log(`Package path: ${packagePath}`);
     
           - name: Create Release Asset
             id: upload-release-asset
             uses: actions/upload-release-asset@v1
             env:
-              GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             with:
-              upload_url: ${{ env.UPLOAD_URL }}
-              asset_path: ${{ env.PACKAGE_PATH }}
-              asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}
-              asset_content_type: application/zip
+                upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
+                asset_path: ${{ steps.find_zip.outputs.package_path }}
+                asset_name: ${{ matrix.config.OS }}-${{ matrix.config.Compiler }}-${{ matrix.config.Config }}.zip
+                asset_content_type: application/zip
                     
                 
               
