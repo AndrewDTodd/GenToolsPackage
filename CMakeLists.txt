@@ -24,8 +24,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Make sure CMake exports its compile commands so things like IntelliSense can detect them in editor
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-
 # Detect OS for platform specific compilation
 if(UNIX AND NOT APPLE)
 	add_compile_definitions(TARGET_OS=Linux _LINUX_TARGET)
