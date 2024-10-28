@@ -11,7 +11,10 @@
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo;Release",
-        "CMAKE_CXX_STANDARD": "20"
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_FLAGS_DEBUG": "/ZI /Od /RTC1",
+        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /DNDEBUG /EHsc",
+        "CMAKE_C_FLAGS_RELEASE": "/O2 /GL /DNDEBUG"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -63,9 +66,6 @@
       "displayName": "Debug",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Debug",
-      "cacheVariables": {
-        "CMAKE_CXX_FLAGS_DEBUG": "/ZI /Od /RTC1"
-      },
       "jobs": 16
     },
     {
@@ -73,10 +73,6 @@
       "displayName": "Release-Dev",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "RelWithDebInfo",
-      "cacheVariables": {
-        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /DNDEBUG /EHsc",
-        "CMAKE_C_FLAGS_RELEASE":  "/O2 /GL /DNDEBUG"
-      },
       "jobs": 16
     },
     {
@@ -84,10 +80,6 @@
       "displayName": "Release",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Release",
-      "cacheVariables": {
-        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /DNDEBUG /EHsc",
-        "CMAKE_C_FLAGS_RELEASE": "/O2 /GL /DNDEBUG"
-      },
       "jobs": 16
     },
 
