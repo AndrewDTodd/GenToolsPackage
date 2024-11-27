@@ -597,29 +597,14 @@ namespace GenTools::GenParse
 		/// <summary>
 		/// Default constructor is private, CmdLineParser is a singleton. Internal use only
 		/// </summary>
-		CmdLineParser() noexcept
-		{}
+		CmdLineParser() noexcept = default;
+
+		/// <summary>
+		/// Destructor is private. Must call DestroyInstance to free singleton
+		/// </summary>
+		~CmdLineParser() noexcept = default;
 
 	public:
-		~CmdLineParser() noexcept
-		{
-			std::shared_lock<std::shared_mutex> readLock(_sharedMutex);
-
-			if (CmdLineParser::s_instance)
-			{
-				readLock.unlock();
-
-				std::unique_lock<std::shared_mutex> writeLock(_sharedMutex);
-
-				if (CmdLineParser::s_instance)
-				{
-					delete s_instance;
-					s_instance = nullptr;
-				}
-			}
-			return;
-		}
-
 		/// <summary>
 		/// Get a pointer to the singletons active instance, or makes an instance if there isn't one already
 		/// </summary>
@@ -643,6 +628,19 @@ namespace GenTools::GenParse
 				}
 			}
 			return CmdLineParser::s_instance;
+		}
+
+		/// <summary>
+		/// Call to free singleton
+		/// </summary>
+		static void DestroyInstance() noexcept
+		{
+			std::unique_lock<std::shared_mutex> writeLock(_sharedMutex);
+			if (CmdLineParser::s_instance)
+			{
+				delete s_instance;
+				s_instance = nullptr;
+			}
 		}
 
 		/// <summary>
