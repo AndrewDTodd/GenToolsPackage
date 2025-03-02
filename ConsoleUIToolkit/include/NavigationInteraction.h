@@ -19,7 +19,7 @@
 #include <vector>
 #include <functional>
 
-#include <rootConfig.h>
+#include <PlatformInterface.h>
 
 namespace GenTools::ConsoleUIToolkit
 {

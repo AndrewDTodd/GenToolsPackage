@@ -147,6 +147,153 @@ namespace GenTools::GenParse
 		Ptr_DelString() : flag_pointer_t<std::string>(ParseStringDelimited) {}
 		Ptr_DelString(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseStringDelimited) {}
 	};
+
+	//////////////////////////////////////////////////////////////////////////////
+	// Arg_List
+	//
+	// Templated on BaseArg, which is an existing flag_argument_t
+	// specialization (e.g. Arg_DelString, Arg_Double, etc.). This class
+	// derives from flag_argument_t<std::vector<T>> where T is BaseArg's value type.
+	//
+	// It stores a pointer to the element parsing function (of type T(*)(const char*))
+	// and in its Parse/TryParse methods it uses the stored parsing function to parse
+	// the input stream until it fails to parse or reaches the end delimiter if specified.
+	//
+	// The template booleans Enclosed and Separated allow you to specify:
+	//   - Enclosed: whether the whole list must be wrapped (e.g. in '[' and ']')
+	//   - Separated: whether the list’s elements are separated by a fixed
+	//                delimiter (for example, a comma)
+	//////////////////////////////////////////////////////////////////////////////
+	template<IsFlagArgument BaseArg, bool Enclosed = false, bool Separated = false>
+	class Arg_List : public flag_argument_t<std::vector<typename BaseArg::value_type>>
+	{
+	public:
+		using element_type = typename BaseArg::value_type;
+		using container_type = std::vector<element_type>;
+
+	private:
+		char m_leftDelimiter;
+		char m_rightDelimiter;
+		char m_separator;
+
+		// The element parse function pointer
+		// (For Arg_DelString this might be ParseStringDelimited, for Arg_Double it might be ParseDouble, etc.)
+		element_type(*elementParseFunc)(const char*);
+
+		static std::string Trim(const std::string& str)
+		{
+			size_t start = str.find_first_not_of(" \t\n");
+			size_t end = str.find_last_not_of(" \t\n");
+			if (start == std::string::npos || end == std::string::npos)
+				return "";
+			return str.substr(start, end - start + 1);
+		}
+
+	public:
+		// Constructor
+		// The user must provide the element parse function pointer
+		Arg_List(const char leftDelimiter = '[', const char rightDelimiter = ']', const char separator = ',')
+			: flag_argument_t<container_type>(container_type()), 
+			m_leftDelimiter(leftDelimiter), m_rightDelimiter(rightDelimiter), m_separator(separator)
+		{
+			BaseArg base;
+			elementParseFunc = base.GetParseFunction();
+		}
+
+		Arg_List(container_type&& defaultValue, 
+			const char leftDelimiter = '[', const char rightDelimiter = ']', const char separator = ',')
+			: flag_argument_t<container_type>(std::forward<container_type>(defaultValue)),
+			m_leftDelimiter(leftDelimiter), m_rightDelimiter(rightDelimiter), m_separator(separator)
+		{
+			BaseArg base;
+			elementParseFunc = base.GetParseFunction();
+		}
+
+		// Override Parse: interpret the provided string (which is assumes to contain
+		// the entire list, either as a single token or with the delimiters embedded)
+		// and split it into individual elements
+		void Parse(const char* str) const override
+		{
+			auto& container = this->argument;
+			container.clear();
+			std::string input(str);
+			std::string listContent;
+
+			if constexpr (Enclosed)
+			{
+				// The list must be enclosed in its delimiters (e.g. '[' and ']')
+				if (input.empty() || input.front() != m_leftDelimiter || input.back() != m_rightDelimiter)
+				{
+					throw std::invalid_argument(std::string("List must be enclosed in delimiters, '") + m_leftDelimiter + "' and '" + m_rightDelimiter + "'");
+				}
+
+				listContent = input.substr(1, input.size() - 2);
+			}
+			else
+			{
+				listContent = input;
+			}
+
+			// Split the listContent into individual elements
+			std::vector<std::string> elements;
+			if constexpr (Separated)
+			{
+				// For separated items, split the listContent by the separator
+				size_t start = 0;
+				size_t pos = 0;
+				while ((pos = listContent.find(m_separator, start)) != std::string::npos)
+				{
+					std::string token = Trim(listContent.substr(start, pos - start));
+					if (!token.empty())
+						elements.push_back(token);
+
+					start = pos + 1;
+				}
+
+				std::string token = Trim(listContent.substr(start));
+				if (!token.empty())
+					elements.push_back(token);
+			}
+			else
+			{
+				// Otherwise, split by whitespace
+				std::istringstream iss(listContent);
+				std::string token;
+				while (iss >> token)
+				{
+					elements.push_back(token);
+				}
+			}
+
+			// For each element, parse it and add it to the container
+			for (const auto& element : elements)
+			{
+				container.push_back(elementParseFunc(element.c_str()));
+			}
+		}
+
+		bool TryParse(const char* str, std::string* errorMsg = nullptr) const noexcept override
+		{
+			try
+			{
+				Parse(str);
+			}
+			catch (const std::exception& e)
+			{
+				if (errorMsg)
+					*errorMsg = e.what();
+				return false;
+			}
+
+			return true;
+		}
+
+		std::string GetArgType() const noexcept override
+		{
+			BaseArg base;
+			return "List<" + base.GetArgType() + ">";
+		}
+	};
 	//************************************************************************************************
 }
 #endif // !GENTOOLS_GENPARSE_FLAG_ARGUMENT_SPECIALIZATIONS_H

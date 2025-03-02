@@ -80,14 +80,21 @@ namespace GenTools::GenParse
 	template<std::movable ArgType>
 	class flag_argument_t : public flag_argument
 	{
-	private:
+	protected:
 		mutable ArgType argument;
 		mutable ArgType(*parseFunc)(const char*) = nullptr;
 
 	public:
+		using value_type = ArgType;
+
 		const ArgType& GetArg() const noexcept
 		{
 			return argument;
+		}
+
+		ArgType(*GetParseFunction() const noexcept)(const char*)
+		{
+			return parseFunc;
 		}
 
 		template<typename default_constructible_type = ArgType,
@@ -263,5 +270,8 @@ namespace GenTools::GenParse
 
 		flag_pointer_t& operator=(const flag_pointer_t&) = delete;
 	};
+
+	template<typename T>
+	concept IsFlagArgument = std::is_base_of_v<flag_argument, T>&& std::movable<T>;
 }
 #endif // !GENTOOLS_GENPARSE_FLAG_ARGUMENT_H

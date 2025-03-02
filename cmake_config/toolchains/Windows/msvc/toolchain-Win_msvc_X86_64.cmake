@@ -6,4 +6,4 @@ set(CMAKE_C_COMPILER cl.exe)
 set(CMAKE_CXX_COMPILER cl.exe)
 
 set(CMAKE_C_FLAGS "/arch:AVX")
-set(CMAKE_CXX_FLAGS "/arch:AVX /EHsc")
+set(CMAKE_CXX_FLAGS "/arch:AVX /EHsc /Zc:__cplusplus")

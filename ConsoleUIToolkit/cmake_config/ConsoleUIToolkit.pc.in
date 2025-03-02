@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@LIBDIR_FOR_PKG_CONFIG@
+includedir=@INCLUDEDIR_FOR_PKG_CONFIG@
+
+Name: @PROJECT_NAME@
+Description: A simple library for creating console based user interfaces
+URL: https://github.com/AndrewDTodd/GenToolsPackage/ConsoleUIToolkit
+Version: @PROJECT_VERSION@
+Cflags: -I${includedir}
+Libs: -lConsoleUIToolkit

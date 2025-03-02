@@ -175,8 +175,7 @@
       ],
       "configurations": [
         "Debug"
-      ],
-      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/Clang/Debug"
+      ]
     },
     {
       "name": "Linux-Clang-x86_64-Release_Dev",
@@ -186,8 +185,7 @@
       ],
       "configurations": [
         "RelWithDebInfo"
-      ],
-      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/Clang/RelWithDebInfo"
+      ]
     },
     {
       "name": "Linux-Clang-x86_64-Release",
@@ -197,8 +195,7 @@
       ],
       "configurations": [
         "Release"
-      ],
-      "packageDirectory": "${sourceDir}/out/package/Linux/x86_64/Clang/Release"
+      ]
     }
   ]
 }

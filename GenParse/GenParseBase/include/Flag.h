@@ -10,7 +10,7 @@
 #include <flag_argument.h>
 #include <concepts>
 
-#include <rootConfig.h>
+#include <PlatformInterface.h>
 
 namespace GenTools::GenParse
 {
@@ -126,9 +126,6 @@ namespace GenTools::GenParse
 
 		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept = 0;
 	};
-
-	template<typename T>
-	concept IsFlagArgument = std::is_base_of_v<flag_argument, T> && std::movable<T>;
 
 	template<IsFlagArgument Flag_Argument>
 	class Flag : public flag_interface

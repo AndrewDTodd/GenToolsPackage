@@ -6,4 +6,4 @@ set(CMAKE_C_COMPILER cl.exe)
 set(CMAKE_CXX_COMPILER cl.exe)
 
 set(CMAKE_C_FLAGS "/arch:ARM64")
-set(CMAKE_CXX_FLAGS "/arch:ARM64")
+set(CMAKE_CXX_FLAGS "/arch:ARM64 /EHsc /Zc:__cplusplus")

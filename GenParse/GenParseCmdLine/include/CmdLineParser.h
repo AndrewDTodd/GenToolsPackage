@@ -11,13 +11,14 @@
 #include <iomanip>
 #include <string>
 #include <typeinfo>
+#include <optional>
 
 #include <Flag.h>
 
 #include <common_definitions.h>
 #include <TriggerSwitch.h>
 
-#include <rootConfig.h>
+#include <PlatformInterface.h>
 
 namespace GenTools::GenParse
 {
@@ -722,6 +723,35 @@ namespace GenTools::GenParse
 			std::shared_lock<std::shared_mutex> readLock(_sharedMutex);
 
 			return _programName;
+		}
+
+		template<typename T>
+		std::optional<T> GetFlagValue(const std::string& flagName) const noexcept
+		{
+			std::shared_lock<std::shared_mutex> readLock(_sharedMutex);
+
+			auto optFlag = _optionalFlags.find(flagName);
+			if (optFlag != _optionalFlags.end())
+				return optFlag->second->FlagArgument().as<T>();
+
+			auto reqFlag = _requiredFlags.find(flagName);
+			if (reqFlag != _requiredFlags.end())
+				return reqFlag->second->FlagArgument().as<T>();
+
+			return std::nullopt;
+		}
+
+		bool IsFlagSet(const std::string& flagName) const noexcept
+		{
+			std::shared_lock<std::shared_mutex> readLock(_sharedMutex);
+			if (_optionalFlags.contains(flagName))
+			{
+				return _optionalFlags.at(flagName)->ArgumentSet();
+			}
+			else if (_requiredFlags.contains(flagName))
+			{
+				return _requiredFlags.at(flagName)->ArgumentSet();
+			}
 		}
 
 		void Raise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end)

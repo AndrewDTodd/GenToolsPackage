@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@LIBDIR_FOR_PKG_CONFIG@
+includedir=@INCLUDEDIR_FOR_PKG_CONFIG@
+
+Name: @PROJECT_NAME@
+Description: Templated parsing structures and utilities for generative parsing constructs
+URL: https://github.com/AndrewDTodd/GenToolsPackage/GenParse
+Version: @PROJECT_VERSION@
+Cflags: -I${includedir}
+Libs: -lGenParse

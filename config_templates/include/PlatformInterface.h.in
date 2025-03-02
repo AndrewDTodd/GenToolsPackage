@@ -1,0 +1,635 @@
+#ifndef GENTOOLS_PLATFORM_INTERFACE_H
+#define GENTOOLS_PLATFORM_INTERFACE_H
+
+#include <iostream>
+#include <stdint.h>
+
+#if defined(__GNUC__) or defined(__clang__)
+#define FORCE_INLINE inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#define FORCE_INLINE __forceinline
+#else
+#define FORCE_INLINE inline
+#endif
+
+#if defined(_LINUX_TARGET) or defined(_MAC_TARGET)
+#include <cstdlib>
+#elif defined(_WIN_TARGET)
+#include <windows.h>
+#endif
+
+namespace GenTools
+{
+	FORCE_INLINE std::string ConvertToLowercase(const std::string& str) noexcept
+	{
+		std::string result;
+		for (char ch : str)
+		{
+			result += std::tolower(ch);
+		}
+		return result;
+	}
+
+	enum class ConsoleKey
+	{
+		NullCharacter = 0,
+		StartOfHeading = 1,
+		StartOfText = 2,
+		EndOfText = 3,
+		EndOfTransmission = 4,
+		Enquiry = 5,
+		Acknowledge = 6,
+		Bell = 7,
+		Backspace = 8,
+		HorizontalTab = 9,
+		LineFeed = 10,
+		VerticalTab = 11,
+		FormFeed = 12,
+		CarriageReturn = 13,
+		Enter = 13,
+		ShiftOut = 14,
+		ShiftIn = 15,
+		DataLinkEscape = 16,
+		DeviceControlOne = 17,
+		DeviceControlTwo = 18,
+		DeviceControlThree = 19,
+		DeviceControlFour = 20,
+		NegativeAcknowledge = 21,
+		SynchronousIdle = 22,
+		EndTransmissionBlock = 23,
+		Cancel = 24,
+		EndOfMedium = 25,
+		Substitute = 26,
+		Escape = 27,
+		FileSeperator = 28,
+		GroupSeperator = 29,
+		RecordSeperator = 30,
+		UnitSeperator = 31,
+		Space = 32,
+		ExclamationMark = 33,
+		DoubleQuotes = 34,
+		NumberSign = 35,
+		Pound = 35,
+		Dollar = 36,
+		PercentSign = 37,
+		Ampersand = 38,
+		SingleQuote = 39,
+		OpenParenthesis = 40,
+		LeftParenthesis = 40,
+		CloseParenthesis = 41,
+		RightParenthesis = 41,
+		Asterisk = 42,
+		Plus = 43,
+		Comma = 44,
+		Hyphen = 45,
+		Minus = 45,
+		Period = 46,
+		Slash = 47,
+		Divide = 47,
+		ForwardSlash = 47,
+		Zero = 48,
+		One = 49,
+		Two = 50,
+		Three = 51,
+		Four = 52,
+		Five = 53,
+		Six = 54,
+		Seven = 55,
+		Eight = 56,
+		Nine = 57,
+		Colon = 58,
+		Semicolon = 59,
+		LessThan = 60,
+		Equals = 61,
+		GreaterThan = 62,
+		QuestionMark = 63,
+		AtSign = 64,
+		A = 65,
+		B = 66,
+		C = 67,
+		D = 68,
+		E = 69,
+		F = 70,
+		G = 71,
+		H = 72,
+		I = 73,
+		J = 74,
+		K = 75,
+		L = 76,
+		M = 77,
+		N = 78,
+		O = 79,
+		P = 80,
+		Q = 81,
+		R = 82,
+		S = 83,
+		T = 84,
+		U = 85,
+		V = 86,
+		W = 87,
+		X = 88,
+		Y = 89,
+		Z = 90,
+		OpeningBracket = 91,
+		LeftBracket = 91,
+		Backslash = 92,
+		ClosingBracket = 93,
+		RightBracket = 93,
+		Caret = 94,
+		Circumflex = 94,
+		Hat = 94,
+		Underscore = 95,
+		GraveAccent = 96,
+		a = 97,
+		b = 98,
+		c = 99,
+		d = 100,
+		e = 101,
+		f = 102,
+		g = 103,
+		h = 104,
+		i = 105,
+		j = 106,
+		k = 107,
+		l = 108,
+		m = 109,
+		n = 110,
+		o = 111,
+		p = 112,
+		q = 113,
+		r = 114,
+		s = 115,
+		t = 116,
+		u = 117,
+		v = 118,
+		w = 119,
+		x = 120,
+		y = 121,
+		z = 122,
+		OpeningBrace = 123,
+		LeftBrace = 123,
+		VerticalBar = 124,
+		Bar = 124,
+		ClosingBrace = 125,
+		RightBrace = 125,
+		EquivalencySign = 126,
+		Tilde = 126,
+		Delete = 127,
+#if defined(_LINUX_TARGET)
+		ArrowUp = 0x1B5B41,
+		ArrowDown = 0x1B5B42,
+		ArrowLeft = 0x1B5B44,
+		ArrowRight = 0x1B5B43
+#elif defined(_WIN_TARGET)
+		ArrowUp = VK_UP,
+		ArrowDown = VK_DOWN,
+		ArrowLeft = VK_LEFT,
+		ArrowRight = VK_RIGHT
+#endif
+	};
+
+	class ConsoleKeyMethods
+	{
+	public:
+		static FORCE_INLINE bool IsLetterOrDigit(ConsoleKey key) noexcept
+		{
+			char charKey = static_cast<char>(key);
+
+			if (charKey > 47 && charKey < 58)
+				return true;
+			else if (charKey > 64 && charKey < 91)
+				return true;
+			else if (charKey > 96 && charKey < 123)
+				return true;
+			else
+				return false;
+		}
+
+		static FORCE_INLINE bool IsWhiteSpace(ConsoleKey key) noexcept
+		{
+			switch (key)
+			{
+			case ConsoleKey::Space:
+				return true;
+			case ConsoleKey::FormFeed:
+				return true;
+			case ConsoleKey::LineFeed:
+				return true;
+			case ConsoleKey::CarriageReturn:
+				return true;
+			case ConsoleKey::HorizontalTab:
+				return true;
+			case ConsoleKey::VerticalTab:
+				return true;
+			default:
+				return false;
+			}
+		}
+
+		static FORCE_INLINE bool IsPunctuation(ConsoleKey key)
+		{
+			char charKey = static_cast<char>(key);
+
+			if (charKey > 32 && charKey < 48)
+				return true;
+			else if (charKey > 57 && charKey < 65)
+				return true;
+			else if (charKey > 90 && charKey < 97)
+				return true;
+			else if (charKey > 122 && charKey < 127)
+				return true;
+			else
+				return false;
+		}
+	};
+
+	constexpr char to_char(ConsoleKey key) noexcept
+	{
+		return static_cast<char>(key);
+	}
+
+	class TERMINAL
+	{
+	public:
+#ifdef _WIN_TARGET
+		static FORCE_INLINE void init_windows_terminal()
+		{
+			static bool windows_terminal_initialized = false;
+
+			if (!windows_terminal_initialized)
+			{
+				HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+				DWORD dwMode;
+				GetConsoleMode(hOut, &dwMode);
+				dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+				SetConsoleMode(hOut, dwMode);
+				windows_terminal_initialized = true;
+			}
+		}
+#endif
+
+		static void SetNonCanonicalMode();
+
+		static void SetCanonicalMode();
+
+		static uint32_t ReadKey();
+
+		static constexpr auto _BELL = "\x07";
+		static constexpr auto _BACKSPACE = "\x08";
+		static constexpr auto _HORIZONTAL_TAB = "\x09";
+		static constexpr auto _LINEFEED = "\x0A";
+		static constexpr auto _VERTICAL_TAB = "\x0B";
+		static constexpr auto _FORMFEED = "\x0C";
+		static constexpr auto _CARRIAGE_RETURN = "\x0D";
+		static constexpr auto _ESCAPE_CHARACTER = "\x1B[";
+		static constexpr auto _DELETE_CHARACTER = "\x7F";
+
+		static constexpr auto _CURSOR_HOME = "\x1B[H";
+		static FORCE_INLINE void _CURSOR_MOVE(const std::string& line, const std::string& column)
+		{
+			std::cout << _ESCAPE_CHARACTER << line << ";" << column << "H";
+		}
+		static FORCE_INLINE void _CURSOR_UP(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "A";
+		}
+		static FORCE_INLINE void _CURSOR_DOWN(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "B";
+		}
+		static FORCE_INLINE void _CURSOR_RIGHT(const std::string& columns)
+		{
+			std::cout << _ESCAPE_CHARACTER << columns << "C";
+		}
+		static FORCE_INLINE void _CURSOR_LEFT(const std::string& columns)
+		{
+			std::cout << _ESCAPE_CHARACTER << columns << "D";
+		}
+		static FORCE_INLINE void _CURSOR_LINE_DOWN(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "E";
+		}
+		static FORCE_INLINE void _CURSOR_LINE_UP(const std::string& lines)
+		{
+			std::cout << _ESCAPE_CHARACTER << lines << "F";
+		}
+		static FORCE_INLINE void _CURSOR_TO_COLUMN(const std::string& column)
+		{
+			std::cout << _ESCAPE_CHARACTER << column << "G";
+		}
+		static constexpr auto _CURSOR_REQUEST_POS = "\x1B[6n";
+		static constexpr auto _CURSOR_UP_LINE = "\x1B M";
+		static constexpr auto _CURSOR_SAVEPOS = "\x1B 7";
+		static constexpr auto _CURSOR_RESTORE = "\x1B 8";
+
+		static constexpr auto _ERASE_TO_END_SCREEN = "\x1B[0J";
+		static constexpr auto _ERASE_TO_BEGINNING_SCREEN = "\x1B[1J";
+		static constexpr auto _ERASE_ALL = "\x1B[2J";
+		static constexpr auto _ERASE_SAVED = "\x1B[3J";
+		static constexpr auto _ERASE_TO_END_LINE = "\x1B[0K";
+		static constexpr auto _ERASE_TO_BEGINNING_LINE = "\x1B[1K";
+		static constexpr auto _ERASE_LINE = "\x1B[2K";
+
+		struct CursorPosition
+		{
+			int32_t row;
+			int32_t column;
+		};
+		static CursorPosition GetCursorPosition() noexcept;
+
+		template<typename... Cells>
+		static FORCE_INLINE void _SET_CELL_GRAPHIC_MODE(const std::string& mode, const Cells... cells)
+		{
+			std::cout << _ESCAPE_CHARACTER;
+
+			((std::cout << cells << ";"), ...);
+
+			std::cout << mode << "m";
+		}
+		static constexpr auto _GRAPHIC_MODE_RESET = "\x1B[0m";
+		static constexpr auto _GRAPHIC_MODE_BOLD = "\x1B[1m";
+		static constexpr auto _GRAPHIC_RESET_BOLD = "\x1B[22m";
+		static constexpr auto _GRAPHIC_MODE_DIMB = "\x1B[2m";
+		static constexpr auto _GRAPHIC_RESET_DIMB = "\x1B[22m";
+		static constexpr auto _GRAPHIC_MODE_ITALIC = "\x1B[3m";
+		static constexpr auto _GRAPHIC_RESET_ITALIC = "\x1B[23m";
+		static constexpr auto _GRAPHIC_MODE_UNDR = "\x1B[4m";
+		static constexpr auto _GRAPHIC_RESET_UNDR = "\x1B[24m";
+		static constexpr auto _GRAPHIC_MODE_BLINK = "\x1B[5m";
+		static constexpr auto _GRAPHIC_RESET_BLINK = "\x1B[25m";
+		static constexpr auto _GRAPHIC_MODE_INVERSE = "\x1B[7m";
+		static constexpr auto _GRAPHIC_RESET_INVERSE = "\x1B[27m";
+		static constexpr auto _GRAPHIC_MODE_HIDDEN = "\x1B[8m";
+		static constexpr auto _GRAPHIC_RESET_HIDDEN = "\x1B[28m";
+		static constexpr auto _GRAPHIC_MODE_STRIKE = "\x1B[9m";
+		static constexpr auto _GRAPHIC_RESET_STRIKE = "\x1B[29m";
+		static constexpr auto _GRAPHIC_MODE_DBL_UNDR = "\x1B[21m";
+		static constexpr auto _GRAPHIC_RESET_DBL_UNDR = "\x1B[24m";
+
+		static constexpr auto _COLOR_BLACK_F = "\x1B[30m";
+		static constexpr auto _COLOR_BLACK_B = "\x1B[40m";
+		static constexpr auto _COLOR_RED_F = "\x1B[31m";
+		static constexpr auto _COLOR_RED_B = "\x1B[41m";
+		static constexpr auto _COLOR_GREEN_F = "\x1B[32m";
+		static constexpr auto _COLOR_GREEN_B = "\x1B[42m";
+		static constexpr auto _COLOR_YELLOW_F = "\x1B[33m";
+		static constexpr auto _COLOR_YELLOW_B = "\x1B[43m";
+		static constexpr auto _COLOR_BLUE_F = "\x1B[34m";
+		static constexpr auto _COLOR_BLUE_B = "\x1B[44m";
+		static constexpr auto _COLOR_MAG_F = "\x1B[35m";
+		static constexpr auto _COLOR_MAG_B = "\x1B[45m";
+		static constexpr auto _COLOR_CYAN_F = "\x1B[36m";
+		static constexpr auto _COLOR_CYAN_B = "\x1B[46m";
+		static constexpr auto _COLOR_WHITE_F = "\x1B[37m";
+		static constexpr auto _COLOR_WHITE_B = "\x1B[47m";
+		static constexpr auto _COLOR_DEFAULT_F = "\x1B[39m";
+		static constexpr auto _COLOR_DEFAULT_B = "\x1B[49m";
+
+		static FORCE_INLINE void BLACK_TEXT()
+		{
+			std::cout << _COLOR_BLACK_F;
+		}
+		static FORCE_INLINE void BLACK_BACKGROUND()
+		{
+			std::cout << _COLOR_BLACK_B;
+		}
+		static FORCE_INLINE void RED_TEXT()
+		{
+			std::cout << _COLOR_RED_F;
+		}
+		static FORCE_INLINE void RED_BACKGORUND()
+		{
+			std::cout << _COLOR_RED_B;
+		}
+		static FORCE_INLINE void GREEN_TEXT()
+		{
+			std::cout << _COLOR_GREEN_F;
+		}
+		static FORCE_INLINE void GREEN_BACKGROUND()
+		{
+			std::cout << _COLOR_GREEN_B;
+		}
+		static FORCE_INLINE void YELLOW_TEXT()
+		{
+			std::cout << _COLOR_YELLOW_F;
+		}
+		static FORCE_INLINE void YELLOW_BACKGROUND()
+		{
+			std::cout << _COLOR_YELLOW_B;
+		}
+		static FORCE_INLINE void BLUE_TEXT()
+		{
+			std::cout << _COLOR_BLUE_F;
+		}
+		static FORCE_INLINE void BLUE_BACKGROUND()
+		{
+			std::cout << _COLOR_BLUE_B;
+		}
+		static FORCE_INLINE void MAGENTA_TEXT()
+		{
+			std::cout << _COLOR_MAG_F;
+		}
+		static FORCE_INLINE void MAGENTA_BACKGROUND()
+		{
+			std::cout << _COLOR_MAG_B;
+		}
+		static FORCE_INLINE void CYAN_TEXT()
+		{
+			std::cout << _COLOR_CYAN_F;
+		}
+		static FORCE_INLINE void CYAN_BACKGROUND()
+		{
+			std::cout << _COLOR_CYAN_B;
+		}
+		static FORCE_INLINE void WHITE_TEXT()
+		{
+			std::cout << _COLOR_WHITE_F;
+		}
+		static FORCE_INLINE void WHITE_BACKGROUND()
+		{
+			std::cout << _COLOR_WHITE_B;
+		}
+		static FORCE_INLINE void DEFAULT_TEXT()
+		{
+			std::cout << _COLOR_DEFAULT_F;
+		}
+		static FORCE_INLINE void DEFAULT_BACKGROUND()
+		{
+			std::cout << _COLOR_DEFAULT_B;
+		}
+
+		static constexpr auto _BRIGHT_BLACK_F = "\x1B[90m";
+		static constexpr auto _BRIGHT_BLACK_B = "\x1B[100m";
+		static constexpr auto _BRIGHT_RED_F = "\x1B[91m";
+		static constexpr auto _BRIGHT_RED_B = "\x1B[101m";
+		static constexpr auto _BRIGHT_GREEN_F = "\x1B[92m";
+		static constexpr auto _BRIGHT_GREEN_B = "\x1B[102m";
+		static constexpr auto _BRIGHT_YELLOW_F = "\x1B[93m";
+		static constexpr auto _BRIGHT_YELLOW_B = "\x1B[103m";
+		static constexpr auto _BRIGHT_BLUE_F = "\x1B[94m";
+		static constexpr auto _BRIGHT_BLUE_B = "\x1B[104m";
+		static constexpr auto _BRIGHT_MAG_F = "\x1B[95m";
+		static constexpr auto _BRIGHT_MAG_B = "\x1B[105m";
+		static constexpr auto _BRIGHT_CYAN_F = "\x1B[96m";
+		static constexpr auto _BRIGHT_CYAN_B = "\x1B[106m";
+		static constexpr auto _BRIGHT_WHITE_F = "\x1B[97m";
+		static constexpr auto _BRIGHT_WHITE_B = "\x1B[107m";
+
+		static FORCE_INLINE void BLACK_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLACK_F;
+		}
+		static FORCE_INLINE void BLACK_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLACK_B;
+		}
+		static FORCE_INLINE void RED_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_RED_F;
+		}
+		static FORCE_INLINE void RED_BACKGORUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_RED_B;
+		}
+		static FORCE_INLINE void GREEN_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_GREEN_F;
+		}
+		static FORCE_INLINE void GREEN_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_GREEN_B;
+		}
+		static FORCE_INLINE void YELLOW_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_YELLOW_F;
+		}
+		static FORCE_INLINE void YELLOW_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_YELLOW_B;
+		}
+		static FORCE_INLINE void BLUE_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLUE_F;
+		}
+		static FORCE_INLINE void BLUE_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_BLUE_B;
+		}
+		static FORCE_INLINE void MAGENTA_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_MAG_F;
+		}
+		static FORCE_INLINE void MAGENTA_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_MAG_B;
+		}
+		static FORCE_INLINE void CYAN_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_CYAN_F;
+		}
+		static FORCE_INLINE void CYAN_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_CYAN_B;
+		}
+		static FORCE_INLINE void WHITE_TEXT_BRIGHT()
+		{
+			std::cout << _BRIGHT_WHITE_F;
+		}
+		static FORCE_INLINE void WHITE_BACKGROUND_BRIGHT()
+		{
+			std::cout << _BRIGHT_WHITE_B;
+		}
+
+		static FORCE_INLINE void _SET_COLOR_256(const std::string& id)
+		{
+			std::cout << _ESCAPE_CHARACTER << "38;5;" << id << "m";
+		}
+		static FORCE_INLINE void _SET_BACKGROUND_256(const std::string& id)
+		{
+			std::cout << _ESCAPE_CHARACTER << "48;5;" << id << "m";
+		}
+
+		static FORCE_INLINE void _SET_COLOR_RGB(const std::string& r, const std::string& g, const std::string& b)
+		{
+			std::cout << _ESCAPE_CHARACTER << "38;2;" << r << ";" << g << ";" << b << "m";
+		}
+		static FORCE_INLINE void _SET_BACKGROUND_RGB(const std::string& r, const std::string& g, const std::string& b)
+		{
+			std::cout << _ESCAPE_CHARACTER << "48;2;" << r << ";" << g << ";" << b << "m";
+		}
+
+		static constexpr auto _SET_40x25_MONO = "\x1B[=0h";
+		static constexpr auto _SET_40x25_COLOR = "\x1B[=1h";
+		static constexpr auto _SET_80x25_MONO = "\x1B[=2h";
+		static constexpr auto _SET_80x25_COLOR = "\x1B[=3h";
+		static constexpr auto _SET_320x200_4COLOR = "\x1B[=4h";
+		static constexpr auto _SET_320x200_MONO = "\x1B[=5h";
+		static constexpr auto _SET_640x200_MONO = "\x1B[=6h";
+		static constexpr auto _SET_ENABLE_LINE_WRAP = "\x1B[=7h";
+		static constexpr auto _SET_320x200_COLOR = "\x1B[=13h";
+		static constexpr auto _SET_640x200_16COLOR = "\x1B[=14h";
+		static constexpr auto _SET_640x350_MONO = "\x1B[=15h";
+		static constexpr auto _SET_640x350_16COLOR = "\x1B[=16h";
+		static constexpr auto _SET_640x480_MONO = "\x1B[=17h";
+		static constexpr auto _SET_640x480_16COLOR = "\x1B[=18h";
+		static constexpr auto _SET_320x200_256COLOR = "\x1B[=19h";
+
+		static constexpr auto _RESET_40x25_MONO = "\x1B[=0l";
+		static constexpr auto _RESET_40x25_COLOR = "\x1B[=1l";
+		static constexpr auto _RESET_80x25_MONO = "\x1B[=2l";
+		static constexpr auto _RESET_80x25_COLOR = "\x1B[=3l";
+		static constexpr auto _RESET_320x200_4COLOR = "\x1B[=4l";
+		static constexpr auto _RESET_320x200_MONO = "\x1B[=5l";
+		static constexpr auto _RESET_640x200_MONO = "\x1B[=6l";
+		static constexpr auto _RESET_ENABLE_LINE_WRAP = "\x1B[=7l";
+		static constexpr auto _RESET_320x200_COLOR = "\x1B[=13l";
+		static constexpr auto _RESET_640x200_16COLOR = "\x1B[=14l";
+		static constexpr auto _RESET_640x350_MONO = "\x1B[=15l";
+		static constexpr auto _RESET_640x350_16COLOR = "\x1B[=16l";
+		static constexpr auto _RESET_640x480_MONO = "\x1B[=17l";
+		static constexpr auto _RESET_640x480_16COLOR = "\x1B[=18l";
+		static constexpr auto _RESET_320x200_256COLOR = "\x1B[=19l";
+
+		static constexpr auto _MODE_CURSOR_INVISIBLE = "\x1B[?25l";
+		static constexpr auto _MODE_CURSOR_VISIBLE = "\x1B[?25h";
+		static constexpr auto _MODE_RESTORE_SCREEN = "\x1B[?47l";
+		static constexpr auto _MODE_SAVE_SCREEN = "\x1B[?47h";
+		static constexpr auto _MODE_SET_ALT_BUFFER = "\x1B[?1049h";
+		static constexpr auto _MODE_RESET_ALT_BUFFER = "\x1B[?1049l";
+
+		static FORCE_INLINE void _SET_KEYBORD_STRING(const std::string& code, const std::string& string)
+		{
+			std::cout << _ESCAPE_CHARACTER << code << ";" << string << ";p";
+		}
+
+		static FORCE_INLINE void PRINT_WARNING(const std::string& message)
+		{
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			YELLOW_TEXT();
+			std::cerr << message << std::endl;
+			DEFAULT_TEXT();
+		}
+		static FORCE_INLINE void PRINT_ERROR(const std::string& message)
+		{
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			RED_TEXT();
+			std::cerr << message << std::endl;
+			DEFAULT_TEXT();
+		}
+
+		static FORCE_INLINE void CLEAR_TERMINAL()
+		{
+#if defined(_LINUX_TARGET) or defined(_MAC_TARGET)
+			std::system("clear");
+#elif defined(_WIN_TARGET)
+			std::system("cls");
+#endif
+		}
+	};
+}
+
+#endif // !GENTOOLS_PLATFORM_INTERFACE_H

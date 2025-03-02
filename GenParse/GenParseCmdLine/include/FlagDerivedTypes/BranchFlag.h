@@ -14,7 +14,7 @@
 #include <common_definitions.h>
 #include <TriggerSwitch.h>
 
-#include <rootConfig.h>
+#include <PlatformInterface.h>
 
 namespace GenTools::GenParse
 {

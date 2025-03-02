@@ -1,51 +1,268 @@
-# CMakeLists.txt ConsoleUIToolkit
+# CMakeList.txt : GenToolsPackage::ConsoleUIToolkit
 
-# Create CMake reference to this source directory, used in sub-directory CMake files
-set(ConsoleUIToolkit_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+project(CONSOLE_UI_TOOLKIT VERSION 1.0.0)
+set(TARGET_NAME ConsoleUIToolkit)
 
-# Create list of all source files to be used in this target
-file(GLOB_RECURSE ConsoleUIToolkit_SOURCE "${ConsoleUIToolkit_SOURCE_DIR}/src/*.cpp" "${GENERATED_SRC_DIR}/*.cpp")
+# Create options that are dependent onthis project being top level
+option(${PROJECT_NAME}_VERBOSE "Enable verbose messages for Rendering Primitives" ${PROJECT_IS_TOP_LEVEL})
 
-if(NOT ConsoleUIToolkit_SOURCE)
-	set(LIBRARY_TYPE "INTERFACE")
-	set(INCLUDE_TYPE "INTERFACE")
-	set(COMP_DEF_TYPE "INTERFACE")
-else()
-	set(LIBRARY_TYPE "STATIC")
-	set(INCLUDE_TYPE "PUBLIC")
-	set(COMP_DEF_TYPE "PRIVATE")
-endif()
+message(STATUS "${PROJECT_NAME}_VERBOSE: ${${PROJECT_NAME}_VERBOSE}")
 
-# Add GenParseBase library target
-add_library(ConsoleUIToolkit ${LIBRARY_TYPE} ${ConsoleUIToolkit_SOURCE})
+# Target Creation *********************************************************************************
+#**************************************************************************************************
 
-# Include the project header files in the include directory
-target_include_directories(ConsoleUIToolkit ${INCLUDE_TYPE} ${ConsoleUIToolkit_SOURCE_DIR}/include)
-# Include the generated headers in the generated directory
-target_include_directories(ConsoleUIToolkit ${INCLUDE_TYPE} ${GENERATED_INCLUDE_DIR})
+option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" OFF)
 
-# Install the static library/include the library binaries in the library package
-install(TARGETS ConsoleUIToolkit 
-	ARCHIVE DESTINATION ConsoleUIToolkit/lib
-	LIBRARY DESTINATION ConsoleUIToolkit/lib
-	RUNTIME DESTINATION ConsoleUIToolkit/bin
+file(GLOB_RECURSE ${TARGET_NAME}_SOURCE 
+	"${CMAKE_SOURCE_DIR}/generated/src/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/*/src/*.cpp"
 )
 
-# Install the public header files/include public headers in library package
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ 
-DESTINATION ConsoleUIToolkit/include 
-FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+file(GLOB ${TARGET_NAME}_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+list(APPEND ${TARGET_NAME}_DIRS ".")
 
-# Configure CMake for testing. Needed for GTest features
-enable_testing()
+if(${PROJECT_NAME}_DEBUG)
+	message(STATUS "${TARGET_NAME}_DIRS: ${${TARGET_NAME}_DIRS}")
+	message(STATUS "${TARGET_NAME}_SOURCE: ${${TARGET_NAME}_SOURCE}")
+endif()
 
-# Connect the tests subdirectory and its targets to the root target
-#add_subdirectory(tests)
+if(NOT DEFINED ${PROJECT_NAME}_BUILD)
+	set(${PROJECT_NAME}_BUILD ON)
+endif()
 
-# Add versioning info
-set(ConsoleUIToolkit_VERSION_MAJOR 1)
-set(ConsoleUIToolkit_VERSION_MINOR 0)
-set(ConsoleUIToolkit_VERSION_PATCH 0)
-set(ConsoleUIToolkit_VERSION_BUILD 0)
+if(${PROJECT_NAME}_BUILD)
+	# Create the RenderingPrimities target
+	if(${TARGET_NAME}_SOURCE)
+		if(${PROJECT_NAME}_DEBUG)
+			message(STATUS "Creating target: ${TARGET_NAME} as STATIC library")
+		endif()
 
-target_compile_definitions(ConsoleUIToolkit ${COMP_DEF_TYPE} CONSOLE_UI_TOOLKIT_VERSION_MAJOR=${ConsoleUIToolkit_VERSION_MAJOR} CONSOLE_UI_TOOLKIT_VERSION_MINOR=${ConsoleUIToolkit_VERSION_MINOR} CONSOLE_UI_TOOLKIT_VERSION_PATCH=${ConsoleUIToolkit_VERSION_PATCH} CONSOLE_UI_TOOLKIT_VERSION_BUILD=${ConsoleUIToolkit_VERSION_BUILD})
+		add_library(${TARGET_NAME} STATIC ${${TARGET_NAME}_SOURCE})
+
+		# Link libraries to the target
+		#target_link_libraries(${TARGET_NAME} )
+
+		if(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/generated/include")
+			if(${PROJECT_NAME}_DEBUG)
+				message(STATUS "Adding include directory: ${CMAKE_SOURCE_DIR}/generated/include")
+			endif()
+			target_include_directories(${TARGET_NAME} PUBLIC 
+				$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/generated/include> 
+ 				$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # This is used when the library is installed
+			)
+		endif()
+
+		# Set up include directories for the static library target
+		foreach(dir ${${TARGET_NAME}_DIRS})
+			if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include")
+				if(${PROJECT_NAME}_DEBUG)
+					message(STATUS "Adding include directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include")
+				endif()
+				target_include_directories(${TARGET_NAME} PUBLIC 
+					$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include> 
+ 					$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # This is used when the library is installed
+				)
+			endif()
+
+			if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl")
+				if(${PROJECT_NAME}_DEBUG)
+					message(STATUS "Adding inl directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl")
+				endif()
+				target_include_directories(${TARGET_NAME} PUBLIC 
+					$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl> 
+ 					$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # This is used when the library is installed
+				)
+			endif()
+		endforeach()
+	else()
+		if(${PROJECT_NAME}_DEBUG)
+			message(STATUS "Creating target: ${TARGET_NAME} as INTERFACE library")
+		endif()
+
+		add_library(${TARGET_NAME} INTERFACE)
+
+		# Link libraries to the target
+		#target_link_libraries(${TARGET_NAME} )
+
+		if(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/generated/include")
+			if(${PROJECT_NAME}_DEBUG)
+				message(STATUS "Adding include directory: ${CMAKE_SOURCE_DIR}/generated/include")
+			endif()
+			target_include_directories(${TARGET_NAME} INTERFACE 
+				$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/generated/include> 
+ 				$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # This is used when the library is installed
+			)
+		endif()
+
+		# Set up include directories for the static library target
+		foreach(dir ${${TARGET_NAME}_DIRS})
+			if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include")
+				if(${PROJECT_NAME}_DEBUG)
+					message(STATUS "Adding include directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include")
+				endif()
+				target_include_directories(${TARGET_NAME} INTERFACE 
+					$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include> 
+ 					$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # This is used when the library is installed
+				)
+			endif()
+
+			if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl")
+				if(${PROJECT_NAME}_DEBUG)
+					message(STATUS "Adding inl directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl")
+				endif()
+				target_include_directories(${TARGET_NAME} INTERFACE 
+					$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl> 
+ 					$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # This is used when the library is installed
+				)
+			endif()
+		endforeach()
+	endif()
+
+	set_target_properties(${TARGET_NAME} PROPERTIES 
+		VERSION ${PROJECT_VERSION} 
+		SOVERSION ${PROJECT_VERSION_MAJOR}
+	)
+
+# End Target Creation *****************************************************************************
+#**************************************************************************************************
+
+# Installation and Packing Configuration **********************************************************
+#**************************************************************************************************
+
+	# Install the targets
+	install(
+		TARGETS ${TARGET_NAME} 
+		EXPORT ${TARGET_NAME}_Targets 
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # Static libraries/import libraries (.lib files for .dll linking) 
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # Shared libraries (.so) 
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # .exe or .dll 
+		PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} # Headers/include directories marked as PUBLIC 
+		PRIVATE_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} # Headers/include directories marked as PRIVATE
+	)
+
+	# Create the targets CMake file which contains the above definitions
+	install(
+		EXPORT ${TARGET_NAME}_Targets 
+		FILE ${TARGET_NAME}_Targets.cmake 
+		NAMESPACE GenToolsPackage::${TARGET_NAME}
+		DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${TARGET_NAME}
+	)
+
+	if(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/generated/include")
+		install(
+			DIRECTORY "${CMAKE_SOURCE_DIR}/generated/include"
+			DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/generated"
+		)
+	endif()
+
+	# Install the actual includes
+	foreach(dir ${${TARGET_NAME}_DIRS})
+		if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include")
+			install(
+				DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include/"
+				DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}"
+			)
+		endif()
+
+		if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl")
+			install(
+				DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl/"
+				DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}"
+			)
+		endif()
+	endforeach()
+
+	# Generate and install the package version config files
+	include(CMakePackageConfigHelpers)
+	write_basic_package_version_file(
+		"${TARGET_NAME}_ConfigVersion.cmake" 
+		VERSION ${PROJECT_VERSION} 
+		COMPATIBILITY SameMajorVersion
+	)
+	configure_package_config_file(
+		"${CMAKE_CURRENT_SOURCE_DIR}/cmake_config/${TARGET_NAME}_Config.cmake.in" 
+		"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_Config.cmake" 
+		INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${TARGET_NAME}
+	)
+
+	# Install the CMake config files
+	install(
+		FILES "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_ConfigVersion.cmake" 
+		"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_Config.cmake" 
+		DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/${TARGET_NAME}
+	)
+
+	# Define Package install paths
+	set(INCLUDEDIR_FOR_PKG_CONFIG "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+	set(LIBDIR_PKG_CONFIG "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+
+	# Create and install the package config file
+	configure_file(
+		"${CMAKE_CURRENT_SOURCE_DIR}/cmake_config/${TARGET_NAME}.pc.in" 
+		"${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.pc" @ONLY
+	)
+
+	# Install the package config file
+	install(
+		FILES "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.pc" 
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	)
+endif()
+
+# A version that is often used to denote a specific build of the software, including revisions, builds, or other metadata
+set(PACKAGE_VERSION_BUILD "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
+
+set(PACKAGE_VERSION "${PROJECT_VERSION}-${PACKAGE_VERSION_BUILD}")
+
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_SOURCE_DIR}/out/package")
+
+set(CPACK_PACKAGE_NAME "${TARGET_NAME}")
+set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}")
+
+set(CPACK_PACKAGE_VENDOR "Andrew Todd")
+set(CPACK_PACKAGE_CONTACT "andrewdanieltodd@gmail.com")
+include(CPack)
+
+if(RENDERING_PRIMITIVES_VERBOSE)
+	message(STATUS "PACKAGE_VERSION is: ${PACKAGE_VERSION}")
+	message(STATUS "PACKAGE_FILE_NAME is: ${CPACK_PACKAGE_FILE_NAME}")
+endif()
+
+# End Installation and Packing Configuration ******************************************************
+#**************************************************************************************************
+
+# Create Unit Test Groups *************************************************************************
+#**************************************************************************************************
+if (GEN_TOOLS_PACKAGE_BUILD_TESTS)
+	if(${PROJECT_NAME}_DEBUG)
+		message(STATUS "Building test suit for ${TARGET_NAME}")
+	endif()
+
+	set(${TARGET_NAME}_TEST_DIRS "")
+
+	foreach(dir ${${TARGET_NAME}_DIRS})
+		if(IS_DIRECTORY "${dir}/tests")
+			list(APPEND ${TARGET_NAME}_TEST_DIRS "${dir}/tests")
+		endif()
+		if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tests")
+				if(${PROJECT_NAME}_DEBUG)	
+					message(STATUS "Adding test directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tests")
+				endif()
+				list(APPEND ${TARGET_NAME}_TEST_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tests")
+			endif()
+	endforeach()
+
+	# Do not install GTest when packaging targets
+	set(INSTALL_GTEST OFF)
+	
+	# Add all the tests directories
+	foreach(tests_dir ${${TARGET_NAME}_TEST_DIRS})
+		if(${PROJECT_NAME}_DEBUG)
+			message(STATUS "Adding Sub-Directory: ${tests_dir}")
+		endif()
+		add_subdirectory("${tests_dir}")
+	endforeach()
+endif()
+# End Create Unit Test Groups *********************************************************************
+#**************************************************************************************************

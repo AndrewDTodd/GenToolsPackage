@@ -40,7 +40,7 @@ file(GLOB_RECURSE FLAG_AGGREGATE_TYPES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit
 foreach(TEST_SOURCE ${FLAG_AGGREGATE_TYPES_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
-	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParseBase)
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParse)
 	set_target_properties(${TEST_NAME} PROPERTIES INSTALLABLE OFF)
 	list(APPEND FLAG_AGGREGATE_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND UNIT_TEST_TARGETS ${TEST_NAME})
@@ -56,7 +56,7 @@ file(GLOB PARSE_FUNCTIONS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/parse_functi
 foreach(TEST_SOURCE ${PARSE_FUNCTIONS_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
-	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParseBase)
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParse)
 	set_target_properties(${TEST_NAME} PROPERTIES INSTALLABLE OFF)
 	list(APPEND PARSE_FUNCTIONS_TARGETS ${TEST_NAME})
 	list(APPEND UNIT_TEST_TARGETS ${TEST_NAME})
@@ -72,7 +72,7 @@ file(GLOB_RECURSE FLAG_TYPES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/flag/*.cp
 foreach(TEST_SOURCE ${FLAG_TYPES_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
-	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParseBase)
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParse)
 	set_target_properties(${TEST_NAME} PROPERTIES INSTALLABLE OFF)
 	list(APPEND FLAG_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND UNIT_TEST_TARGETS ${TEST_NAME})
@@ -84,7 +84,7 @@ add_custom_target(flag_aggregate_tests DEPENDS ${FLAG_AGGREGATE_TYPES_TARGETS})
 # Create an executable for the custom target, such that the IDEs can see it as a runnable target
 add_executable(run_flag_aggregate_tests EXCLUDE_FROM_ALL ${FLAG_AGGREGATE_TYPES_SOURCES})
 # Link the executable with GTest and the TokenValueParser library
-target_link_libraries(run_flag_aggregate_tests PRIVATE GTest::gtest_main GenParseBase)
+target_link_libraries(run_flag_aggregate_tests PRIVATE GTest::gtest_main GenParse)
 set_target_properties(run_flag_aggregate_tests PROPERTIES INSTALLABLE OFF)
 
 # Create a custom target for the parse_functions tests
@@ -92,7 +92,7 @@ add_custom_target(parse_functions_tests DEPENDS ${PARSE_FUNCTIONS_TARGETS})
 # Create an executable for the custom target, such that the IDEs can see it as a runnable target
 add_executable(run_parse_functions_tests EXCLUDE_FROM_ALL ${PARSE_FUNCTIONS_SOURCES})
 # Link the executable with GTest and the TokenValueParser library
-target_link_libraries(run_parse_functions_tests PRIVATE GTest::gtest_main GenParseBase)
+target_link_libraries(run_parse_functions_tests PRIVATE GTest::gtest_main GenParse)
 set_target_properties(run_parse_functions_tests PROPERTIES INSTALLABLE OFF)
 
 # Create a custom target for the flags types
@@ -100,7 +100,7 @@ add_custom_target(flags_tests DEPENDS ${FLAG_TYPES_TARGETS})
 # Create an executable for the custom target, such that the IDEs can see it as a runnable target
 add_executable(run_flags_tests EXCLUDE_FROM_ALL ${FLAG_TYPES_SOURCES})
 # Link the executable with GTest and the TokenValueParser library
-target_link_libraries(run_flags_tests PRIVATE GTest::gtest_main GenParseBase)
+target_link_libraries(run_flags_tests PRIVATE GTest::gtest_main GenParse)
 set_target_properties(run_flags_tests PROPERTIES INSTALLABLE OFF)
 
 set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS "${UNIT_TEST_TARGETS}")

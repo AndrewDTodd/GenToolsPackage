@@ -1,9 +1,12 @@
 # toolchain-Linux_gcc_x86.cmake
+
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR x86)
 
-# Use clang and g++ for 32-bit
+# Use GCC and G++
 set(CMAKE_C_COMPILER gcc)
 set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_C_FLAGS "-m32")
-set(CMAKE_CXX_FLAGS "-m32")
+
+# Enable SIMD extensions if supported
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -march=native")

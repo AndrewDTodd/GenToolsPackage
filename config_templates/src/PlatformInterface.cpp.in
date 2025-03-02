@@ -1,4 +1,4 @@
-#include <rootConfig.h>
+#include <PlatformInterface.h>
 
 #include <iostream>
 #include <string>
@@ -64,7 +64,7 @@ namespace GenTools
 	uint32_t TERMINAL::ReadKey()
 	{
 		uint32_t ch = getchar();
-		if(ch == '\033')
+		if (ch == '\033')
 		{
 			uint32_t seq1 = getchar();
 			uint32_t seq2 = getchar();

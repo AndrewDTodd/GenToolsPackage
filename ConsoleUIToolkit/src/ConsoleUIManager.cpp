@@ -1,5 +1,4 @@
 #include <ConsoleUIManager.h>
-#include <rootConfig.h>
 
 #include <sstream>
 

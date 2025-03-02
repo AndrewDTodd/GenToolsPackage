@@ -40,7 +40,7 @@ file(GLOB_RECURSE FLAG_DERIVED_TYPES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit/F
 foreach(TEST_SOURCE ${FLAG_DERIVED_TYPES_SOURCES})
 	get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 	add_executable(${TEST_NAME} EXCLUDE_FROM_ALL ${TEST_SOURCE})
-	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParseCmdLine)
+	target_link_libraries(${TEST_NAME} PRIVATE GTest::gtest_main GenParse)
 	set_target_properties(${TEST_NAME} PROPERTIES INSTALLABLE OFF)
 	list(APPEND FLAG_DERIVED_TYPES_TARGETS ${TEST_NAME})
 	list(APPEND UNIT_TEST_TARGETS ${TEST_NAME})
@@ -52,7 +52,7 @@ add_custom_target(flag_derived_tests DEPENDS ${FLAG_DERIVED_TYPES_TARGETS})
 # Create an executable for the custom target, such that the IDEs can see it as a runnable target
 add_executable(run_flag_derived_tests EXCLUDE_FROM_ALL ${FLAG_DERIVED_TYPES_SOURCES})
 # Link the executable with GTest and the TokenValueParser library
-target_link_libraries(run_flag_derived_tests PRIVATE GTest::gtest_main GenParseCmdLine)
+target_link_libraries(run_flag_derived_tests PRIVATE GTest::gtest_main GenParse)
 set_target_properties(run_flag_derived_tests PROPERTIES INSTALLABLE OFF)
 
 set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS "${UNIT_TEST_TARGETS}")

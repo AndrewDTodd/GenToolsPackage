@@ -1,0 +1,8 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=@INCLUDEDIR_FOR_PKG_CONFIG@
+
+Name: @PROJECT_NAME@
+Description: A tool for generating serialization code for C++ classes
+URL: https://github.com/AndrewDTodd/GenToolsPackage/GenParse/GenSerialize
+Version: @PROJECT_VERSION@
+Cflags: -I${includedir}
