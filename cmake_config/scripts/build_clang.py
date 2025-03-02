@@ -9,16 +9,18 @@ def run_command(cmd, cwd=None):
     subprocess.check_call(cmd, cwd=cwd)
 
 def main():
-    if len(sys.argv) < 7:
-        print("Usage: build_clang.py <stamp_file> <build_dir> <install_dir> <source_dir> <config> <target_arch>")
+    if len(sys.argv) < 6:
+        print("Usage: build_clang.py <build_dir> <install_dir> <source_dir> <config> <target_arch>")
         sys.exit(1)
     
-    stamp_file = sys.argv[1]
-    build_dir   = sys.argv[2]
-    install_dir = sys.argv[3]
-    source_dir  = sys.argv[4]
-    config      = sys.argv[5]
-    target_arch = sys.argv[6]
+    build_dir   = sys.argv[1]
+    install_dir = sys.argv[2]
+    source_dir  = sys.argv[3]
+    config      = sys.argv[4]
+    target_arch = sys.argv[5]
+    
+    # Define the stamp file in the installation directory.
+    stamp_file = os.path.join(install_dir, "built.stamp")
     
     # If the stamp file exists, clang is already built.
     if os.path.exists(stamp_file):
@@ -28,12 +30,11 @@ def main():
     # Ensure the build directory exists.
     os.makedirs(build_dir, exist_ok=True)
     
-    # Configure step: run cmake to configure the LLVM/Clang build.
+    # Configure step: run CMake to configure the LLVM/Clang build.
     configure_cmd = [
         "cmake", "-Wno-dev", "-GNinja",
         f"-DCMAKE_INSTALL_PREFIX={install_dir}",
         "-DLLVM_ENABLE_PROJECTS=clang",
-        # Set your target architecture as needed:
         f"-DLLVM_TARGETS_TO_BUILD={target_arch}",
         "-DLLVM_PARALLEL_LINK_JOBS=6",
         "-DLLVM_ENABLE_ASSERTIONS=OFF",

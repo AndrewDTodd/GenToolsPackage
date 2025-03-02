@@ -95,7 +95,7 @@ if (NOT USE_SYSTEM_CLANG)
     set(LLVM_SOURCE_DIR "${LLVM_CLANG_MINIMAL_DIR}/llvm")
     set(LLVM_BUILD_DIR "${CMAKE_BINARY_DIR}/llvm-build/$<CONFIG>")
     set(LLVM_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/llvm-install/$<CONFIG>")
-    set(LLVM_BUILT_FLAG "${LLVM_INSTALL_DIR}/built.flag")
+    #set(LLVM_BUILT_FLAG "${LLVM_INSTALL_DIR}/built.flag")
 
     #[[# Single custom command that configures, builds, and installs LLVM/Clang
     add_custom_command(
@@ -136,18 +136,13 @@ if (NOT USE_SYSTEM_CLANG)
 
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
-    # Custom command to build clang only if it hasn’t been built already.
-    add_custom_command(
-      OUTPUT ${LLVM_BUILT_FLAG}
+    add_custom_target(llvm-install ALL
       COMMAND ${CMAKE_COMMAND} -E echo "Checking if Clang is built for configuration $<CONFIG>..."
       COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake_config/scripts/build_clang.py
-              ${LLVM_BUILT_FLAG} ${LLVM_BUILD_DIR} ${LLVM_INSTALL_DIR} ${LLVM_SOURCE_DIR} $<CONFIG> ${LLVM_TARGET_ARCH}
+              ${LLVM_BUILD_DIR} ${LLVM_INSTALL_DIR} ${LLVM_SOURCE_DIR} $<CONFIG> ${LLVM_TARGET_ARCH}
       COMMENT "Building and Installing LLVM/Clang (if needed)..."
       VERBATIM
     )
-
-    # Custom target that depends on the stamp file.
-    add_custom_target(llvm-install ALL DEPENDS ${LLVM_BUILT_FLAG})
 
     # Set include and lib paths for built Clang
     set(LLVM_INCLUDE_DIR "${LLVM_INSTALL_DIR}/include")
@@ -195,7 +190,7 @@ if (${PROJECT_NAME}_BUILD)
             add_dependencies(${TARGET_NAME} llvm-install)
 
             # Add Clang headers and libraries for linking
-            target_include_directories(${TARGET_NAME} PRIVATE ${LLVM_INCLUDE_DIR})
+            target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${LLVM_INCLUDE_DIR})
             target_link_directories(${TARGET_NAME} PRIVATE ${LLVM_LIB_DIR})
 
             target_link_libraries(${TARGET_NAME} PRIVATE 
@@ -237,8 +232,44 @@ if (${PROJECT_NAME}_BUILD)
             )
         else()
             # Use system Clang's include and library paths
-            target_include_directories(${TARGET_NAME} PRIVATE ${Clang_INCLUDE_DIRS})
-            target_link_libraries(${TARGET_NAME} PRIVATE clangFrontend clangAST clangBasic)
+            target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${Clang_INCLUDE_DIRS})
+            target_link_libraries(${TARGET_NAME} PRIVATE 
+            clangFrontend 
+            clangAST 
+            clangBasic 
+            clangLex 
+            
+            LLVMCore 
+            LLVMFrontendOpenMP 
+            LLVMFrontendOffloading
+            LLVMScalarOpts
+            LLVMInstCombine
+            LLVMAggressiveInstCombine
+            LLVMTransformUtils
+            LLVMAnalysis
+            LLVMProfileData
+            LLVMSymbolize
+            LLVMDebugInfoBTF
+            LLVMDebugInfoPDB
+            LLVMDebugInfoMSF
+            LLVMDebugInfoDWARF
+            LLVMObject
+            LLVMTextAPI
+            LLVMMCParser
+            LLVMIRReader
+            LLVMAsmParser
+            LLVMMC
+            LLVMDebugInfoCodeView
+            LLVMBitReader
+            LLVMRemarks 
+            LLVMBitstreamReader 
+            LLVMBinaryFormat 
+            LLVMTargetParser 
+            LLVMSupport 
+            LLVMDemangle
+
+            ntdll
+            )
         endif()
 
         # Set up include directories
