@@ -15,6 +15,7 @@
 #if defined(_LINUX_TARGET) or defined(_MAC_TARGET)
 #include <cstdlib>
 #elif defined(_WIN_TARGET)
+#define NOMINMAX
 #include <windows.h>
 #endif
 

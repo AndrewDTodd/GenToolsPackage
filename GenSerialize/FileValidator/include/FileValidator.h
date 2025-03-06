@@ -9,12 +9,11 @@ namespace GenTools::GenSerialize
 	class FileValidator
 	{
 	private:
-		std::filesystem::path m_sourceFilePath;
 
 	public:
-		explicit FileValidator(const std::filesystem::path& sourceFilePath);
+		explicit FileValidator() = default;
 
-		bool ValidateFile();
+		bool ValidateFile(const std::filesystem::path& sourceFilePath);
 	};
 }
 

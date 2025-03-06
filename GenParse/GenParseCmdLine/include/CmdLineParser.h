@@ -780,11 +780,11 @@ namespace GenTools::GenParse
 
 						if constexpr (ParseMode == ParsingMode::Strict)
 						{
-							throw std::invalid_argument("Error: In Command Line Parser\n >>>Unknown token \'" + key + "\' provided");
+							throw std::invalid_argument("Error: In Command Line Parser\n >>> Unknown token \'" + key + "\' provided");
 						}
 						else if constexpr (Verbosity == VerbositySetting::Verbose)
 						{
-							std::string message = "Warning: In Command Line Parser\n >>>Ignoring unknown token \'" + key + "\' provided";
+							std::string message = "Warning: In Command Line Parser\n >>> Ignoring unknown token \'" + key + "\' provided";
 							TERMINAL::PRINT_WARNING(message);
 						}
 
@@ -798,7 +798,7 @@ namespace GenTools::GenParse
 			}
 
 			if (_detectedReqFlags < _reqFlagsCount && !_optionalFlags["--help"]->FlagArgument().as<bool>())
-				throw std::invalid_argument("Error: In Command Line Parser\n >>>" + _programName + " requires that the, " + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments");
+				throw std::invalid_argument("Error: In Command Line Parser\n >>> " + _programName + " requires that the, " + _requiredFlagsExpectedTokens + " flag token(s) all be set with valid arguments");
 		}
 
 		bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept
@@ -830,7 +830,7 @@ namespace GenTools::GenParse
 
 						if constexpr (ParseMode == ParsingMode::Strict)
 						{
-							std::string msg = "Error: In Command Line Parser\n >>>Unknown token \'" + key + "\' provided";
+							std::string msg = "Error: In Command Line Parser\n >>> Unknown token \'" + key + "\' provided";
 
 							TERMINAL::PRINT_ERROR(msg);
 
@@ -838,7 +838,7 @@ namespace GenTools::GenParse
 						}
 						else if constexpr (Verbosity == VerbositySetting::Verbose)
 						{
-							std::string message = "Warning: In Command Line Parser\n >>>Ignoring unknown token \'" + key + "\' provided";
+							std::string message = "Warning: In Command Line Parser\n >>> Ignoring unknown token \'" + key + "\' provided";
 							TERMINAL::PRINT_WARNING(message);
 						}
 
@@ -854,7 +854,7 @@ namespace GenTools::GenParse
 
 			if (_detectedReqFlags < _reqFlagsCount && !_optionalFlags["--help"]->FlagArgument().as<bool>())
 			{
-				std::string msg = "Error: In Command Line Parser\n >>>" + _programName + " requires that the, " + _requiredFlagsExpectedTokens + " flag tokens all be set with valid arguments";
+				std::string msg = "Error: In Command Line Parser\n >>> " + _programName + " requires that the, " + _requiredFlagsExpectedTokens + " flag token(s) all be set with valid arguments";
 
 				TERMINAL::PRINT_ERROR(msg);
 

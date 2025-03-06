@@ -11,26 +11,28 @@
 #include <vector>
 #include <unordered_map>
 #include <sstream>
+#include <filesystem>
 
 #include <SAST.h>
 
 namespace GenTools::GenSerialize
 {
+	struct SASTResult
+	{
+		std::vector<std::shared_ptr<SASTNode>> SASTTree;
+		std::unordered_map<std::string, std::shared_ptr<SASTNode>> SASTMap;
+		std::string filePath;
+	};
+
 	class ASTParser : public clang::ASTConsumer, public clang::RecursiveASTVisitor<ASTParser>
 	{
 	private:
-		clang::CompilerInstance& m_compilerInstance;
-
-		// Map of SAST nodes keyed by fully qualified type name
-		std::unordered_map<std::string, std::shared_ptr<SASTNode>> m_SASTNodes;
-
-		// List of SAST nodes (one per marked type) for the translation unit
-		std::vector<std::shared_ptr<SASTNode>> m_SASTList;
+		SASTResult& m_result;
 
 		void ProcessFields(clang::CXXRecordDecl* recordDecl, std::shared_ptr<SASTNode> sastNode);
-
+		
 	public:
-		explicit ASTParser(clang::CompilerInstance& compilerInstance);
+		explicit ASTParser(SASTResult& result);
 
 		void HandleTranslationUnit(clang::ASTContext& context) override;
 

@@ -8,7 +8,7 @@ option(${PROJECT_NAME}_VERBOSE "Enable verbose messages for ${TARGET_NAME}" ${PR
 
 message(STATUS "${PROJECT_NAME}_VERBOSE: ${${PROJECT_NAME}_VERBOSE}")
 
-option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" OFF)
+option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" ON)
 
 # FIND PACKAGE and FETCH CONTENT ******************************************************************
 #**************************************************************************************************
@@ -23,7 +23,7 @@ if (Clang_FOUND)
     set(USE_SYSTEM_CLANG TRUE)
 else()
     if (${PROJECT_NAME}_DEBUG)
-        message(STATUS "System Clang not found; will use clone and build Clang.")
+        message(STATUS "System Clang not found; will clone and build Clang.")
     endif()
     set(USE_SYSTEM_CLANG FALSE)
 endif()
@@ -95,44 +95,6 @@ if (NOT USE_SYSTEM_CLANG)
     set(LLVM_SOURCE_DIR "${LLVM_CLANG_MINIMAL_DIR}/llvm")
     set(LLVM_BUILD_DIR "${CMAKE_BINARY_DIR}/llvm-build/$<CONFIG>")
     set(LLVM_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/llvm-install/$<CONFIG>")
-    #set(LLVM_BUILT_FLAG "${LLVM_INSTALL_DIR}/built.flag")
-
-    #[[# Single custom command that configures, builds, and installs LLVM/Clang
-    add_custom_command(
-      OUTPUT ${LLVM_BUILT_FLAG}
-
-      # Ensure the build directory exists; the generator expression $<CONFIG> is evaluated here.
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${LLVM_BUILD_DIR}
-
-      # Configure step (run from LLVM_BUILD_DIR)
-      COMMAND ${CMAKE_COMMAND} -E chdir ${LLVM_BUILD_DIR} ${CMAKE_COMMAND} -E echo "Configuring LLVM/Clang..."
-      COMMAND ${CMAKE_COMMAND} -E chdir ${LLVM_BUILD_DIR} ${CMAKE_COMMAND} -Wno-dev -GNinja
-        -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL_DIR}
-        -DLLVM_ENABLE_PROJECTS=clang
-        -DLLVM_TARGETS_TO_BUILD=${LLVM_TARGET_ARCH}
-        -DLLVM_PARALLEL_LINK_JOBS=6
-        -DLLVM_ENABLE_ASSERTIONS=OFF
-        -DLLVM_BUILD_LLVM_DYLIB=OFF
-        -DLLVM_USE_LINKER=lld
-        -DCMAKE_BUILD_TYPE=$<CONFIG>
-        ${LLVM_SOURCE_DIR}
-      COMMENT "Configuring LLVM/Clang (if needed)..."
-      VERBATIM
-
-      # Build step (run from LLVM_BUILD_DIR)
-      COMMAND ${CMAKE_COMMAND} -E chdir ${LLVM_BUILD_DIR} ${CMAKE_COMMAND} -E echo "Building LLVM/Clang..."
-      COMMAND ${CMAKE_COMMAND} -E chdir ${LLVM_BUILD_DIR} ninja
-
-      # Install step (run from LLVM_BUILD_DIR)
-      COMMAND ${CMAKE_COMMAND} -E chdir ${LLVM_BUILD_DIR} ${CMAKE_COMMAND} -E echo "Installing LLVM/Clang..."
-      COMMAND ${CMAKE_COMMAND} -E chdir ${LLVM_BUILD_DIR} ninja install
-
-      # Touch file to indicate successful install
-      COMMAND ${CMAKE_COMMAND} -E chdir ${LLVM_BUILD_DIR} ${CMAKE_COMMAND} -E touch ${LLVM_BUILT_FLAG}
-      COMMENT "Building and Installing LLVM/Clang (if needed)..."
-    )
-
-    add_custom_target(llvm-install DEPENDS ${LLVM_BUILT_FLAG})]]
 
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
@@ -155,19 +117,17 @@ endif()
 # Target Creation *********************************************************************************
 #**************************************************************************************************
 
-file(GLOB_RECURSE ${TARGET_NAME}_SOURCE 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+file(GLOB_RECURSE Lib${TARGET_NAME}_SOURCE 
     "${CMAKE_CURRENT_SOURCE_DIR}/*/src/*.cpp"
     "${CMAKE_SOURCE_DIR}/generated/src/*.cpp"
 )
 
-file(GLOB ${TARGET_NAME}_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
-list(APPEND ${TARGET_NAME}_DIRS ".")
-list(APPEND ${TARGET_NAME}_DIRS "${CMAKE_SOURCE_DIR}/generated")
+file(GLOB Lib${TARGET_NAME}_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+list(APPEND Lib${TARGET_NAME}_DIRS ".")
 
 if (${PROJECT_NAME}_DEBUG)
-    message(STATUS "${TARGET_NAME}_DIRS: ${${TARGET_NAME}_DIRS}")
-    message(STATUS "${TARGET_NAME}_SOURCE: ${${TARGET_NAME}_SOURCE}")
+    message(STATUS "Lib${TARGET_NAME}_DIRS: ${Lib${TARGET_NAME}_DIRS}")
+    message(STATUS "Lib${TARGET_NAME}_SOURCE: ${Lib${TARGET_NAME}_SOURCE}")
 endif()
 
 if (NOT DEFINED ${PROJECT_NAME}_BUILD)
@@ -175,112 +135,349 @@ if (NOT DEFINED ${PROJECT_NAME}_BUILD)
 endif()
 
 if (${PROJECT_NAME}_BUILD)
-    if (${TARGET_NAME}_SOURCE)
+    if (Lib${TARGET_NAME}_SOURCE)
         if (${PROJECT_NAME}_DEBUG)
-            message(STATUS "Creating target: ${TARGET_NAME} executable")
+            message(STATUS "Creating target: Lib${TARGET_NAME} library")
         endif()
 
-        add_executable(${TARGET_NAME} ${${TARGET_NAME}_SOURCE})
-
-        target_link_libraries(${TARGET_NAME} PRIVATE GenParse)
+        add_library(Lib${TARGET_NAME} STATIC ${Lib${TARGET_NAME}_SOURCE})
 
         # Only add llvm-clang dependency if using an external build
         if (NOT USE_SYSTEM_CLANG)
             # Ensure Clang fetch completes before compiling
-            add_dependencies(${TARGET_NAME} llvm-install)
+            add_dependencies(Lib${TARGET_NAME} llvm-install)
 
             # Add Clang headers and libraries for linking
-            target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${LLVM_INCLUDE_DIR})
-            target_link_directories(${TARGET_NAME} PRIVATE ${LLVM_LIB_DIR})
+            target_include_directories(Lib${TARGET_NAME} SYSTEM PUBLIC ${LLVM_INCLUDE_DIR})
+            target_link_directories(Lib${TARGET_NAME} PUBLIC ${LLVM_LIB_DIR})
 
-            target_link_libraries(${TARGET_NAME} PRIVATE 
-            clangFrontend 
-            clangAST 
-            clangBasic 
-            clangLex 
+            target_link_libraries(Lib${TARGET_NAME} PUBLIC 
+            clangAnalysis
+            clangAnalysisFlowSensitive
+            clangAnalysisFlowSensitiveModels
+            clangAPINotes
+            clangARCMigrate
+            clangAST
+            clangASTMatchers
+            clangBasic
+            clangCodeGen
+            clangCrossTU
+            clangDependencyScanning
+            clangDirectoryWatcher
+            clangDriver
+            clangDynamicASTMatchers
+            clangEdit
+            clangExtractAPI
+            clangFormat
+            clangFrontend
+            clangFrontendTool
+            clangHandleCXX
+            clangHandleLLVM
+            clangIndex
+            clangIndexSerialization
+            clangInstallAPI
+            clangInterpreter
+            clangLex
+            clangParse
+            clangRewrite
+            clangRewriteFrontend
+            clangSema
+            clangSerialization
+            clangStaticAnalyzerCheckers
+            clangStaticAnalyzerCore
+            clangStaticAnalyzerFrontend
+            clangSupport
+            clangTooling
+            clangToolingASTDiff
+            clangToolingCore
+            clangToolingInclusions
+            clangToolingInclusionsStdlib
+            clangToolingRefactoring
+            clangToolingSyntax
+            clangTransformer
+            libclang
             
-            LLVMCore 
-            LLVMFrontendOpenMP 
-            LLVMFrontendOffloading
-            LLVMScalarOpts
-            LLVMInstCombine
+            LLVM-C
             LLVMAggressiveInstCombine
-            LLVMTransformUtils
             LLVMAnalysis
-            LLVMProfileData
-            LLVMSymbolize
-            LLVMDebugInfoBTF
-            LLVMDebugInfoPDB
-            LLVMDebugInfoMSF
-            LLVMDebugInfoDWARF
-            LLVMObject
-            LLVMTextAPI
-            LLVMMCParser
-            LLVMIRReader
             LLVMAsmParser
-            LLVMMC
-            LLVMDebugInfoCodeView
+            LLVMAsmPrinter
+            LLVMBinaryFormat
             LLVMBitReader
-            LLVMRemarks 
-            LLVMBitstreamReader 
-            LLVMBinaryFormat 
-            LLVMTargetParser 
-            LLVMSupport 
+            LLVMBitstreamReader
+            LLVMBitWriter
+            LLVMCFGuard
+            LLVMCFIVerify
+            LLVMCodeGen
+            LLVMCodeGenData
+            LLVMCodeGenTypes
+            LLVMCore
+            LLVMCoroutines
+            LLVMCoverage
+            LLVMDebugInfoBTF
+            LLVMDebugInfoCodeView
+            LLVMDebuginfod
+            LLVMDebugInfoDWARF
+            LLVMDebugInfoGSYM
+            LLVMDebugInfoLogicalView
+            LLVMDebugInfoMSF
+            LLVMDebugInfoPDB
             LLVMDemangle
-
-            ntdll
+            LLVMDiff
+            LLVMDlltoolDriver
+            LLVMDWARFLinker
+            LLVMDWARFLinkerClassic
+            LLVMDWARFLinkerParallel
+            LLVMDWP
+            LLVMExecutionEngine
+            LLVMExegesis
+            LLVMExegesisX86
+            LLVMExtensions
+            LLVMFileCheck
+            LLVMFrontendDriver
+            LLVMFrontendHLSL
+            LLVMFrontendOffloading
+            LLVMFrontendOpenACC
+            LLVMFrontendOpenMP
+            LLVMFuzzerCLI
+            LLVMFuzzMutate
+            LLVMGlobalISel
+            LLVMHipStdPar
+            LLVMInstCombine
+            LLVMInstrumentation
+            LLVMInterfaceStub
+            LLVMInterpreter
+            LLVMipo
+            LLVMIRPrinter
+            LLVMIRReader
+            LLVMJITLink
+            LLVMLibDriver
+            LLVMLineEditor
+            LLVMLinker
+            LLVMLTO
+            LLVMMC
+            LLVMMCA
+            LLVMMCDisassembler
+            LLVMMCParser
+            LLVMMIRParser
+            LLVMObjCARCOpts
+            LLVMObjCopy
+            LLVMObject
+            LLVMObjectYAML
+            LLVMOptDriver
+            LLVMOption
+            LLVMOrcDebugging
+            LLVMOrcJIT
+            LLVMOrcShared
+            LLVMOrcTargetProcess
+            LLVMPasses
+            LLVMProfileData
+            LLVMRemarks
+            LLVMRuntimeDyld
+            LLVMSandboxIR
+            LLVMScalarOpts
+            LLVMSelectionDAG
+            LLVMSupport
+            LLVMSymbolize
+            LLVMTableGen
+            LLVMTableGenBasic
+            LLVMTableGenCommon
+            LLVMTarget
+            LLVMTargetParser
+            LLVMTextAPI
+            LLVMTextAPIBinaryReader
+            LLVMTransformUtils
+            LLVMVectorize
+            LLVMWindowsDriver
+            LLVMWindowsManifest
+            LLVMXRay
+            LLVMX86AsmParser
+            LLVMX86CodeGen
+            LLVMX86Desc
+            LLVMX86Disassembler
+            LLVMX86Info
+            LLVMX86TargetMCA
+            LTO
+            Remarks
             )
         else()
             # Use system Clang's include and library paths
-            target_include_directories(${TARGET_NAME} SYSTEM PRIVATE ${Clang_INCLUDE_DIRS})
-            target_link_libraries(${TARGET_NAME} PRIVATE 
-            clangFrontend 
-            clangAST 
-            clangBasic 
-            clangLex 
+            target_include_directories(Lib${TARGET_NAME} SYSTEM PUBLIC ${Clang_INCLUDE_DIRS})
+            target_link_libraries(Lib${TARGET_NAME} PUBLIC 
+            clangAnalysis
+            clangAnalysisFlowSensitive
+            clangAnalysisFlowSensitiveModels
+            clangAPINotes
+            clangARCMigrate
+            clangAST
+            clangASTMatchers
+            clangBasic
+            clangCodeGen
+            clangCrossTU
+            clangDependencyScanning
+            clangDirectoryWatcher
+            clangDriver
+            clangDynamicASTMatchers
+            clangEdit
+            clangExtractAPI
+            clangFormat
+            clangFrontend
+            clangFrontendTool
+            clangHandleCXX
+            clangHandleLLVM
+            clangIndex
+            clangIndexSerialization
+            clangInstallAPI
+            clangInterpreter
+            clangLex
+            clangParse
+            clangRewrite
+            clangRewriteFrontend
+            clangSema
+            clangSerialization
+            clangStaticAnalyzerCheckers
+            clangStaticAnalyzerCore
+            clangStaticAnalyzerFrontend
+            clangSupport
+            clangTooling
+            clangToolingASTDiff
+            clangToolingCore
+            clangToolingInclusions
+            clangToolingInclusionsStdlib
+            clangToolingRefactoring
+            clangToolingSyntax
+            clangTransformer
+            libclang
             
-            LLVMCore 
-            LLVMFrontendOpenMP 
-            LLVMFrontendOffloading
-            LLVMScalarOpts
-            LLVMInstCombine
+            LLVM-C
             LLVMAggressiveInstCombine
-            LLVMTransformUtils
             LLVMAnalysis
-            LLVMProfileData
-            LLVMSymbolize
-            LLVMDebugInfoBTF
-            LLVMDebugInfoPDB
-            LLVMDebugInfoMSF
-            LLVMDebugInfoDWARF
-            LLVMObject
-            LLVMTextAPI
-            LLVMMCParser
-            LLVMIRReader
             LLVMAsmParser
-            LLVMMC
-            LLVMDebugInfoCodeView
+            LLVMAsmPrinter
+            LLVMBinaryFormat
             LLVMBitReader
-            LLVMRemarks 
-            LLVMBitstreamReader 
-            LLVMBinaryFormat 
-            LLVMTargetParser 
-            LLVMSupport 
+            LLVMBitstreamReader
+            LLVMBitWriter
+            LLVMCFGuard
+            LLVMCFIVerify
+            LLVMCodeGen
+            LLVMCodeGenData
+            LLVMCodeGenTypes
+            LLVMCore
+            LLVMCoroutines
+            LLVMCoverage
+            LLVMDebugInfoBTF
+            LLVMDebugInfoCodeView
+            LLVMDebuginfod
+            LLVMDebugInfoDWARF
+            LLVMDebugInfoGSYM
+            LLVMDebugInfoLogicalView
+            LLVMDebugInfoMSF
+            LLVMDebugInfoPDB
             LLVMDemangle
-
-            ntdll
+            LLVMDiff
+            LLVMDlltoolDriver
+            LLVMDWARFLinker
+            LLVMDWARFLinkerClassic
+            LLVMDWARFLinkerParallel
+            LLVMDWP
+            LLVMExecutionEngine
+            LLVMExegesis
+            LLVMExegesisX86
+            LLVMExtensions
+            LLVMFileCheck
+            LLVMFrontendDriver
+            LLVMFrontendHLSL
+            LLVMFrontendOffloading
+            LLVMFrontendOpenACC
+            LLVMFrontendOpenMP
+            LLVMFuzzerCLI
+            LLVMFuzzMutate
+            LLVMGlobalISel
+            LLVMHipStdPar
+            LLVMInstCombine
+            LLVMInstrumentation
+            LLVMInterfaceStub
+            LLVMInterpreter
+            LLVMipo
+            LLVMIRPrinter
+            LLVMIRReader
+            LLVMJITLink
+            LLVMLibDriver
+            LLVMLineEditor
+            LLVMLinker
+            LLVMLTO
+            LLVMMC
+            LLVMMCA
+            LLVMMCDisassembler
+            LLVMMCParser
+            LLVMMIRParser
+            LLVMObjCARCOpts
+            LLVMObjCopy
+            LLVMObject
+            LLVMObjectYAML
+            LLVMOptDriver
+            LLVMOption
+            LLVMOrcDebugging
+            LLVMOrcJIT
+            LLVMOrcShared
+            LLVMOrcTargetProcess
+            LLVMPasses
+            LLVMProfileData
+            LLVMRemarks
+            LLVMRuntimeDyld
+            LLVMSandboxIR
+            LLVMScalarOpts
+            LLVMSelectionDAG
+            LLVMSupport
+            LLVMSymbolize
+            LLVMTableGen
+            LLVMTableGenBasic
+            LLVMTableGenCommon
+            LLVMTarget
+            LLVMTargetParser
+            LLVMTextAPI
+            LLVMTextAPIBinaryReader
+            LLVMTransformUtils
+            LLVMVectorize
+            LLVMWindowsDriver
+            LLVMWindowsManifest
+            LLVMXRay
+            LLVMX86AsmParser
+            LLVMX86CodeGen
+            LLVMX86Desc
+            LLVMX86Disassembler
+            LLVMX86Info
+            LLVMX86TargetMCA
+            LTO
+            Remarks
             )
         endif()
 
+        if(WIN32)
+            target_link_libraries(Lib${TARGET_NAME} PUBLIC ntdll Version.lib)
+        endif()
+
+        add_link_options(/ignore:4099)
+
+        if (${PROJECT_NAME}_DEBUG)
+            message(STATUS "Adding include directory: ${CMAKE_SOURCE_DIR}/generated/include")
+        endif()
+
+        target_include_directories(Lib${TARGET_NAME} PUBLIC 
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/generated/include> 
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/Lib${TARGET_NAME}/generated> # Used when installed
+        )
+
         # Set up include directories
-        foreach (dir ${${TARGET_NAME}_DIRS})
+        foreach (dir ${Lib${TARGET_NAME}_DIRS})
             if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include")
                 if (${PROJECT_NAME}_DEBUG)
                     message(STATUS "Adding include directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include")
                 endif()
-                target_include_directories(${TARGET_NAME} PRIVATE 
+                target_include_directories(Lib${TARGET_NAME} PUBLIC 
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${dir}/include> 
-                    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # Used when installed
+                    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/Lib${TARGET_NAME}/${dir}> # Used when installed
                 )
             endif()
 
@@ -288,12 +485,25 @@ if (${PROJECT_NAME}_BUILD)
                 if (${PROJECT_NAME}_DEBUG)
                     message(STATUS "Adding inl directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl")
                 endif()
-                target_include_directories(${TARGET_NAME} PRIVATE 
+                target_include_directories(Lib${TARGET_NAME} PUBLIC 
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${dir}/inl> 
-                    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME}/${dir}> # Used when installed
+                    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/Lib${TARGET_NAME}/${dir}> # Used when installed
                 )
             endif()
         endforeach()
+
+        set_target_properties(Lib${TARGET_NAME} PROPERTIES 
+            VERSION ${PROJECT_VERSION} 
+            SOVERSION ${PROJECT_VERSION_MAJOR}
+        )
+
+        if (${PROJECT_NAME}_DEBUG)
+            message(STATUS "Creating target: ${TARGET_NAME} executable")
+        endif()
+
+        add_executable(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+
+        target_link_libraries(${TARGET_NAME} PRIVATE GenParse LibGenSerialize)
 
         set_target_properties(${TARGET_NAME} PROPERTIES 
             VERSION ${PROJECT_VERSION} 
@@ -486,10 +696,7 @@ if (GEN_TOOLS_PACKAGE_BUILD_TESTS)
 
 	set(${TARGET_NAME}_TEST_DIRS "")
 
-	foreach(dir ${${TARGET_NAME}_DIRS})
-		if(IS_DIRECTORY "${dir}/tests")
-			list(APPEND ${TARGET_NAME}_TEST_DIRS "${dir}/tests")
-		endif()
+	foreach(dir ${Lib${TARGET_NAME}_DIRS})
 		if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tests")
 				if(${PROJECT_NAME}_DEBUG)	
 					message(STATUS "Adding test directory: ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tests")

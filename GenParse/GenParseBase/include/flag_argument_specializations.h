@@ -69,6 +69,11 @@ namespace GenTools::GenParse
 	public:
 		Arg_String() : flag_argument_t<std::string>("", ParseString) {}
 		Arg_String(std::string&& defaultValue) : flag_argument_t<std::string>(std::move(defaultValue), ParseString) {}
+
+		std::string GetArgType() const noexcept override
+		{
+			return "string";
+		}
 	};
 
 	class Arg_DelString : public flag_argument_t<std::string>
@@ -76,6 +81,11 @@ namespace GenTools::GenParse
 	public:
 		Arg_DelString() : flag_argument_t<std::string>("", ParseStringDelimited) {}
 		Arg_DelString(std::string&& defaultValue) : flag_argument_t<std::string>(std::move(defaultValue), ParseStringDelimited) {}
+
+		std::string GetArgType() const noexcept override
+		{
+			return "string";
+		}
 	};
 
 	class Ptr_Bool : public flag_pointer_t<bool>
@@ -139,6 +149,11 @@ namespace GenTools::GenParse
 	public:
 		Ptr_String() : flag_pointer_t<std::string>(ParseString) {}
 		Ptr_String(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseString) {}
+
+		std::string GetArgType() const noexcept override
+		{
+			return "string";
+		}
 	};
 
 	class Ptr_DelString : public flag_pointer_t<std::string>
@@ -146,6 +161,11 @@ namespace GenTools::GenParse
 	public:
 		Ptr_DelString() : flag_pointer_t<std::string>(ParseStringDelimited) {}
 		Ptr_DelString(std::string* targetString) : flag_pointer_t<std::string>(targetString, ParseStringDelimited) {}
+
+		std::string GetArgType() const noexcept override
+		{
+			return "string";
+		}
 	};
 
 	//////////////////////////////////////////////////////////////////////////////

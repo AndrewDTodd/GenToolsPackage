@@ -1,16 +1,23 @@
 #include <ASTParser.h>
 
+#include <FileValidator.h>
+#include <PlatformInterface.h>
+
 namespace GenTools::GenSerialize
 {
-	ASTParser::ASTParser(clang::CompilerInstance& compilerInstance)
-		: m_compilerInstance(compilerInstance)
+	ASTParser::ASTParser(SASTResult& result)
+		: m_result(result)
 	{}
 
 	void ASTParser::HandleTranslationUnit(clang::ASTContext& context)
 	{
 		TraverseDecl(context.getTranslationUnitDecl());
 
-		
+		if (!m_result.SASTTree.empty())
+		{
+			FileValidator validator;
+			validator.ValidateFile(m_result.filePath);
+		}
 	}
 
 	bool ASTParser::VisitCXXRecordDecl(clang::CXXRecordDecl* recordDecl)
@@ -32,7 +39,7 @@ namespace GenTools::GenSerialize
 			if (annotation.find("serializable") == 0)
 			{
 				isSerializable = true;
-				std::string params = annotation.substr(12);
+				std::string params = annotation.substr(13);
 				
 				// Determine the policy based upon the parameter
 				if (params == "all")
@@ -90,8 +97,8 @@ namespace GenTools::GenSerialize
 				if (baseDecl->hasAttr<clang::AnnotateAttr>())
 				{
 					// Find the SAST node for the base class, if one exists
-					auto baseNode = m_SASTNodes.find(baseDecl->getQualifiedNameAsString());
-					if (baseNode != m_SASTNodes.end())
+					auto baseNode = m_result.SASTMap.find(baseDecl->getQualifiedNameAsString());
+					if (baseNode != m_result.SASTMap.end())
 					{
 						sastNode->baseNodes.push_back(baseNode->second);
 					}
@@ -103,8 +110,8 @@ namespace GenTools::GenSerialize
 		ProcessFields(recordDecl, sastNode);
 
 		// Save the node for later lookup and processing
-		m_SASTNodes[sastNode->name] = sastNode;
-		m_SASTList.push_back(sastNode);
+		m_result.SASTMap[sastNode->name] = sastNode;
+		m_result.SASTTree.push_back(sastNode);
 
 		return true;
 	}
@@ -144,6 +151,11 @@ namespace GenTools::GenSerialize
 			{
 				includeField = true;
 			}
+			// If not explicitly annotated but the node uses the "POD" policy, include it
+			else if (!includeField && sastNode->serializationPolicy == SASTNode::SerializationPolicy::POD)
+			{
+				includeField = true;
+			}
 
 			if (!includeField)
 				continue;
@@ -152,7 +164,26 @@ namespace GenTools::GenSerialize
 			sastField.name = customName.empty() ? field->getNameAsString() : customName;
 
 			auto fieldType = field->getType();
-			if (fieldType->isIntegerType())
+			if (fieldType->isRecordType())
+			{
+				// For user-defined types, mark as object
+				sastField.type = SASTType::Object;
+				sastField.originalTypeName = fieldType.getAsString();
+
+				if (sastField.originalTypeName == "std::string")
+				{
+					sastField.type = SASTType::String;
+				}
+				else if (auto recordDecl = fieldType->getAsCXXRecordDecl())
+				{
+					std::string recordName = recordDecl->getQualifiedNameAsString();
+					if (m_result.SASTMap.find(recordName) != m_result.SASTMap.end())
+					{
+						sastField.objectNode = m_result.SASTMap[recordName];
+					}
+				}
+			}
+			else if (fieldType->isIntegerType())
 			{
 				sastField.type = SASTType::Int;
 				sastField.originalTypeName = fieldType.getAsString();
@@ -169,21 +200,6 @@ namespace GenTools::GenSerialize
 			{
 				sastField.type = SASTType::Bool;
 				sastField.originalTypeName = fieldType.getAsString();
-			}
-			else if (fieldType->isRecordType())
-			{
-				// For user-defined types, mark as object
-				sastField.type = SASTType::Object;
-				sastField.originalTypeName = fieldType.getAsString();
-
-				if (auto recordDecl = fieldType->getAsCXXRecordDecl())
-				{
-					std::string recordName = recordDecl->getQualifiedNameAsString();
-					if (m_SASTNodes.find(recordName) != m_SASTNodes.end())
-					{
-						sastField.objectNode = m_SASTNodes[recordName];
-					}
-				}
 			}
 			else
 			{
