@@ -4,8 +4,6 @@ namespace GenTools::GenSerialize
 {
 	std::unique_ptr<clang::FrontendAction> SASTGeneratorActionFactory::create()
 	{
-		std::lock_guard<std::mutex> lock(m_resultsMutex);
-
 		m_results.emplace_back();
 
 		return std::make_unique<SASTGeneratorAction>(m_results.back());

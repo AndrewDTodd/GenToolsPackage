@@ -14,20 +14,40 @@ namespace GenTools::GenSerialize
 	{
 		Int,
 		Float,
-		Double,
 		Bool,
 		String,
-		Object
+		Object,
+		POD,
+		Array,
+		Vector,
+		Set,
+		Map,
+		Unordered_Map
 	};
 
 	struct SASTNode;
 
 	struct SASTField
 	{
-		std::string name;						// The field name (or custom name if specified)
+		enum class Access
+		{
+			Public,
+			Protected,
+			Private
+		};
+		Access access;
+		std::string name;						// The field name
+		std::string formattedName;				// The field name, or custom name if specified
 		SASTType type;							// The type of the field
 		std::string originalTypeName;			// The C++ type name of the field, for debugging or further processing
 		std::shared_ptr<SASTNode> objectNode;	// For complex types, a link to the SASTNode representing that type
+
+		// For container types
+		// For Array, Vector, and Set the contained type
+		std::shared_ptr<SASTField> elementType;
+		// For Map, and Unordered_Map the key and value types
+		std::shared_ptr<SASTField> keyType;
+		std::shared_ptr<SASTField> valueType;
 	};
 
 	struct SASTNode

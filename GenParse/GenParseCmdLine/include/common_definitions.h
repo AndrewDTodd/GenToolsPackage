@@ -8,9 +8,6 @@
 
 namespace GenTools::GenParse
 {
-	template<typename T>
-	concept FlagType = std::is_base_of_v<flag_interface, T>&& std::movable<T>;
-
 	/// <summary>
 	/// Configure the parser's policy on irregularities in the arguments sequence it is parsing
 	/// </summary>

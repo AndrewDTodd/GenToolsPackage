@@ -30,6 +30,7 @@ namespace GenTools::GenSerialize
 		SASTResult& m_result;
 
 		void ProcessFields(clang::CXXRecordDecl* recordDecl, std::shared_ptr<SASTNode> sastNode);
+		std::shared_ptr<SASTField> ProcessFieldType(const clang::QualType& fieldType);
 		
 	public:
 		explicit ASTParser(SASTResult& result);

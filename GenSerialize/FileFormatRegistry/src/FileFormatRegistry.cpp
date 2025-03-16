@@ -8,9 +8,9 @@ namespace GenTools::GenSerialize
 		return instance;
 	}
 
-	void FileFormatRegistry::RegisterPlugin(const std::string& formatName, std::shared_ptr<IFormatPlugin> plugin)
+	void FileFormatRegistry::RegisterPlugin(std::shared_ptr<IFormatPlugin> plugin)
 	{
-		m_formatPlugins[formatName] = plugin;
+		m_formatPlugins[plugin->GetFormatName()] = plugin;
 	}
 
 	std::shared_ptr<IFormatPlugin> FileFormatRegistry::GetPlugin(const std::string& formatName) const

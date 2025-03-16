@@ -1,6 +1,8 @@
 #ifndef GENTOOLS_GENPARSE_FLAG_ARGUMENT_SPECIALIZATIONS_H
 #define GENTOOLS_GENPARSE_FLAG_ARGUMENT_SPECIALIZATIONS_H
 
+#include <sstream>
+
 #include <flag_argument.h>
 #include <parse_functions.h>
 

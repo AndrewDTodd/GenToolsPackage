@@ -21,10 +21,22 @@ namespace GenTools::GenSerialize
 	public:
 		static FileFormatRegistry& GetInstance();
 
-		void RegisterPlugin(const std::string& formatName, std::shared_ptr<IFormatPlugin> plugin);
+		void RegisterPlugin(std::shared_ptr<IFormatPlugin> plugin);
 
 		std::shared_ptr<IFormatPlugin> GetPlugin(const std::string& formatName) const;
 	};
+
+	class PluginRegistrar
+	{
+	public:
+		PluginRegistrar(std::shared_ptr<IFormatPlugin> plugin)
+		{
+			FileFormatRegistry::GetInstance().RegisterPlugin(plugin);
+		}
+	};
+
+#define REGISTER_STATIC_PLUGIN(PluginClass) \
+	static PluginRegistrar registrar_##PluginClass(std::make_shared<PluginClass>())
 }
 
 #endif // !GENTOOLS_GENSERIALIZE_FILE_FORMAT_REGISTRY_H

@@ -11,7 +11,6 @@ namespace GenTools::GenSerialize
 	class SASTGeneratorActionFactory : public clang::tooling::FrontendActionFactory
 	{
 	private:
-		std::mutex m_resultsMutex;
 		std::vector<SASTResult> m_results;
 
 	public:

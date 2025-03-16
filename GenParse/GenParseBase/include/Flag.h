@@ -127,6 +127,9 @@ namespace GenTools::GenParse
 		virtual inline bool TryRaise(std::vector<std::string_view>::const_iterator& itr, const std::vector<std::string_view>::const_iterator end, std::string* errorMsg = nullptr) noexcept = 0;
 	};
 
+	template<typename T>
+	concept FlagType = std::is_base_of_v<flag_interface, T>&& std::movable<T>;
+
 	template<IsFlagArgument Flag_Argument>
 	class Flag : public flag_interface
 	{

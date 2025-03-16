@@ -503,7 +503,7 @@ if (${PROJECT_NAME}_BUILD)
 
         add_executable(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
-        target_link_libraries(${TARGET_NAME} PRIVATE GenParse LibGenSerialize)
+        target_link_libraries(${TARGET_NAME} PRIVATE LibGenSerialize)
 
         set_target_properties(${TARGET_NAME} PROPERTIES 
             VERSION ${PROJECT_VERSION} 
@@ -512,12 +512,20 @@ if (${PROJECT_NAME}_BUILD)
 # End Target Creation *****************************************************************************
 #**************************************************************************************************
 
+# Add Sub-directories *****************************************************************************
+#**************************************************************************************************
+
+add_subdirectory(StandardPlugins)
+
+# End Add Sub-directories *************************************************************************
+#**************************************************************************************************
+
 # Installation and Packing Configuration **********************************************************
 #**************************************************************************************************
 
 	    # Install the targets
 	    install(
-		    TARGETS ${TARGET_NAME} 
+		    TARGETS ${TARGET_NAME} Lib${TARGET_NAME} 
 		    EXPORT ${TARGET_NAME}_Targets 
 		    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # Static libraries/import libraries (.lib files for .dll linking) 
 		    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # Shared libraries (.so) 
@@ -621,6 +629,7 @@ endif()
 # Custom Commands *********************************************************************************
 #**************************************************************************************************
 
+        #[[
         # Allow the user or parent project to specify which source files to process via a cache variable.
         set(GEN_SERIALIZE_SOURCE_FILES "" CACHE STRING "List of source files to run the GenSerialize tool on")
 
@@ -683,6 +692,7 @@ endif()
         add_custom_target(GenerateSerializationCode ALL
             DEPENDS ${CMAKE_BINARY_DIR}/gen_serialize_stamp
         )
+        ]]
 
 # End Custom Commands *****************************************************************************
 #**************************************************************************************************

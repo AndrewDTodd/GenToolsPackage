@@ -22,6 +22,13 @@ namespace GenTools::GenSerialize
 
 	bool ASTParser::VisitCXXRecordDecl(clang::CXXRecordDecl* recordDecl)
 	{
+		// Get the source manager from the ASTContext
+		clang::SourceManager& SM = recordDecl->getASTContext().getSourceManager();
+
+		// Skip declarations in system headers
+		if (SM.isInSystemHeader(recordDecl->getLocation()))
+			return true; // Continue traversal, but skip processing this record
+
 		// Only process definitions (not forward declarations)
 		if (!recordDecl->isThisDeclarationADefinition())
 		{
@@ -161,10 +168,145 @@ namespace GenTools::GenSerialize
 				continue;
 
 			SASTField sastField;
-			sastField.name = customName.empty() ? field->getNameAsString() : customName;
+			sastField.name = field->getNameAsString();
+			sastField.formattedName = customName.empty() ? field->getNameAsString() : customName;
+
+			switch (field->getAccess())
+			{
+			case clang::AS_public:
+				sastField.access = SASTField::Access::Public;
+				break;
+
+			case clang::AS_protected:
+				sastField.access = SASTField::Access::Protected;
+				if(sastNode->serializationPolicy == SASTNode::SerializationPolicy::POD)
+					throw std::runtime_error("Protected fields are not allowed in POD types");
+				break;
+
+			case clang::AS_private:
+				sastField.access = SASTField::Access::Private;
+				if (sastNode->serializationPolicy == SASTNode::SerializationPolicy::POD)
+					throw std::runtime_error("Private fields are not allowed in POD types");
+				break;
+
+			default:
+				sastField.access = SASTField::Access::Private;
+				break;
+			}
 
 			auto fieldType = field->getType();
-			if (fieldType->isRecordType())
+
+			// Handle C-style arrays (or similar array types)
+			if (fieldType->isArrayType())
+			{
+				sastField.type = SASTType::Array;
+				sastField.originalTypeName = fieldType.getAsString();
+
+				if (auto arrayType = clang::dyn_cast<clang::ArrayType>(fieldType.getTypePtr()))
+				{
+					auto elemType = arrayType->getElementType();
+					sastField.elementType = ProcessFieldType(elemType);
+				}
+			}
+			// Handle template specializations (i.e. STL containers)
+			else if (const auto* specType = fieldType->getAs<clang::TemplateSpecializationType>())
+			{
+				if (const auto* tmplDecl = specType->getTemplateName().getAsTemplateDecl())
+				{
+					std::string tmplName = tmplDecl->getNameAsString();
+					sastField.originalTypeName = fieldType.getAsString();
+
+					if (tmplName == "vector")
+					{
+						sastField.type = SASTType::Vector;
+						if (!specType->template_arguments().empty())
+						{
+							auto arg = specType->template_arguments()[0];
+							if (arg.getKind() == clang::TemplateArgument::Type)
+							{
+								auto elemType = arg.getAsType();
+								sastField.elementType = ProcessFieldType(elemType);
+							}
+						}
+					}
+					else if (tmplName == "set")
+					{
+						sastField.type = SASTType::Set;
+						if (!specType->template_arguments().empty())
+						{
+							auto arg = specType->template_arguments()[0];
+							if (arg.getKind() == clang::TemplateArgument::Type)
+							{
+								auto elemType = arg.getAsType();
+								sastField.elementType = ProcessFieldType(elemType);
+							}
+						}
+					}
+					else if (tmplName == "map")
+					{
+						sastField.type = SASTType::Map;
+						if (specType->template_arguments().size() >= 2)
+						{
+							auto keyArg = specType->template_arguments()[0];
+							auto valueArg = specType->template_arguments()[1];
+							if (keyArg.getKind() == clang::TemplateArgument::Type)
+							{
+								auto keyType = keyArg.getAsType();
+								sastField.keyType = ProcessFieldType(keyType);
+							}
+							if (valueArg.getKind() == clang::TemplateArgument::Type)
+							{
+								auto valueType = valueArg.getAsType();
+								sastField.valueType = ProcessFieldType(valueType);
+							}
+						}
+					}
+					else if (tmplName == "unordered_map")
+					{
+						sastField.type = SASTType::Unordered_Map;
+						if (specType->template_arguments().size() >= 2)
+						{
+							auto keyArg = specType->template_arguments()[0];
+							auto valueArg = specType->template_arguments()[1];
+							if (keyArg.getKind() == clang::TemplateArgument::Type)
+							{
+								auto keyType = keyArg.getAsType();
+								sastField.keyType = ProcessFieldType(keyType);
+							}
+							if (valueArg.getKind() == clang::TemplateArgument::Type)
+							{
+								auto valueType = valueArg.getAsType();
+								sastField.valueType = ProcessFieldType(valueType);
+							}
+						}
+					}
+					else
+					{
+						// Fallback: treat as a regular object if the template type is not recognized
+						sastField.type = SASTType::Object;
+						sastField.originalTypeName = fieldType.getAsString();
+
+						if (sastField.originalTypeName == "std::string")
+						{
+							sastField.type = SASTType::String;
+						}
+						else if (auto recordDecl = fieldType->getAsCXXRecordDecl())
+						{
+							std::string recordName = recordDecl->getQualifiedNameAsString();
+							if (m_result.SASTMap.find(recordName) != m_result.SASTMap.end())
+							{
+								sastField.objectNode = m_result.SASTMap[recordName];
+								if (sastField.objectNode)
+								{
+									if (sastField.objectNode->serializationPolicy == SASTNode::SerializationPolicy::POD)
+										sastField.type = SASTType::POD;
+								}
+							}
+						}
+					}
+				}
+			}
+			else if (fieldType->isRecordType())
 			{
 				// For user-defined types, mark as object
 				sastField.type = SASTType::Object;
@@ -180,6 +322,11 @@ namespace GenTools::GenSerialize
 					if (m_result.SASTMap.find(recordName) != m_result.SASTMap.end())
 					{
 						sastField.objectNode = m_result.SASTMap[recordName];
+						if (sastField.objectNode)
+						{
+							if (sastField.objectNode->serializationPolicy == SASTNode::SerializationPolicy::POD)
+								sastField.type = SASTType::POD;
+						}
 					}
 				}
 			}
@@ -190,10 +337,7 @@ namespace GenTools::GenSerialize
 			}
 			else if (fieldType->isFloatingType())
 			{
-				if (fieldType->isSpecificBuiltinType(clang::BuiltinType::Float))
-					sastField.type = SASTType::Float;
-				else
-					sastField.type = SASTType::Double;
+				sastField.type = SASTType::Float;
 				sastField.originalTypeName = fieldType.getAsString();
 			}
 			else if (fieldType->isBooleanType())
@@ -210,5 +354,169 @@ namespace GenTools::GenSerialize
 
 			sastNode->fields.push_back(sastField);
 		}
+	}
+
+	std::shared_ptr<SASTField> ASTParser::ProcessFieldType(const clang::QualType& fieldType)
+	{
+		auto sastField = std::make_shared<SASTField>();
+		sastField->name = "";
+
+		// Handle C-style arrays (or similar array types)
+		if (fieldType->isArrayType())
+		{
+			sastField->type = SASTType::Array;
+			sastField->originalTypeName = fieldType.getAsString();
+
+			if (auto arrayType = clang::dyn_cast<clang::ArrayType>(fieldType.getTypePtr()))
+			{
+				auto elemType = arrayType->getElementType();
+				sastField->elementType = ProcessFieldType(elemType);
+			}
+		}
+		// Handle template specializations (i.e. STL containers)
+		else if (const auto* specType = fieldType->getAs<clang::TemplateSpecializationType>())
+		{
+			if (const auto* tmplDecl = specType->getTemplateName().getAsTemplateDecl())
+			{
+				std::string tmplName = tmplDecl->getNameAsString();
+				sastField->originalTypeName = fieldType.getAsString();
+
+				if (tmplName == "vector")
+				{
+					sastField->type = SASTType::Vector;
+					if (!specType->template_arguments().empty())
+					{
+						auto arg = specType->template_arguments()[0];
+						if (arg.getKind() == clang::TemplateArgument::Type)
+						{
+							auto elemType = arg.getAsType();
+							sastField->elementType = ProcessFieldType(elemType);
+						}
+					}
+				}
+				else if (tmplName == "set")
+				{
+					sastField->type = SASTType::Set;
+					if (!specType->template_arguments().empty())
+					{
+						auto arg = specType->template_arguments()[0];
+						if (arg.getKind() == clang::TemplateArgument::Type)
+						{
+							auto elemType = arg.getAsType();
+							sastField->elementType = ProcessFieldType(elemType);
+						}
+					}
+				}
+				else if (tmplName == "map")
+				{
+					sastField->type = SASTType::Map;
+					if (specType->template_arguments().size() >= 2)
+					{
+						auto keyArg = specType->template_arguments()[0];
+						auto valueArg = specType->template_arguments()[1];
+						if (keyArg.getKind() == clang::TemplateArgument::Type)
+						{
+							auto keyType = keyArg.getAsType();
+							sastField->keyType = ProcessFieldType(keyType);
+						}
+						if (valueArg.getKind() == clang::TemplateArgument::Type)
+						{
+							auto valueType = valueArg.getAsType();
+							sastField->valueType = ProcessFieldType(valueType);
+						}
+					}
+				}
+				else if (tmplName == "unordered_map")
+				{
+					sastField->type = SASTType::Unordered_Map;
+					if (specType->template_arguments().size() >= 2)
+					{
+						auto keyArg = specType->template_arguments()[0];
+						auto valueArg = specType->template_arguments()[1];
+						if (keyArg.getKind() == clang::TemplateArgument::Type)
+						{
+							auto keyType = keyArg.getAsType();
+							sastField->keyType = ProcessFieldType(keyType);
+						}
+						if (valueArg.getKind() == clang::TemplateArgument::Type)
+						{
+							auto valueType = valueArg.getAsType();
+							sastField->valueType = ProcessFieldType(valueType);
+						}
+					}
+				}
+				else
+				{
+					// Fallback: treat as a regular object if the template type is not recognized
+					sastField->type = SASTType::Object;
+					sastField->originalTypeName = fieldType.getAsString();
+
+					if (sastField->originalTypeName == "std::string")
+					{
+						sastField->type = SASTType::String;
+					}
+					else if (auto recordDecl = fieldType->getAsCXXRecordDecl())
+					{
+						std::string recordName = recordDecl->getQualifiedNameAsString();
+						if (m_result.SASTMap.find(recordName) != m_result.SASTMap.end())
+						{
+							sastField->objectNode = m_result.SASTMap[recordName];
+							if (sastField->objectNode)
+							{
+								if (sastField->objectNode->serializationPolicy == SASTNode::SerializationPolicy::POD)
+									sastField->type = SASTType::POD;
+							}
+						}
+					}
+				}
+			}
+		}
+		else if (fieldType->isRecordType())
+		{
+			// For user-defined types, mark as object
+			sastField->type = SASTType::Object;
+			sastField->originalTypeName = fieldType.getAsString();
+
+			if (sastField->originalTypeName == "std::string")
+			{
+				sastField->type = SASTType::String;
+			}
+			else if (auto recordDecl = fieldType->getAsCXXRecordDecl())
+			{
+				std::string recordName = recordDecl->getQualifiedNameAsString();
+				if (m_result.SASTMap.find(recordName) != m_result.SASTMap.end())
+				{
+					sastField->objectNode = m_result.SASTMap[recordName];
+					if (sastField->objectNode)
+					{
+						if (sastField->objectNode->serializationPolicy == SASTNode::SerializationPolicy::POD)
+							sastField->type = SASTType::POD;
+					}
+				}
+			}
+		}
+		else if (fieldType->isIntegerType())
+		{
+			sastField->type = SASTType::Int;
+			sastField->originalTypeName = fieldType.getAsString();
+		}
+		else if (fieldType->isFloatingType())
+		{
+			sastField->type = SASTType::Float;
+			sastField->originalTypeName = fieldType.getAsString();
+		}
+		else if (fieldType->isBooleanType())
+		{
+			sastField->type = SASTType::Bool;
+			sastField->originalTypeName = fieldType.getAsString();
+		}
+		else
+		{
+			// Fallback for types not covered above
+			sastField->type = SASTType::Object;
+			sastField->originalTypeName = fieldType.getAsString();
+		}
+
+		return sastField;
 	}
 }
