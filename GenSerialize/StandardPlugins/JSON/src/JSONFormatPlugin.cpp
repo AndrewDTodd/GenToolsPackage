@@ -13,389 +13,393 @@ namespace GenTools::GenSerialize
 {
 	DECLARE_FORMAT_PLUGIN(JSONFormatPlugin)
 
-	std::string JSONFormatPlugin::GenerateArraySerializeCode(const SASTField& field, const std::string& jsonObjName, const std::string& elementName, size_t depth)
+	namespace
 	{
-		std::ostringstream oss;
+		std::string GenerateKeyConversionFromString(const SASTField& keyField, const std::string& strExpr)
+		{
+			switch (keyField.type)
+			{
+			case SASTType::Int:
+				return "std::stoi(" + strExpr + ")";
 
-		std::string newElementName = elementName + "_" + std::to_string(depth);
+			case SASTType::Float:
+				return "std::stof(" + strExpr + ")";
 
-		// Generate code based on the field's type
-		// For primitives, we add a JSONNumber/JSONBool/JSONString directly
+			case SASTType::Bool:
+				return "(" + strExpr + " == \"true\")";
+
+			case SASTType::String:
+				return strExpr;
+
+			default:
+				throw std::runtime_error("Unsupported key type for conversion from string: " + keyField.originalTypeName);
+			}
+		}
+
+		std::string GenerateKeyConversionToString(const SASTField& keyField, const std::string& keyExpr)
+		{
+			switch (keyField.type)
+			{
+			case SASTType::Int:
+			case SASTType::Float:
+			case SASTType::Bool:
+				return "std::to_string(" + keyExpr + ")";
+
+			case SASTType::String:
+				return keyExpr;
+
+			default:
+				throw std::runtime_error("Unsupported key type for conversion to string: " + keyField.originalTypeName);
+			}
+		}
+
+		std::string GenerateJsonObjInsertCode(const SASTField& field, const std::string& jsonReceiver, const std::string& fieldAccessor, size_t depth)
+		{
+			std::string indent(depth, '\t');
+
+			switch (field.type)
+			{
+			case SASTType::Int:
+			case SASTType::Float:
+				return indent + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", JSONNumber(static_cast<double>(" + fieldAccessor + ")));\n";
+
+			case SASTType::Bool:
+				return indent + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", JSONBool(" + fieldAccessor + "));\n";
+
+			case SASTType::String:
+				return indent + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", JSONString(" + fieldAccessor + "));\n";
+
+			case SASTType::POD:
+			{
+				std::string nestedPOD = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", std::move(" + nestedPOD + "));\n" + indent + "}\n";
+			}
+			case SASTType::Object:
+			{
+				std::string nestedObj = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", std::move(" + nestedObj + "));\n" + indent + "}\n";
+			}
+			case SASTType::Array:
+			{
+				std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", std::move(" + nestedArray + "));\n" + indent + "}\n";
+			}
+			case SASTType::Dynamic_Array:
+			{
+				std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", std::move(" + nestedArray + "));\n" + indent + "}\n";
+			}
+			case SASTType::Vector:
+			case SASTType::Set:
+			case SASTType::Unordered_Set:
+			{
+				std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", std::move(" + nestedArray + "));\n" + indent + "}\n";
+			}
+			case SASTType::Map:
+			case SASTType::Unordered_Map:
+			{
+				std::string nestedObj = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(\"" + field.formattedName + "\", std::move(" + nestedObj + "));\n" + indent + "}\n";
+			}
+			default:
+				throw std::runtime_error("Unsupported field type");
+				break;
+			}
+		}
+
+		std::string GenerateJsonArrayInsertCode(const SASTField& field, const std::string& jsonReceiver, const std::string& fieldAccessor, size_t depth)
+		{
+			std::string indent(depth, '\t');
+
+			switch (field.type)
+			{
+			case SASTType::Int:
+			case SASTType::Float:
+				return indent + jsonReceiver + ".AddMember(JSONNumber(static_cast<double>(" + fieldAccessor + ")));\n";
+
+			case SASTType::Bool:
+				return indent + jsonReceiver + ".AddMember(JSONBool(" + fieldAccessor + "));\n";
+
+			case SASTType::String:
+				return indent + jsonReceiver + ".AddMember(JSONString(" + fieldAccessor + "))\n";
+
+			case SASTType::POD:
+			{
+				std::string nestedPOD = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(std::move(" + nestedPOD + "));\n" + indent + "}\n";
+			}
+			case SASTType::Object:
+			{
+				std::string nestedObj = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(std::move(" + nestedObj + "));\n" + indent + "}\n";
+			}
+			case SASTType::Array:
+			{
+				std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(std::move(" + nestedArray + "));\n" + indent + "}\n";
+			}
+			case SASTType::Dynamic_Array:
+			{
+				std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(std::move(" + nestedArray + "));\n" + indent + "}\n";
+			}
+			case SASTType::Vector:
+			case SASTType::Set:
+			case SASTType::Unordered_Set:
+			{
+				std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(std::move(" + nestedArray + "));\n" + indent + "}\n";
+			}
+			case SASTType::Map:
+			case SASTType::Unordered_Map:
+			{
+				std::string nestedObj = (field.name.empty() ? "nested" : field.name) + "_json";
+				return indent + "\t" + jsonReceiver + ".AddMember(std::move(" + nestedObj + "));\n" + indent + "}\n";
+			}
+			default:
+				throw std::runtime_error("Unsupported field type");
+				break;
+			}
+		}
+	}
+
+	std::string JSONFormatPlugin::GenerateArrayAllocationCode(const SASTField& field, const std::string& arrayName, const std::string& jsonArrayName)
+	{
+		return arrayName + " = new " + field.originalTypeName + "[" + jsonArrayName + ".GetItems().size()];\n";
+	}
+
+	std::string JSONFormatPlugin::GenerateNewContainerElementCode(const SASTField& field, const std::string& containerName, const std::string& newElementReferenceName, const std::string& key)
+	{
 		switch (field.type)
 		{
-		case SASTType::Int:
-		case SASTType::Float:
-			oss << "\t" << jsonObjName << ".AddMember(JSONNumber(static_cast<double>(" << elementName << "))); \n";
-			break;
-
-		case SASTType::Bool:
-			oss << "\t" << jsonObjName << ".AddMember(JSONBool(" << elementName << "));\n";
-			break;
-
-		case SASTType::String:
-			oss << "\t" << jsonObjName << ".AddMember(JSONString(" << elementName << "))\n";
-			break;
-
-		case SASTType::POD:
-			oss << "\t\tJSONObject json_" << elementName << ";\n";
-			for (auto& podField : field.objectNode->fields)
-			{
-				oss << "\t\t" << GenerateFieldSerializeCode(podField, "json_" + elementName, elementName);
-			}
-			oss << "\t\t" << jsonObjName << ".AddMember(std::move(json_" << elementName << "));\n";
-			break;
-
-		case SASTType::Object:
-			// Call the Serialize to JSONObject function for the contained object (field)
-			oss << "\tJSONObject json_" << field.name << ";\n";
-			oss << "\tSerialize(" << elementName << ", json_" << field.name << ");\n";
-			oss << "\t" << jsonObjName << ".AddMember(std::move(json_" << field.name << "));\n";
-			break;
-
-		case SASTType::Array:
 		case SASTType::Vector:
+			return "auto& " + newElementReferenceName + " = " + containerName + ".emplace_back();\n";
+
 		case SASTType::Set:
-			// Loop over the items in the container and add then to a JSONArray
-			oss << "\tJSONArray arr_" << field.name << ";\n";
-			oss << "\tfor(const auto& " << newElementName << " : " << elementName << ")\n\t{\n";
-			oss << GenerateArraySerializeCode(field, "arr_" + field.name, newElementName, depth++) << "\n";
-			oss << "\t}\n";
-			oss << "\tarr" << field.name << ".AddMember(std::move(arr_" << field.name << "));\n";
-			break;
+		case SASTType::Unordered_Set:
+			return "auto& " + newElementReferenceName + " = " + containerName + ".emplace();\n";
 
 		case SASTType::Map:
 		case SASTType::Unordered_Map:
-			oss << "\tJSONObject json_" << field.name << ";\n";
-			oss << "\tfor(const auto& [key, value] : " << elementName << ")\n\t{\n";
-			oss << GenerateMapSerializeCode(field, "json_" + field.name, "key", "value") << "\n";
-			oss << "\t}\n";
-			oss << "\tarr" << field.name << ".AddMember(std::move(json_" << field.name << "));\n";
-			break;
+			if (key.empty())
+				throw std::runtime_error("Key is required for Map or Unordered_Map element creation");
+			return "auto& " + newElementReferenceName + " = " + containerName + "[" + GenerateKeyConversionFromString(*field.keyType, key) + "];\n";
 
 		default:
-			throw std::runtime_error("Unsupported field type");
+			throw std::runtime_error("Unsupported container type for insertion");
+		}
+	}
+
+	std::string JSONFormatPlugin::GenerateMemoryCleanupCode(const std::string& pointerName)
+	{
+		return "if (" + pointerName + ") delete[] " + pointerName + ";\n";
+	}
+
+	std::string JSONFormatPlugin::GenerateFieldSerializeCode(const SASTField& field, const std::string& jsonReceiver, const std::string& objSource, size_t depth, bool receiverIsJsonObj, bool generateInsertion)
+	{
+		std::ostringstream oss;
+
+		std::string indent(depth, '\t');
+
+		std::string fieldAccessor = objSource;
+		fieldAccessor += field.name.empty() ? "" : "." + field.name;
+
+		// Generate code based on the field's type
+		switch (field.type)
+		{
+		case SASTType::POD:
+		{
+			std::string nestedPOD = (field.name.empty() ? "nested" : field.name) + "_json";
+			oss << indent << "{\n";
+			oss << indent << "\tJSONObject " << nestedPOD << ";\n";
+			for (auto& podField : field.objectNode->fields)
+			{
+				oss << GenerateFieldSerializeCode(podField, nestedPOD, fieldAccessor, depth + 1);
+			}
 			break;
+		}
+		case SASTType::Object:
+		{
+			// Call the Serialize to JSONObject function for the contained object (field)
+			std::string nestedObj = (field.name.empty() ? "nested" : field.name) + "_json";
+			oss << indent << "{\n";
+			oss << indent << "\tJSONObject " << nestedObj << ";\n";
+			oss << indent << "\tJSONSerialize(" << nestedObj << ", " << fieldAccessor << ");\n";
+			break;
+		}
+		case SASTType::Array:
+		{
+			std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+			std::string i = "i_" + std::to_string(depth);
+			oss << indent << "{\n";
+			oss << indent << "\tJSONArray " << nestedArray << ";\n";
+			oss << indent << "\tfor(size_t " << i << " = 0; " << i << " < sizeof(" << fieldAccessor << ") / sizeof(" << fieldAccessor << "[0]); " << i << "++)\n";
+			oss << indent << "\t{\n";
+			oss << GenerateFieldSerializeCode(*field.elementType, nestedArray, fieldAccessor + "[" + i + "]", depth + 2, false);
+			oss << indent << "\t}\n";
+			break;
+		}
+		case SASTType::Dynamic_Array:
+		{
+			std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+			std::string i = "i_" + std::to_string(depth);
+			oss << indent << "{\n";
+			oss << indent << "\tJSONArray " << nestedArray << ";\n";
+			oss << indent << "\tfor(size_t " << i << " = 0; " << i << " < " << field.lengthVar << "; " << i << "++)\n";
+			oss << indent << "\t{\n";
+			oss << GenerateFieldSerializeCode(*field.elementType, nestedArray, fieldAccessor + "[" + i + "]", depth + 2, false);
+			oss << indent << "\t}\n";
+			break;
+		}
+		case SASTType::Vector:
+		case SASTType::Set:
+		case SASTType::Unordered_Set:
+		{
+			std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+			std::string item = "item_" + std::to_string(depth);
+			oss << indent << "{\n";
+			oss << indent << "\tJSONArray " << nestedArray << ";\n";
+			oss << indent << "\tfor(const auto& " << item << " : " << fieldAccessor << ")\n";
+			oss << indent << "\t{\n";
+			oss << GenerateFieldSerializeCode(*field.elementType, nestedArray, item, depth + 2, false);
+			oss << indent << "\t}\n";
+			break;
+		}
+		case SASTType::Map:
+		case SASTType::Unordered_Map:
+		{
+			std::string nestedObj = (field.name.empty() ? "nested" : field.name) + "_json";
+			std::string valueObj = (field.valueType->name.empty() ? "nested" : field.valueType->name) + "_json";
+			std::string key = "key_" + std::to_string(depth);
+			std::string value = "value_" + std::to_string(depth);
+			field.keyType->formattedName = key;
+			field.valueType->formattedName = value;
+			oss << indent << "{\n";
+			oss << indent << "\tJSONObject " << nestedObj << ";\n";
+			oss << indent << "\tfor(const auto& [" << key << ", " << value << "] : " << fieldAccessor << ")\n";
+			oss << indent << "\t{\n";
+			oss << GenerateFieldSerializeCode(*field.valueType, nestedObj, value, depth + 2, true, false);
+			oss << indent << "\t\t\t" << nestedObj << ".AddMember(" << GenerateKeyConversionToString(*field.keyType, field.keyType->formattedName) << ", std::move(" << valueObj << "));\n";
+			oss << indent << "\t\t}\n";
+			oss << indent << "\t}\n";
+			break;
+		}
+		default:
+			break;
+		}
+
+		if (generateInsertion)
+		{
+			if (receiverIsJsonObj)
+				oss << GenerateJsonObjInsertCode(field, jsonReceiver, fieldAccessor, depth);
+			else
+				oss << GenerateJsonArrayInsertCode(field, jsonReceiver, fieldAccessor, depth);
 		}
 
 		return oss.str();
 	}
 
-	std::string JSONFormatPlugin::GenerateMapSerializeCode(const SASTField& field, const std::string& jsonObjName, const std::string& keyName, const std::string& valueName, size_t depth)
+	std::string JSONFormatPlugin::GenerateFieldDeserializeCode(const SASTField& field, const std::string& objReceiver, const std::string& jsonSource, size_t depth, bool sourceIsJsonObj, bool treatKeyAsString)
 	{
 		std::ostringstream oss;
 
-		std::string newKeyName = keyName + "_" + std::to_string(depth);
-		std::string newValueName = valueName + "_" + std::to_string(depth);
+		std::string indent(depth, '\t');
+
+		std::string fieldAccessor = objReceiver;
+		fieldAccessor += field.name.empty() ? "" : "." + field.name;
+		std::string jsonAccessor = sourceIsJsonObj ? (treatKeyAsString ? jsonSource + ".GetMember(\"" + field.formattedName + "\")" : jsonSource + ".GetMember(" + field.formattedName + ")") : jsonSource;
 
 		// Generate code based on the field's type
-		// For primitives, we add a JSONNumber/JSONBool/JSONString directly
 		switch (field.type)
 		{
 		case SASTType::Int:
 		case SASTType::Float:
-			oss << "\t" << jsonObjName << ".AddMember(std::to_string(" << keyName << "), JSONNumber(static_cast<double>(" << valueName << ")));\n";
+			oss << indent << fieldAccessor << " = " << jsonAccessor << ".as<JSONNumber>().value;\n";
 			break;
 
 		case SASTType::Bool:
-			oss << "\t" << jsonObjName << ".AddMember(std::to_string(" << keyName << "), JSONBool(" << valueName << "));\n";
+			oss << indent << fieldAccessor << " = " << jsonAccessor << ".as<JSONBool>().value;\n";
 			break;
 
 		case SASTType::String:
-			oss << "\t" << jsonObjName << ".AddMember(std::to_string(" << keyName << "), JSONString(" << valueName << "))\n";
+			oss << indent << fieldAccessor << " = " << jsonAccessor << ".as<JSONString>().value;\n";
 			break;
 
 		case SASTType::POD:
-			oss << "\t\tJSONObject json_" << valueName << ";\n";
+		{
 			for (auto& podField : field.objectNode->fields)
 			{
-				oss << "\t\t" << GenerateFieldSerializeCode(podField, "json_" + valueName, valueName);
+				oss << GenerateFieldDeserializeCode(podField, fieldAccessor, jsonAccessor + ".as<JSONObject>()", depth);
 			}
-			oss << "\t\t" << jsonObjName << ".AddMember(std::move(json_" << valueName << "));\n";
-			break;
-
-		case SASTType::Object:
-			// Call the Serialize to JSONObject function for the contained object (field)
-			oss << "\tJSONObject json_" << field.name << ";\n";
-			oss << "\tSerialize(" << valueName << ", json_" << field.name << ");\n";
-			oss << "\t" << jsonObjName << ".AddMember(std::to_string(" << keyName << "), std::move(json_" << field.name << "));\n";
-			break;
-
-		case SASTType::Array:
-		case SASTType::Vector:
-		case SASTType::Set:
-			// Loop over the items in the container and add then to a JSONArray
-			oss << "\tJSONArray arr_" << field.name << ";\n";
-			oss << "\tfor(const auto& item : " << valueName << ")\n\t{\n";
-			oss << GenerateArraySerializeCode(field, "arr_" + field.name, "item") << "\n";
-			oss << "\t}\n";
-			oss << "\t" << jsonObjName << ".AddMember(std::to_string(" << keyName << "), std::move(arr_" << field.name << "));\n";
-			break;
-
-		case SASTType::Map:
-		case SASTType::Unordered_Map:
-			oss << "\tJSONObject json_" << field.name << ";\n";
-			oss << "\tfor(const auto& [" << newKeyName << "," << newValueName << "] : " << valueName << ")\n\t{\n";
-			oss << GenerateMapSerializeCode(field, "json" + field.name, newKeyName, newValueName, depth++) << "\n";
-			oss << "\t}\n";
-			oss << "\t" << jsonObjName << ".AddMember(std::to_string(" << keyName << "), std::move(json_" << field.name << "));\n";
-			break;
-
-		default:
-			throw std::runtime_error("Unsupported field type");
 			break;
 		}
-
-		return oss.str();
-	}
-
-	std::string JSONFormatPlugin::GenerateArrayDeserializeCode(const SASTField& field, const std::string& receiverName, const std::string& elementName, size_t depth)
-	{
-		std::ostringstream oss;
-
-		std::string newElementName = elementName + "_" + std::to_string(depth);
-
-		// Generate code based on the field's type
-		// For primitives, we add a JSONNumber/JSONBool/JSONString directly
-		switch (field.type)
-		{
-		case SASTType::Int:
-		case SASTType::Float:
-			oss << "\t" << receiverName << " = " << elementName << ".GetMember(\"" << field.formattedName << "\").as<JSONNumber>().value;\n";
-			break;
-
-		case SASTType::Bool:
-			oss << "\t" << receiverName << " = " << elementName << ".GetMembers(\"" << field.formattedName << "\").as<JSONBool>().value;\n";
-			break;
-
-		case SASTType::String:
-			oss << "\t" << receiverName << " = " << elementName << ".GetMember(\"" << field.formattedName << "\").as<JSONString>().value;\n";
-			break;
-
-		case SASTType::POD:
-			//oss << "\tconst JSONObject& json_" << field.name << " = *" << elementName << ".GetMember(\"" << field.formattedName << "\").as<JSONObject>();\n";
-			for (auto& podField : field.objectNode->fields)
-			{
-				podField.formattedName = field.name + "." + podField.name;
-				oss << GenerateFieldDeserializeCode(podField, receiverName + "." + podField.formattedName, elementName);
-			}
-			break;
-
 		case SASTType::Object:
-			// Call the Serialize to JSONObject function for the contained object (field)
-			oss << "\tconst JSONObject& json_" << field.name << " = *" << elementName << ".GetMember(\"" << field.formattedName << "\").as<JSONObject>();\n";
-			oss << "\tDeserialize(" << receiverName << ", json_" << field.name << ");\n";
+			oss << indent << "JSONDeserialize(" << fieldAccessor << ", " << jsonAccessor << ".as<JSONObject>());\n";
 			break;
 
 		case SASTType::Array:
-		case SASTType::Vector:
-		case SASTType::Set:
-			// Loop over the items in the container and add then to a JSONArray
-			oss << "\tconst JSONArray& arr_" << field.name << " = *" << elementName << ".GetMember(\"" << field.formattedName << "\").as<JSONArray>();\n";
-			oss << "\tfor(const auto& " << newElementName << " : arr_" << field.name << ".GetItems())\n\t{\n";
-			oss << GenerateArrayDeserializeCode(*field.elementType, receiverName + "." + field.name, newElementName, depth++) << "\n";
-			oss << "\t}\n";
-			break;
-
-		case SASTType::Map:
-		case SASTType::Unordered_Map:
-			oss << "\tconst JSONObject& json_" << field.name << " = *" << elementName << ".GetMember(\"" << field.formattedName << "\").as<JSONObject>();\n";
-			oss << "\tfor(const auto& [key, value] : json_" << field.name << ".GetMembers())\n\t{\n";
-			oss << GenerateMapDeserializeCode(*field.valueType, receiverName + "." + field.name, "key", "value") << "\n";
-			oss << "\t}\n";
-			break;
-
-		default:
-			throw std::runtime_error("Unsupported field type");
+		{
+			std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+			std::string i = "i_" + std::to_string(depth);
+			oss << indent << "{\n";
+			oss << indent << "\tJSONArray " << nestedArray << " = " << jsonAccessor << ".as<JSONArray>();\n";
+			oss << indent << "\tfor(size_t " << i << " = 0; " << i << " < sizeof(" << fieldAccessor << ") / sizeof(" << fieldAccessor << "[0]); " << i << "++)\n";
+			oss << indent << "\t{\n";
+			oss << GenerateFieldDeserializeCode(*field.elementType, fieldAccessor + "[" + i + "]", nestedArray + "[" + i + "]", depth + 2, false);
+			oss << indent << "\t}\n";
+			oss << indent << "}\n";
 			break;
 		}
-
-		return oss.str();
-	}
-
-	std::string JSONFormatPlugin::GenerateMapDeserializeCode(const SASTField& field, const std::string& receiverName, const std::string& keyName, const std::string& valueName, size_t depth)
-	{
-		std::ostringstream oss;
-
-		std::string newKeyName = keyName + "_" + std::to_string(depth);
-		std::string newValueName = valueName + "_" + std::to_string(depth);
-
-		// Generate code based on the field's type
-		// For primitives, we add a JSONNumber/JSONBool/JSONString directly
-		switch (field.type)
+		case SASTType::Dynamic_Array:
 		{
-		case SASTType::Int:
-		case SASTType::Float:
-			oss << "\t" << receiverName << " = " << valueName << ".GetMember(\"" << field.formattedName << "\").as<JSONNumber>().value;\n";
-			break;
-
-		case SASTType::Bool:
-			oss << "\t" << receiverName << " = " << valueName << ".GetMembers(\"" << field.formattedName << "\").as<JSONBool>().value;\n";
-			break;
-
-		case SASTType::String:
-			oss << "\t" << receiverName << " = " << valueName << ".GetMember(\"" << field.formattedName << "\").as<JSONString>().value;\n";
-			break;
-
-		case SASTType::POD:
-			for (auto& podField : field.objectNode->fields)
-			{
-				podField.formattedName = field.name + "." + podField.name;
-				oss << GenerateFieldDeserializeCode(podField, receiverName + "[" + podField.formattedName + "]", valueName);
-			}
-			break;
-
-		case SASTType::Object:
-			// Call the Serialize to JSONObject function for the contained object (field)
-			oss << "\tconst JSONObject& json_" << field.name << " = *" << valueName << ".GetMember(\"" << field.formattedName << "\").as<JSONObject>();\n";
-			oss << "\tDeserialize(" << receiverName << ", json_" << field.name << ");\n";
-			break;
-
-		case SASTType::Array:
-		case SASTType::Vector:
-		case SASTType::Set:
-			// Loop over the items in the container and add then to a JSONArray
-			oss << "\tconst JSONArray& arr_" << field.name << " = *" << valueName << ".GetMember(\"" << field.formattedName << "\").as<JSONArray>();\n";
-			oss << "\tfor(const auto& item : arr_" << field.name << ".GetItems())\n\t{\n";
-			oss << GenerateArrayDeserializeCode(*field.elementType, receiverName + "." + field.name, "item") << "\n";
-			oss << "\t}\n";
-			break;
-
-		case SASTType::Map:
-		case SASTType::Unordered_Map:
-			oss << "\tconst JSONObject& json" << field.name << " = *" << valueName << ".GetMember(\"" << field.formattedName << "\").as<JSONObject>();\n";
-			oss << "\tfor(const auto& [" << newKeyName << "," << newValueName << "] : json" << field.name << ".GetMembers())\n\t{\n";
-			oss << "\t\t" << GenerateMapDeserializeCode(*field.valueType, receiverName + "." + field.name, newKeyName, newValueName, depth++) << "\n";
-			oss << "\t}\n";
-			break;
-
-		default:
-			throw std::runtime_error("Unsupported field type");
+			std::string nestedArray = (field.name.empty() ? "nested" : field.name) + "_json";
+			std::string i = "i_" + std::to_string(depth);
+			oss << indent << "{\n";
+			oss << indent << "\tJSONArray " << nestedArray << " = " << jsonAccessor << ".as<JSONArray>();\n";
+			oss << indent << "\t\t" << GenerateMemoryCleanupCode(fieldAccessor) << "\n";
+			oss << indent << "\t\t" << GenerateArrayAllocationCode(field, fieldAccessor, nestedArray) << "\n";
+			oss << indent << "\t" << field.lengthVar << " = " << nestedArray << ".GetItems().size();\n";
+			oss << indent << "\tfor(size_t " << i << " = 0; " << i << " < " << field.lengthVar << "; " << i << "++)\n";
+			oss << indent << "\t{\n";
+			oss << GenerateFieldDeserializeCode(*field.elementType, fieldAccessor + "[" + i + "]", nestedArray + "[" + i + "]", depth + 2, false);
+			oss << indent << "\t}\n";
+			oss << indent << "}\n";
 			break;
 		}
-
-		return oss.str();
-	}
-
-	std::string JSONFormatPlugin::GenerateFieldSerializeCode(const SASTField& field, const std::string& jsonObjName, const std::string& objName)
-	{
-		std::ostringstream oss;
-
-		// Generate code based on the field's type
-		// For primitives, we add a JSONNumber/JSONBool/JSONString directly
-		switch (field.type)
-		{
-		case SASTType::Int:
-		case SASTType::Float:
-			oss << "\t" << jsonObjName << ".AddMember(\"" << field.formattedName << "\", JSONNumber(static_cast<double>(" << objName << "." << field.name << ")));\n";
-			break;
-
-		case SASTType::Bool:
-			oss << "\t" << jsonObjName << ".AddMember(\"" << field.formattedName << "\", JSONBool(" << objName << "." << field.name << "));\n";
-			break;
-
-		case SASTType::String:
-			oss << "\t" << jsonObjName << ".AddMember(\"" << field.formattedName << "\", JSONString(" << objName << "." << field.name << "));\n";
-			break;
-
-		case SASTType::POD:
-			for (auto& podField : field.objectNode->fields)
-			{
-				podField.formattedName = field.name + "." + podField.name;
-				oss << GenerateFieldSerializeCode(podField, jsonObjName, field.name);
-			}
-			break;
-
-		case SASTType::Object:
-			// Call the Serialize to JSONObject function for the contained object (field)
-			oss << "\tJSONObject json_" << field.name << ";\n";
-			oss << "\tSerialize(" << objName << "." << field.name << ", json" << field.name << ");\n";
-			oss << "\t" << jsonObjName << ".AddMember(\"" << field.formattedName << "\", std::move(json_" << field.name << "));\n";
-			break;
-
-		case SASTType::Array:
 		case SASTType::Vector:
 		case SASTType::Set:
-			// Loop over the items in the container and add then to a JSONArray
-			oss << "\tJSONArray arr_" << field.name << ";\n";
-			oss << "\tfor(const auto& item : " << objName << "." << field.name << ")\n\t{\n";
-			oss << GenerateArraySerializeCode(*field.elementType, "arr_" + field.name, "item") << "\n";
-			oss << "\t}\n";
-			oss << "\t" << jsonObjName << ".AddMember(\"" << field.formattedName << "\", std::move(arr_" << field.name << "));\n";
-			break;
-
-		case SASTType::Map:
-		case SASTType::Unordered_Map:
-			oss << "\tJSONObject json" << field.name << ";\n";
-			oss << "\tfor(const auto& [key, value] : " << objName << "." << field.name << ")\n\t{\n";
-			oss << GenerateMapSerializeCode(*field.valueType, "json" + field.name, "key", "value") << "\n";
-			oss << "\t}\n";
-			oss << "\t" << jsonObjName << ".AddMember(\"" << field.formattedName << "\", std::move(json" << field.name << "));\n";
-			break;
-
-		default:
-			throw std::runtime_error("Unsupported field type");
+		case SASTType::Unordered_Set:
+		{
+			std::string item = "item_" + std::to_string(depth);
+			std::string temp = "elem_" + std::to_string(depth);
+			oss << indent << "{\n";
+			oss << indent << "\tfor(const auto& " << item << " : " << jsonAccessor << ".as<JSONArray>().GetItems())\n";
+			oss << indent << "\t{\n";
+			oss << indent << "\t\t" << GenerateNewContainerElementCode(field, fieldAccessor, temp);
+			oss << GenerateFieldDeserializeCode(*field.elementType, temp, item, depth + 2, false);
+			oss << indent << "\t}\n";
+			oss << indent << "}\n";
 			break;
 		}
-
-		return oss.str();
-	}
-
-	std::string JSONFormatPlugin::GenerateFieldDeserializeCode(const SASTField& field, const std::string& jsonObjName, const std::string& objName)
-	{
-		std::ostringstream oss;
-
-		// Generate code based on the field's type
-		// For primitives, we add a JSONNumber/JSONBool/JSONString directly
-		switch (field.type)
-		{
-		case SASTType::Int:
-		case SASTType::Float:
-			oss << "\t" << objName << "." << field.name << " = " << jsonObjName << ".GetMember(\"" << field.formattedName << "\").as<JSONNumber>().value;\n";
-			break;
-
-		case SASTType::Bool:
-			oss << "\t" << objName << "." << field.name << " = " << jsonObjName << ".GetMembers(\"" << field.formattedName << "\").as<JSONBool>().value;\n";
-			break;
-
-		case SASTType::String:
-			oss << "\t" << objName << "." << field.name << " = " << jsonObjName << ".GetMember(\"" << field.formattedName << "\").as<JSONString>().value;\n";
-			break;
-
-		case SASTType::POD:
-			for (auto& podField : field.objectNode->fields)
-			{
-				podField.formattedName = field.name + "." + podField.name;
-				oss << GenerateFieldDeserializeCode(podField, jsonObjName, field.name);
-			}
-			break;
-
-		case SASTType::Object:
-			// Call the Serialize to JSONObject function for the contained object (field)
-			oss << "\tconst JSONObject& json" << field.name << " = *" << jsonObjName << ".GetMember(\"" << field.formattedName << "\").as<JSONObject>();\n";
-			oss << "\tDeserialize(" << objName << "." << field.name << ", json" << field.name << ");\n";
-			break;
-
-		case SASTType::Array:
-		case SASTType::Vector:
-		case SASTType::Set:
-			// Loop over the items in the container and add then to a JSONArray
-			oss << "\tconst JSONArray& arr" << field.name << " = *" << jsonObjName << ".GetMember(\"" << field.formattedName << "\").as<JSONArray>();\n";
-			oss << "\tfor(const auto& item : arr" << field.name << ".GetItems())\n\t{\n";
-			oss << "\t\t" << GenerateArrayDeserializeCode(*field.elementType, objName + "." + field.name, "item") << "\n";
-			oss << "\t}\n";
-			break;
-
 		case SASTType::Map:
 		case SASTType::Unordered_Map:
-			oss << "\tconst JSONObject& json" << field.name << " = *" << jsonObjName << ".GetMember(\"" << field.formattedName << "\").as<JSONObject>();\n";
-			oss << "\tfor(const auto& [key, value] : json" << field.name << ".GetMembers())\n\t{\n";
-			oss << "\t\t" << GenerateMapDeserializeCode(*field.valueType, objName + "." + field.name, "key", "value") << "\n";
-			oss << "\t}\n";
+		{
+			std::string key = "key_" + std::to_string(depth);
+			std::string value = "value_" + std::to_string(depth);
+			std::string temp = "elem_" + std::to_string(depth);
+			field.valueType->formattedName = key;
+			oss << indent << "{\n";
+			oss << indent << "\tfor(const auto& [" << key << ", " << value << "] : " << jsonAccessor << ".as<JSONObject>().GetMembers())\n";
+			oss << indent << "\t{\n";
+			oss << indent << "\t\t" << GenerateNewContainerElementCode(field, fieldAccessor, temp, key);
+			oss << GenerateFieldDeserializeCode(*field.valueType, temp, value, depth + 2, false, false);
+			oss << indent << "\t}\n";
+			oss << indent << "}\n";
 			break;
-
+		}
 		default:
 			throw std::runtime_error("Unsupported field type");
-			break;
 		}
 
 		return oss.str();
@@ -403,17 +407,6 @@ namespace GenTools::GenSerialize
 
 	std::string JSONFormatPlugin::GenerateCode(const std::shared_ptr<SASTNode> sastNode)
 	{
-		std::ostringstream oss;
-
-		// Function signature for the serialization function
-		oss << "#include <fstream>\n\n";
-
-
-		oss << "#include <JSONStructure.h>\n\n";
-
-		// Generate the Serialize to JSONObject function
-		oss << "static void JSONSerialize(const " << sastNode->name << "& obj, JSONObject& json)\n{\n";
-
 		// Build a flattened list of fields: for POD types use only the node's fields,
 		// otherwise add base class fields (only if accessible) then own fields
 		std::vector<const SASTField*> flattenedFields;
@@ -430,45 +423,60 @@ namespace GenTools::GenSerialize
 			flattenedFields.push_back(&field);
 		}
 
+		std::ostringstream oss;
+
+		// Function signature for the serialization function
+		oss << "#include <fstream>\n\n";
+
+
+		oss << "#include <JSONStructure.h>\n\n";
+
+		// Generate the Serialize to JSONObject function
+		oss << "static void JSONSerialize(JSONObject& jsonReceiver, const " << sastNode->name << "& objSource)\n";
+		oss << "{\n";
+
 		// Generate code for each flattened field
 		for (const auto& field : flattenedFields)
 		{
-			oss << GenerateFieldSerializeCode(*field, "json", "obj");
+			oss << GenerateFieldSerializeCode(*field, "jsonReceiver", "objSource") << "\n";
 		}
 
 		oss << "}\n\n";
 
 		// Generate the Deserialize to JSONObject function
-		oss << "static void JSONDeserialize(" << sastNode->name << "& obj, const JSONObject& json)\n{\n";
+		oss << "static void JSONDeserialize(" << sastNode->name << "& objReceiver, const JSONObject& jsonSource)\n";
+		oss << "{\n";
 
 		for (const auto& field : flattenedFields)
 		{
-			oss << GenerateFieldDeserializeCode(*field, "json", "obj");
+			oss << GenerateFieldDeserializeCode(*field, "objReceiver", "jsonSource") << "\n";
 		}
 
 		oss << "}\n\n";
 
 		// Generate the Serialize to stream function
-		oss << "static void JSONSerialize(const " << sastNode->name << "& obj, std::ostream& os)\n{\n";
-		oss << "\tJSONStructure json;\n";
+		oss << "static void JSONSerialize(std::ostream& osReceiver, const " << sastNode->name << "& objSource)\n";
+		oss << "{\n";
+		oss << "\tJSONStructure jsonRep;\n";
 
 		// Generate code for each flattened field
 		for (const auto& field : flattenedFields)
 		{
-			oss << GenerateFieldSerializeCode(*field, "json", "obj");
+			oss << GenerateFieldSerializeCode(*field, "jsonRep", "objSource") << "\n";
 		}
 
-		oss << "\tos << json.Stringify();\n";
+		oss << "\tosReceiver << jsonRep.Stringify();\n";
 		oss << "}\n\n";
 
 		// Generate the Deserialize from stream function
-		oss << "static void JSONDeserialize(" << sastNode->name << "& obj, const std::istream& is)\n{\n";
-		oss << "\tJSONStructure json = JSONStructure::Parse(is);\n";
+		oss << "static void JSONDeserialize(" << sastNode->name << "& objReceiver, const std::istream& isSource)\n";
+		oss << "{\n";
+		oss << "\tJSONStructure jsonRep = JSONStructure::Parse(isSource);\n";
 
 		// Generate code for each flattened field
 		for (const auto& field : flattenedFields)
 		{
-			oss << GenerateFieldDeserializeCode(*field, "json", "obj");
+			oss << GenerateFieldDeserializeCode(*field, "objReceiver", "jsonRep") << "\n";
 		}
 
 		oss << "}\n";

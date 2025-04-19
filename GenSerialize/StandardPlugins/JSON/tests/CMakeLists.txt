@@ -56,13 +56,6 @@ target_link_libraries(run_JSONFormatPlugin_tests PRIVATE GTest::gtest_main JSON_
 set_target_properties(run_JSONFormatPlugin_tests PROPERTIES INSTALLABLE OFF)
 
 set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS "${UNIT_TEST_TARGETS}")
-
-# Determine the location of the build shared library
-add_custom_command(TARGET run_JSONFormatPlugin_tests POST_BUILD 
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-	$<TARGET_FILE:JSON_FormatPlugin> # The build shared library
-	$<TARGET_FILE_DIR:run_JSONFormatPlugin_tests> # The directory where the test executalbles are 
-)
 ################################################################################################################################################################
 
 #add tests to be discoverable by ctest *Note this is only necessary when not using gtest_discover. The tests are automatically added by gtest

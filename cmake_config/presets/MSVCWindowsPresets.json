@@ -63,9 +63,6 @@
       "displayName": "Debug",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Debug",
-      "cacheVariables": {
-        "CMAKE_CXX_FLAGS_DEBUG": "/MDd /ZI /Ob0 /Od /RTC1"
-      },
       "jobs": 16
     },
     {
@@ -73,10 +70,6 @@
       "displayName": "Release-Dev",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "RelWithDebInfo",
-      "cacheVariables": {
-        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /DNDEBUG /EHsc",
-        "CMAKE_C_FLAGS_RELEASE":  "/O2 /GL /DNDEBUG"
-      },
       "jobs": 16
     },
     {
@@ -84,10 +77,6 @@
       "displayName": "Release",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Release",
-      "cacheVariables": {
-        "CMAKE_CXX_FLAGS_RELEASE": "/O2 /GL /DNDEBUG /EHsc",
-        "CMAKE_C_FLAGS_RELEASE": "/O2 /GL /DNDEBUG"
-      },
       "jobs": 16
     },
 

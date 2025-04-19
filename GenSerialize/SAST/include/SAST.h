@@ -19,8 +19,10 @@ namespace GenTools::GenSerialize
 		Object,
 		POD,
 		Array,
+		Dynamic_Array,
 		Vector,
 		Set,
+		Unordered_Set,
 		Map,
 		Unordered_Map
 	};
@@ -48,6 +50,8 @@ namespace GenTools::GenSerialize
 		// For Map, and Unordered_Map the key and value types
 		std::shared_ptr<SASTField> keyType;
 		std::shared_ptr<SASTField> valueType;
+		// For dynamic arrays, the name of the variable that contains its length
+		std::string lengthVar;
 	};
 
 	struct SASTNode

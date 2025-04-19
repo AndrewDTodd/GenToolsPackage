@@ -8,7 +8,14 @@ option(${PROJECT_NAME}_VERBOSE "Enable verbose messages for ${TARGET_NAME}" ${PR
 
 message(STATUS "${PROJECT_NAME}_VERBOSE: ${${PROJECT_NAME}_VERBOSE}")
 
-option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" ON)
+option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" OFF)
+
+# For MSVC: ensure Debug builds use the release STL runtime, to match Clang libs
+if (MSVC)
+  add_compile_definitions($<$<CONFIG:Debug>:_ITERATOR_DEBUG_LEVEL=0>)
+  add_compile_options($<$<CONFIG:Debug>:/MD>)  # Use DLL runtime instead of /MDd
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+endif()
 
 # FIND PACKAGE and FETCH CONTENT ******************************************************************
 #**************************************************************************************************
@@ -17,18 +24,21 @@ option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" ON)
 find_package(Clang QUIET)
 
 if (Clang_FOUND)
-    if (${PROJECT_NAME}_DEBUG)
-        message(STATUS "System Clang installation found; will use system Clang.")
-    endif()
+    message(STATUS "System Clang installation found; will use system Clang.")
     set(USE_SYSTEM_CLANG TRUE)
 else()
-    if (${PROJECT_NAME}_DEBUG)
-        message(STATUS "System Clang not found; will clone and build Clang.")
-    endif()
+    message(STATUS "System Clang not found; will clone and build Clang.")
     set(USE_SYSTEM_CLANG FALSE)
 endif()
 
 if (NOT USE_SYSTEM_CLANG)
+    # Determine install prefix based on OS and cache it for reuse
+    if (WIN32)
+        set(CLANG_INSTALL_DIR "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$ENV{ProgramData}/LLVM/RelWithDebInfo>$<$<CONFIG:Release>:$ENV{ProgramData}/LLVM/Release>" CACHE PATH "Clang install base on Windows")
+    else()
+        set(CLANG_INSTALL_DIR "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/usr/local/LLVM/RelWithDebInfo>$<$<CONFIG:Release>:/usr/local/LLVM/Release>" CACHE PATH "Clang install base on Unix")
+    endif()
+
     # Set the directory where the minimal LLVM/Clang source will be placed.
     set(LLVM_CLANG_MINIMAL_DIR "${CMAKE_SOURCE_DIR}/llvm-clang-minimal")
 
@@ -93,22 +103,25 @@ if (NOT USE_SYSTEM_CLANG)
 
     # Define directories and a marker file
     set(LLVM_SOURCE_DIR "${LLVM_CLANG_MINIMAL_DIR}/llvm")
-    set(LLVM_BUILD_DIR "${CMAKE_BINARY_DIR}/llvm-build/$<CONFIG>")
-    set(LLVM_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/llvm-install/$<CONFIG>")
 
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
     add_custom_target(llvm-install ALL
       COMMAND ${CMAKE_COMMAND} -E echo "Checking if Clang is built for configuration $<CONFIG>..."
       COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake_config/scripts/build_clang.py
-              ${LLVM_BUILD_DIR} ${LLVM_INSTALL_DIR} ${LLVM_SOURCE_DIR} $<CONFIG> ${LLVM_TARGET_ARCH}
+              ${CLANG_INSTALL_DIR} ${LLVM_SOURCE_DIR} $<CONFIG> ${LLVM_TARGET_ARCH}
       COMMENT "Building and Installing LLVM/Clang (if needed)..."
       VERBATIM
     )
 
     # Set include and lib paths for built Clang
-    set(LLVM_INCLUDE_DIR "${LLVM_INSTALL_DIR}/include")
-    set(LLVM_LIB_DIR "${LLVM_INSTALL_DIR}/lib")
+    if (WIN32)
+        set(LLVM_INCLUDE_DIR "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$ENV{ProgramData}/LLVM/RelWithDebInfo/include>$<$<CONFIG:Release>:$ENV{ProgramData}/LLVM/Release/include>" CACHE PATH "Clang include base on Windows")
+        set(LLVM_LIB_DIR "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:$ENV{ProgramData}/LLVM/RelWithDebInfo/lib>$<$<CONFIG:Release>:$ENV{ProgramData}/LLVM/Release/lib>" CACHE PATH "Clang lib base on Windows")
+    else()
+        set(LLVM_INCLUDE_DIR "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/usr/local/LLVM/RelWithDebInfo/include>$<$<CONFIG:Release>:/usr/local/LLVM/Release/include>" CACHE PATH "Clang include base on Unix")
+        set(LLVM_LIB_DIR "$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/usr/local/LLVM/RelWithDebInfo/lib>$<$<CONFIG:Release>:/usr/local/LLVM/Release/lib>" CACHE PATH "Clang lib base on Unix")
+    endif()
 endif()
 
 # End FIND PACKAGE and FETCH CONTENT **************************************************************
@@ -149,71 +162,71 @@ if (${PROJECT_NAME}_BUILD)
 
             # Add Clang headers and libraries for linking
             target_include_directories(Lib${TARGET_NAME} SYSTEM PUBLIC ${LLVM_INCLUDE_DIR})
-            target_link_directories(Lib${TARGET_NAME} PUBLIC ${LLVM_LIB_DIR})
+            target_link_directories(Lib${TARGET_NAME} PUBLIC "${LLVM_LIB_DIR}")
 
             target_link_libraries(Lib${TARGET_NAME} PUBLIC 
             clangAnalysis
-            clangAnalysisFlowSensitive
-            clangAnalysisFlowSensitiveModels
+            #clangAnalysisFlowSensitive
+            #clangAnalysisFlowSensitiveModels
             clangAPINotes
-            clangARCMigrate
+            #clangARCMigrate
             clangAST
             clangASTMatchers
             clangBasic
-            clangCodeGen
-            clangCrossTU
-            clangDependencyScanning
-            clangDirectoryWatcher
+            #clangCodeGen
+            #clangCrossTU
+            #clangDependencyScanning
+            #clangDirectoryWatcher
             clangDriver
-            clangDynamicASTMatchers
+            #clangDynamicASTMatchers
             clangEdit
-            clangExtractAPI
-            clangFormat
+            #clangExtractAPI
+            #clangFormat
             clangFrontend
-            clangFrontendTool
-            clangHandleCXX
-            clangHandleLLVM
-            clangIndex
-            clangIndexSerialization
-            clangInstallAPI
-            clangInterpreter
+            #clangFrontendTool
+            #clangHandleCXX
+            #clangHandleLLVM
+            #clangIndex
+            #clangIndexSerialization
+            #clangInstallAPI
+            #clangInterpreter
             clangLex
             clangParse
-            clangRewrite
-            clangRewriteFrontend
+            #clangRewrite
+            #clangRewriteFrontend
             clangSema
             clangSerialization
-            clangStaticAnalyzerCheckers
-            clangStaticAnalyzerCore
-            clangStaticAnalyzerFrontend
+            #clangStaticAnalyzerCheckers
+            #clangStaticAnalyzerCore
+            #clangStaticAnalyzerFrontend
             clangSupport
             clangTooling
-            clangToolingASTDiff
-            clangToolingCore
-            clangToolingInclusions
-            clangToolingInclusionsStdlib
-            clangToolingRefactoring
-            clangToolingSyntax
-            clangTransformer
-            libclang
+            #clangToolingASTDiff
+            #clangToolingCore
+            #clangToolingInclusions
+            #clangToolingInclusionsStdlib
+            #clangToolingRefactoring
+            #clangToolingSyntax
+            #clangTransformer
+            #libclang
             
-            LLVM-C
-            LLVMAggressiveInstCombine
+            #LLVM-C
+            #LLVMAggressiveInstCombine
             LLVMAnalysis
             LLVMAsmParser
-            LLVMAsmPrinter
+            #LLVMAsmPrinter
             LLVMBinaryFormat
             LLVMBitReader
             LLVMBitstreamReader
-            LLVMBitWriter
-            LLVMCFGuard
-            LLVMCFIVerify
-            LLVMCodeGen
-            LLVMCodeGenData
-            LLVMCodeGenTypes
+            #LLVMBitWriter
+            #LLVMCFGuard
+            #LLVMCFIVerify
+            #LLVMCodeGen
+            #LLVMCodeGenData
+            #LLVMCodeGenTypes
             LLVMCore
-            LLVMCoroutines
-            LLVMCoverage
+            #LLVMCoroutines
+            #LLVMCoverage
             LLVMDebugInfoBTF
             LLVMDebugInfoCodeView
             LLVMDebuginfod
@@ -223,82 +236,82 @@ if (${PROJECT_NAME}_BUILD)
             LLVMDebugInfoMSF
             LLVMDebugInfoPDB
             LLVMDemangle
-            LLVMDiff
-            LLVMDlltoolDriver
-            LLVMDWARFLinker
-            LLVMDWARFLinkerClassic
-            LLVMDWARFLinkerParallel
-            LLVMDWP
-            LLVMExecutionEngine
-            LLVMExegesis
-            LLVMExegesisX86
-            LLVMExtensions
-            LLVMFileCheck
-            LLVMFrontendDriver
-            LLVMFrontendHLSL
+            #LLVMDiff
+            #LLVMDlltoolDriver
+            #LLVMDWARFLinker
+            #LLVMDWARFLinkerClassic
+            #LLVMDWARFLinkerParallel
+            #LLVMDWP
+            #LLVMExecutionEngine
+            #LLVMExegesis
+            #LLVMExegesisX86
+            #LLVMExtensions
+            #LLVMFileCheck
+            #LLVMFrontendDriver
+            #LLVMFrontendHLSL
             LLVMFrontendOffloading
-            LLVMFrontendOpenACC
+            #LLVMFrontendOpenACC
             LLVMFrontendOpenMP
-            LLVMFuzzerCLI
-            LLVMFuzzMutate
-            LLVMGlobalISel
-            LLVMHipStdPar
-            LLVMInstCombine
-            LLVMInstrumentation
-            LLVMInterfaceStub
-            LLVMInterpreter
-            LLVMipo
-            LLVMIRPrinter
+            #LLVMFuzzerCLI
+            #LLVMFuzzMutate
+            #LLVMGlobalISel
+            #LLVMHipStdPar
+            #LLVMInstCombine
+            #LLVMInstrumentation
+            #LLVMInterfaceStub
+            #LLVMInterpreter
+            #LLVMipo
+            #LLVMIRPrinter
             LLVMIRReader
-            LLVMJITLink
-            LLVMLibDriver
-            LLVMLineEditor
-            LLVMLinker
-            LLVMLTO
+            #LLVMJITLink
+            #LLVMLibDriver
+            #LLVMLineEditor
+            #LLVMLinker
+            #LLVMLTO
             LLVMMC
-            LLVMMCA
-            LLVMMCDisassembler
+            #LLVMMCA
+            #LLVMMCDisassembler
             LLVMMCParser
-            LLVMMIRParser
-            LLVMObjCARCOpts
-            LLVMObjCopy
+            #LLVMMIRParser
+            #LLVMObjCARCOpts
+            #LLVMObjCopy
             LLVMObject
-            LLVMObjectYAML
-            LLVMOptDriver
+            #LLVMObjectYAML
+            #LLVMOptDriver
             LLVMOption
-            LLVMOrcDebugging
-            LLVMOrcJIT
-            LLVMOrcShared
-            LLVMOrcTargetProcess
-            LLVMPasses
+            #LLVMOrcDebugging
+            #LLVMOrcJIT
+            #LLVMOrcShared
+            #LLVMOrcTargetProcess
+            #LLVMPasses
             LLVMProfileData
             LLVMRemarks
-            LLVMRuntimeDyld
-            LLVMSandboxIR
+            #LLVMRuntimeDyld
+            #LLVMSandboxIR
             LLVMScalarOpts
-            LLVMSelectionDAG
+            #LLVMSelectionDAG
             LLVMSupport
-            LLVMSymbolize
-            LLVMTableGen
-            LLVMTableGenBasic
-            LLVMTableGenCommon
-            LLVMTarget
+            #LLVMSymbolize
+            #LLVMTableGen
+            #LLVMTableGenBasic
+            #LLVMTableGenCommon
+            #LLVMTarget
             LLVMTargetParser
             LLVMTextAPI
-            LLVMTextAPIBinaryReader
+            #LLVMTextAPIBinaryReader
             LLVMTransformUtils
-            LLVMVectorize
+            #LLVMVectorize
             LLVMWindowsDriver
-            LLVMWindowsManifest
-            LLVMXRay
-            LLVMX86AsmParser
-            LLVMX86CodeGen
-            LLVMX86Desc
-            LLVMX86Disassembler
-            LLVMX86Info
-            LLVMX86TargetMCA
-            LTO
-            Remarks
+            #LLVMWindowsManifest
+            #LLVMXRay
+            #LLVMX86AsmParser
+            #LLVMX86CodeGen
+            #LLVMX86Desc
+            #LLVMX86Disassembler
+            #LLVMX86Info
+            #LLVMX86TargetMCA
+            #LTO
+            #Remarks
             )
         else()
             # Use system Clang's include and library paths

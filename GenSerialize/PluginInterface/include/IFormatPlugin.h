@@ -3,6 +3,8 @@
 
 #include <SAST.h>
 
+#include <string>
+
 #if defined(_WIN32)
 #if defined(FORMAT_PLUGIN_EXPORTS)
 #define FORMAT_PLUGIN_ABI __declspec(dllexport)

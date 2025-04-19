@@ -14,14 +14,23 @@ namespace GenTools::GenSerialize
 	class FileFormatRegistry
 	{
 	private:
-		std::unordered_map<std::string, std::shared_ptr<IFormatPlugin>> m_formatPlugins;
+		/// <summary>
+		/// Simple structure that pairs a plugin instance to a priority for plugin overriding in the registry
+		/// </summary>
+		struct PluginInfo
+		{
+			std::shared_ptr<IFormatPlugin> plugin;
+			uint8_t priority;
+		};
+
+		std::unordered_map<std::string, PluginInfo> m_formatPlugins;
 
 		FileFormatRegistry() = default;
 
 	public:
 		static FileFormatRegistry& GetInstance();
 
-		void RegisterPlugin(std::shared_ptr<IFormatPlugin> plugin);
+		void RegisterPlugin(std::shared_ptr<IFormatPlugin> plugin, uint8_t priority = 0);
 
 		std::shared_ptr<IFormatPlugin> GetPlugin(const std::string& formatName) const;
 	};
@@ -29,14 +38,14 @@ namespace GenTools::GenSerialize
 	class PluginRegistrar
 	{
 	public:
-		PluginRegistrar(std::shared_ptr<IFormatPlugin> plugin)
+		PluginRegistrar(std::shared_ptr<IFormatPlugin> plugin, uint8_t priority = 0)
 		{
-			FileFormatRegistry::GetInstance().RegisterPlugin(plugin);
+			FileFormatRegistry::GetInstance().RegisterPlugin(plugin, priority);
 		}
 	};
 
-#define REGISTER_STATIC_PLUGIN(PluginClass) \
-	static PluginRegistrar registrar_##PluginClass(std::make_shared<PluginClass>())
+#define REGISTER_STATIC_PLUGIN(PluginClass, Priority) \
+	static PluginRegistrar registrar_##PluginClass(std::make_shared<PluginClass>(), Priority)
 }
 
 #endif // !GENTOOLS_GENSERIALIZE_FILE_FORMAT_REGISTRY_H

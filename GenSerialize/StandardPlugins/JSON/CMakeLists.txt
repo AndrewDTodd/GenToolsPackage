@@ -11,7 +11,7 @@ message(STATUS "${PROJECT_NAME}_VERBOSE: ${${PROJECT_NAME}_VERBOSE}")
 # Target Creation *********************************************************************************
 #**************************************************************************************************
 
-option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" ON)
+option(${PROJECT_NAME}_DEBUG "Enable CMake related Debug messages" OFF)
 
 file(GLOB_RECURSE ${TARGET_NAME}_SOURCE 
 	"${CMAKE_SOURCE_DIR}/generated/src/*.cpp"
@@ -269,3 +269,10 @@ if (GEN_TOOLS_PACKAGE_BUILD_TESTS)
 endif()
 # End Create Unit Test Groups *********************************************************************
 #**************************************************************************************************
+
+# Determine the location of the build shared library
+add_custom_command(TARGET JSON_FormatPlugin POST_BUILD 
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+	$<TARGET_FILE:JSON_FormatPlugin> # The build shared library
+	$<TARGET_FILE_DIR:run_JSONFormatPlugin_tests> # The directory where the test executalbles are 
+)

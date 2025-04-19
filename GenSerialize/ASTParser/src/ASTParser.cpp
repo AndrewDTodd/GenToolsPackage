@@ -3,6 +3,8 @@
 #include <FileValidator.h>
 #include <PlatformInterface.h>
 
+#include <unordered_set>
+
 namespace GenTools::GenSerialize
 {
 	ASTParser::ASTParser(SASTResult& result)
@@ -125,10 +127,18 @@ namespace GenTools::GenSerialize
 
 	void ASTParser::ProcessFields(clang::CXXRecordDecl* recordDecl, std::shared_ptr<SASTNode> sastNode)
 	{
+		std::unordered_set<std::string> fieldNames;
+		std::vector<std::pair<std::string, std::string>> dynamicLengthReferences; // {arrayFieldName, LengthVar}
+
 		for (const auto& field : recordDecl->fields())
 		{
+			fieldNames.insert(field->getName().str());
+
 			bool includeField = false;
 			std::string customName = "";
+
+			bool isStaticArray = false;
+			std::optional<std::string> dynamicLengthVar;
 
 			// Check field annotations: SERIALIZE_FIELD, SERIALIZE_FIELD_AS, SERIALIZE_EXCLUDE
 			for (auto attribute : field->specific_attrs<clang::AnnotateAttr>())
@@ -151,6 +161,14 @@ namespace GenTools::GenSerialize
 						includeField = true;
 					}
 				}
+				else if (annotation == "static_array")
+				{
+					isStaticArray = true;
+				}
+				else if (annotation.find("dynamic_array:") == 0)
+				{
+					dynamicLengthVar = annotation.substr(14);
+				}
 			}
 
 			// If not explicitly annotated but the node uses the "All" policy, include it
@@ -168,8 +186,8 @@ namespace GenTools::GenSerialize
 				continue;
 
 			SASTField sastField;
-			sastField.name = field->getNameAsString();
-			sastField.formattedName = customName.empty() ? field->getNameAsString() : customName;
+			sastField.name = field->getName().str();
+			sastField.formattedName = customName.empty() ? sastField.name : customName;
 
 			switch (field->getAccess())
 			{
@@ -199,7 +217,26 @@ namespace GenTools::GenSerialize
 			// Handle C-style arrays (or similar array types)
 			if (fieldType->isArrayType())
 			{
-				sastField.type = SASTType::Array;
+				if (isStaticArray)
+				{
+					if (!fieldType->isConstantArrayType())
+						throw std::runtime_error("Field '" + sastField.name + "' is marked static_array but is not statically sized");
+
+					sastField.type = SASTType::Array;
+				}
+				else if (dynamicLengthVar.has_value())
+				{
+					if (!fieldType->isPointerType())
+						throw std::runtime_error("Field '" + sastField.name + "' is marked dynamic_array but is not a pointer");
+
+					sastField.type = SASTType::Dynamic_Array;
+					sastField.lengthVar = dynamicLengthVar.value();
+
+					dynamicLengthReferences.emplace_back(sastField.name, sastField.lengthVar);
+				}
+				else
+					throw std::runtime_error("Array marked for serialization but not marked, or is improperly marked as static or dynamic");
+
 				sastField.originalTypeName = fieldType.getAsString();
 
 				if (auto arrayType = clang::dyn_cast<clang::ArrayType>(fieldType.getTypePtr()))
@@ -232,6 +269,19 @@ namespace GenTools::GenSerialize
 					else if (tmplName == "set")
 					{
 						sastField.type = SASTType::Set;
+						if (!specType->template_arguments().empty())
+						{
+							auto arg = specType->template_arguments()[0];
+							if (arg.getKind() == clang::TemplateArgument::Type)
+							{
+								auto elemType = arg.getAsType();
+								sastField.elementType = ProcessFieldType(elemType);
+							}
+						}
+					}
+					else if (tmplName == "unordered_set")
+					{
+						sastField.type = SASTType::Unordered_Set;
 						if (!specType->template_arguments().empty())
 						{
 							auto arg = specType->template_arguments()[0];
@@ -354,6 +404,14 @@ namespace GenTools::GenSerialize
 
 			sastNode->fields.push_back(sastField);
 		}
+
+		for (const auto& [arrayName, lenVar] : dynamicLengthReferences)
+		{
+			if (!fieldNames.contains(lenVar))
+			{
+				throw std::runtime_error("Dynamic array field '" + arrayName + "' refers to length variable '" + lenVar + "', but that variable does not exist in the object");
+			}
+		}
 	}
 
 	std::shared_ptr<SASTField> ASTParser::ProcessFieldType(const clang::QualType& fieldType)
@@ -364,6 +422,9 @@ namespace GenTools::GenSerialize
 		// Handle C-style arrays (or similar array types)
 		if (fieldType->isArrayType())
 		{
+			if (!fieldType->isConstantArrayType())
+				throw std::runtime_error("Element type found to be array but not statically sized array, this is not supported. Serialized container contains dynamically allocated arrays.");
+
 			sastField->type = SASTType::Array;
 			sastField->originalTypeName = fieldType.getAsString();
 
@@ -397,6 +458,19 @@ namespace GenTools::GenSerialize
 				else if (tmplName == "set")
 				{
 					sastField->type = SASTType::Set;
+					if (!specType->template_arguments().empty())
+					{
+						auto arg = specType->template_arguments()[0];
+						if (arg.getKind() == clang::TemplateArgument::Type)
+						{
+							auto elemType = arg.getAsType();
+							sastField->elementType = ProcessFieldType(elemType);
+						}
+					}
+				}
+				else if (tmplName == "unordered_set")
+				{
+					sastField->type = SASTType::Unordered_Set;
 					if (!specType->template_arguments().empty())
 					{
 						auto arg = specType->template_arguments()[0];

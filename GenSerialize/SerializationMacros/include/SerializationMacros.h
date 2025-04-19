@@ -19,13 +19,13 @@
 
 #ifdef __clang__
 // MACRO to mark an object for serialization, defaulting to include only public fields. Attribute list specifies formats to create logic for
-#defie SERIALIZABLE_PUBLIC(...) __attribute__((annotate("serializable:public")))
+#define SERIALIZABLE_PUBLIC(...) __attribute__((annotate("serializable:public")))
 #else
 // MACRO to mark an object for serialization, defaulting to include only public fields. Attribute list specifies formats to create logic for
 #define SERIALIZABLE_PUBLIC(...)
 #endif
 
-#ifdef 
+#ifdef __clang__
 // MACRO to mark an object for serialization, defaulting to include only protected fields. Attribute list specifies formats to create logic for
 #define SERIALIZABLE_PROTECTED(...) __attribute__((annotate("serializable:protected")))
 #else
@@ -65,6 +65,22 @@
 #else
 // MACRO to mark a field for serialization, with a custom name.
 #define SERIALIZE_FIELD_AS(name)
+#endif
+
+#ifdef __clang__
+// MACRO to mark a statically allocated array for serialization.
+#define STATIC_ARRAY __attribute__((annotate("static_array")))
+#else
+// MACRO to mark a statically allocated array for serialization.
+#define STATIC_ARRAY
+#endif
+
+#ifdef __clang__
+// MACRO to mark a statically allocated array for serialization.
+#define DYNAMIC_ARRAY(lengthVar) __attribute__((annotate("dynamic_array:" #lengthVar)))
+#else
+// MACRO to mark a statically allocated array for serialization.
+#define DYNAMIC_ARRAY(lengthVar)
 #endif
 
 #ifdef __clang__

@@ -11,11 +11,21 @@ FetchContent_Declare(
 
 set(INSTALL_GTEST OFF)
 
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
 # New format for including googletest subdirectory. To prevent googletest items being added to install
 FetchContent_MakeAvailable(googletest)
 
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# Fix GoogleTest runtime and iterator settings to match Clang build mode
+if (MSVC)
+  foreach(lib gtest gtest_main)
+    set_target_properties(${lib} PROPERTIES
+      MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"  # Forces /MD, not /MDd
+    )
+    target_compile_definitions(${lib} PRIVATE _ITERATOR_DEBUG_LEVEL=0)
+  endforeach()
+endif()
 
 enable_testing()
 include(GoogleTest)
