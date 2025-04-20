@@ -12,7 +12,7 @@
 namespace GenTools::GenSerialize
 {
 	template<typename T>
-	FORCE_INLINE auto JSONValue::as()
+	FORCE_INLINE auto& JSONValue::as()
 #if !defined(DEBUG) && !defined(_DEBUG)
 		noexcept
 #endif // !DEBUG
@@ -22,12 +22,12 @@ namespace GenTools::GenSerialize
 			return derived;
 		throw std::bad_cast();
 #else
-		return static_cast<T*>(this);
+		return *static_cast<T*>(this);
 #endif // DEBUG
 	}
 
 	template<typename T>
-	FORCE_INLINE const auto JSONValue::as() const
+	FORCE_INLINE const auto& JSONValue::as() const
 #if !defined(DEBUG) && !defined(_DEBUG)
 		noexcept
 #endif // !DEBUG
@@ -37,7 +37,7 @@ namespace GenTools::GenSerialize
 			return derived;
 		throw std::bad_cast();
 #else
-		return static_cast<const T*>(this);
+		return *static_cast<const T*>(this);
 #endif // DEBUG
 	}
 

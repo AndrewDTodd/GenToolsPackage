@@ -25,14 +25,14 @@ namespace GenTools::GenSerialize
 		virtual ~JSONValue() = default;
 
 		template<typename T>
-		auto as()
+		auto& as()
 #if !defined(DEBUG) && !defined(_DEBUG)
 			noexcept
 #endif // !DEBUG
 			;
 		
 		template<typename T>
-		const auto as() const
+		const auto& as() const
 #if !defined(DEBUG) && !defined(_DEBUG)
 			noexcept
 #endif // !DEBUG

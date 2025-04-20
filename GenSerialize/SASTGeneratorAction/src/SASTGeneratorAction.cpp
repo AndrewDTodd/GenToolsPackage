@@ -123,6 +123,8 @@ namespace GenTools::GenSerialize
         ppOpts.addMacroDef("SERIALIZABLE_POD=__attribute__((annotate(\"serializable:pod\")))");
         ppOpts.addMacroDef("SERIALIZE_FIELD=__attribute__((annotate(\"serialize\")))");
         ppOpts.addMacroDef("SERIALIZE_FIELD_AS(name)=__attribute__((annotate(\"serialize:\" #name)))");
+        ppOpts.addMacroDef("STATIC_ARRAY=__attribute__((annotate(\"static_array\")))");
+        ppOpts.addMacroDef("DYNAMIC_ARRAY(lengthVar)=__attribute__((annotate(\"dynamic_array:\" #lengthVar)))");
         ppOpts.addMacroDef("SERIALIZE_EXCLUDE=__attribute__((annotate(\"serialize:exclude\")))");
         ppOpts.addMacroDef("GENERATED_SERIALIZATION_BODY()=");
         return clang::ASTFrontendAction::BeginInvocation(CI);

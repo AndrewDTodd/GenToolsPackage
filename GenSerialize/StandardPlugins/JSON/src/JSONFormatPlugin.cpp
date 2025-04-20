@@ -166,7 +166,7 @@ namespace GenTools::GenSerialize
 
 	std::string JSONFormatPlugin::GenerateArrayAllocationCode(const SASTField& field, const std::string& arrayName, const std::string& jsonArrayName)
 	{
-		return arrayName + " = new " + field.originalTypeName + "[" + jsonArrayName + ".GetItems().size()];\n";
+		return arrayName + " = new " + field.elementType->originalTypeName + "[" + jsonArrayName + ".GetItems().size()];\n";
 	}
 
 	std::string JSONFormatPlugin::GenerateNewContainerElementCode(const SASTField& field, const std::string& containerName, const std::string& newElementReferenceName, const std::string& key)
@@ -357,8 +357,8 @@ namespace GenTools::GenSerialize
 			std::string i = "i_" + std::to_string(depth);
 			oss << indent << "{\n";
 			oss << indent << "\tJSONArray " << nestedArray << " = " << jsonAccessor << ".as<JSONArray>();\n";
-			oss << indent << "\t\t" << GenerateMemoryCleanupCode(fieldAccessor) << "\n";
-			oss << indent << "\t\t" << GenerateArrayAllocationCode(field, fieldAccessor, nestedArray) << "\n";
+			oss << indent << "\t" << GenerateMemoryCleanupCode(fieldAccessor);
+			oss << indent << "\t" << GenerateArrayAllocationCode(field, fieldAccessor, nestedArray);
 			oss << indent << "\t" << field.lengthVar << " = " << nestedArray << ".GetItems().size();\n";
 			oss << indent << "\tfor(size_t " << i << " = 0; " << i << " < " << field.lengthVar << "; " << i << "++)\n";
 			oss << indent << "\t{\n";

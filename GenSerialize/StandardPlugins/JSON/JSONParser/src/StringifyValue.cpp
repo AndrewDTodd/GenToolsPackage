@@ -19,10 +19,10 @@ namespace GenTools::GenSerialize::JSON
         switch (value->Type())
         {
         case JSONType::String:
-            return "\"" + value->as<JSONString>()->value + "\"";
+            return "\"" + value->as<JSONString>().value + "\"";
 
         case JSONType::Number: {
-            double num = value->as<JSONNumber>()->value;
+            double num = value->as<JSONNumber>().value;
             if (num == static_cast<int64_t>(num)) {
                 return std::to_string(static_cast<int64_t>(num)); // Print as integer if whole
             }
@@ -34,13 +34,13 @@ namespace GenTools::GenSerialize::JSON
         }
 
         case JSONType::Bool:
-            return value->as<JSONBool>()->value ? "true" : "false";
+            return value->as<JSONBool>().value ? "true" : "false";
 
         case JSONType::Array:
-            return value->as<JSONArray>()->StringifyHelper(level, indent);
+            return value->as<JSONArray>().StringifyHelper(level, indent);
 
         case JSONType::Object:
-            return value->as<JSONObject>()->StringifyHelper(level, indent);
+            return value->as<JSONObject>().StringifyHelper(level, indent);
 
         case JSONType::Null:
             return "null";
