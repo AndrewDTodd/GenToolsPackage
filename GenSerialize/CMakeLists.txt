@@ -318,67 +318,67 @@ if (${PROJECT_NAME}_BUILD)
             target_include_directories(Lib${TARGET_NAME} SYSTEM PUBLIC ${Clang_INCLUDE_DIRS})
             target_link_libraries(Lib${TARGET_NAME} PUBLIC 
             clangAnalysis
-            clangAnalysisFlowSensitive
-            clangAnalysisFlowSensitiveModels
+            #clangAnalysisFlowSensitive
+            #clangAnalysisFlowSensitiveModels
             clangAPINotes
-            clangARCMigrate
+            #clangARCMigrate
             clangAST
             clangASTMatchers
             clangBasic
-            clangCodeGen
-            clangCrossTU
-            clangDependencyScanning
-            clangDirectoryWatcher
+            #clangCodeGen
+            #clangCrossTU
+            #clangDependencyScanning
+            #clangDirectoryWatcher
             clangDriver
-            clangDynamicASTMatchers
+            #clangDynamicASTMatchers
             clangEdit
-            clangExtractAPI
-            clangFormat
+            #clangExtractAPI
+            #clangFormat
             clangFrontend
-            clangFrontendTool
-            clangHandleCXX
-            clangHandleLLVM
-            clangIndex
-            clangIndexSerialization
-            clangInstallAPI
-            clangInterpreter
+            #clangFrontendTool
+            #clangHandleCXX
+            #clangHandleLLVM
+            #clangIndex
+            #clangIndexSerialization
+            #clangInstallAPI
+            #clangInterpreter
             clangLex
             clangParse
-            clangRewrite
-            clangRewriteFrontend
+            #clangRewrite
+            #clangRewriteFrontend
             clangSema
             clangSerialization
-            clangStaticAnalyzerCheckers
-            clangStaticAnalyzerCore
-            clangStaticAnalyzerFrontend
+            #clangStaticAnalyzerCheckers
+            #clangStaticAnalyzerCore
+            #clangStaticAnalyzerFrontend
             clangSupport
             clangTooling
-            clangToolingASTDiff
-            clangToolingCore
-            clangToolingInclusions
-            clangToolingInclusionsStdlib
-            clangToolingRefactoring
-            clangToolingSyntax
-            clangTransformer
-            libclang
+            #clangToolingASTDiff
+            #clangToolingCore
+            #clangToolingInclusions
+            #clangToolingInclusionsStdlib
+            #clangToolingRefactoring
+            #clangToolingSyntax
+            #clangTransformer
+            #libclang
             
-            LLVM-C
-            LLVMAggressiveInstCombine
+            #LLVM-C
+            #LLVMAggressiveInstCombine
             LLVMAnalysis
             LLVMAsmParser
-            LLVMAsmPrinter
+            #LLVMAsmPrinter
             LLVMBinaryFormat
             LLVMBitReader
             LLVMBitstreamReader
-            LLVMBitWriter
-            LLVMCFGuard
-            LLVMCFIVerify
-            LLVMCodeGen
-            LLVMCodeGenData
-            LLVMCodeGenTypes
+            #LLVMBitWriter
+            #LLVMCFGuard
+            #LLVMCFIVerify
+            #LLVMCodeGen
+            #LLVMCodeGenData
+            #LLVMCodeGenTypes
             LLVMCore
-            LLVMCoroutines
-            LLVMCoverage
+            #LLVMCoroutines
+            #LLVMCoverage
             LLVMDebugInfoBTF
             LLVMDebugInfoCodeView
             LLVMDebuginfod
@@ -388,82 +388,82 @@ if (${PROJECT_NAME}_BUILD)
             LLVMDebugInfoMSF
             LLVMDebugInfoPDB
             LLVMDemangle
-            LLVMDiff
-            LLVMDlltoolDriver
-            LLVMDWARFLinker
-            LLVMDWARFLinkerClassic
-            LLVMDWARFLinkerParallel
-            LLVMDWP
-            LLVMExecutionEngine
-            LLVMExegesis
-            LLVMExegesisX86
-            LLVMExtensions
-            LLVMFileCheck
-            LLVMFrontendDriver
-            LLVMFrontendHLSL
+            #LLVMDiff
+            #LLVMDlltoolDriver
+            #LLVMDWARFLinker
+            #LLVMDWARFLinkerClassic
+            #LLVMDWARFLinkerParallel
+            #LLVMDWP
+            #LLVMExecutionEngine
+            #LLVMExegesis
+            #LLVMExegesisX86
+            #LLVMExtensions
+            #LLVMFileCheck
+            #LLVMFrontendDriver
+            #LLVMFrontendHLSL
             LLVMFrontendOffloading
-            LLVMFrontendOpenACC
+            #LLVMFrontendOpenACC
             LLVMFrontendOpenMP
-            LLVMFuzzerCLI
-            LLVMFuzzMutate
-            LLVMGlobalISel
-            LLVMHipStdPar
-            LLVMInstCombine
-            LLVMInstrumentation
-            LLVMInterfaceStub
-            LLVMInterpreter
-            LLVMipo
-            LLVMIRPrinter
+            #LLVMFuzzerCLI
+            #LLVMFuzzMutate
+            #LLVMGlobalISel
+            #LLVMHipStdPar
+            #LLVMInstCombine
+            #LLVMInstrumentation
+            #LLVMInterfaceStub
+            #LLVMInterpreter
+            #LLVMipo
+            #LLVMIRPrinter
             LLVMIRReader
-            LLVMJITLink
-            LLVMLibDriver
-            LLVMLineEditor
-            LLVMLinker
-            LLVMLTO
+            #LLVMJITLink
+            #LLVMLibDriver
+            #LLVMLineEditor
+            #LLVMLinker
+            #LLVMLTO
             LLVMMC
-            LLVMMCA
-            LLVMMCDisassembler
+            #LLVMMCA
+            #LLVMMCDisassembler
             LLVMMCParser
-            LLVMMIRParser
-            LLVMObjCARCOpts
-            LLVMObjCopy
+            #LLVMMIRParser
+            #LLVMObjCARCOpts
+            #LLVMObjCopy
             LLVMObject
-            LLVMObjectYAML
-            LLVMOptDriver
+            #LLVMObjectYAML
+            #LLVMOptDriver
             LLVMOption
-            LLVMOrcDebugging
-            LLVMOrcJIT
-            LLVMOrcShared
-            LLVMOrcTargetProcess
-            LLVMPasses
+            #LLVMOrcDebugging
+            #LLVMOrcJIT
+            #LLVMOrcShared
+            #LLVMOrcTargetProcess
+            #LLVMPasses
             LLVMProfileData
             LLVMRemarks
-            LLVMRuntimeDyld
-            LLVMSandboxIR
+            #LLVMRuntimeDyld
+            #LLVMSandboxIR
             LLVMScalarOpts
-            LLVMSelectionDAG
+            #LLVMSelectionDAG
             LLVMSupport
-            LLVMSymbolize
-            LLVMTableGen
-            LLVMTableGenBasic
-            LLVMTableGenCommon
-            LLVMTarget
+            #LLVMSymbolize
+            #LLVMTableGen
+            #LLVMTableGenBasic
+            #LLVMTableGenCommon
+            #LLVMTarget
             LLVMTargetParser
             LLVMTextAPI
-            LLVMTextAPIBinaryReader
+            #LLVMTextAPIBinaryReader
             LLVMTransformUtils
-            LLVMVectorize
+            #LLVMVectorize
             LLVMWindowsDriver
-            LLVMWindowsManifest
-            LLVMXRay
-            LLVMX86AsmParser
-            LLVMX86CodeGen
-            LLVMX86Desc
-            LLVMX86Disassembler
-            LLVMX86Info
-            LLVMX86TargetMCA
-            LTO
-            Remarks
+            #LLVMWindowsManifest
+            #LLVMXRay
+            #LLVMX86AsmParser
+            #LLVMX86CodeGen
+            #LLVMX86Desc
+            #LLVMX86Disassembler
+            #LLVMX86Info
+            #LLVMX86TargetMCA
+            #LTO
+            #Remarks
             )
         endif()
 
@@ -631,7 +631,7 @@ set(CPACK_PACKAGE_VENDOR "Andrew Todd")
 set(CPACK_PACKAGE_CONTACT "andrewdanieltodd@gmail.com")
 include(CPack)
 
-if(RENDERING_PRIMITIVES_VERBOSE)
+if(GEN_SERIALIZE_VERBOSE)
 	message(STATUS "PACKAGE_VERSION is: ${PACKAGE_VERSION}")
 	message(STATUS "PACKAGE_FILE_NAME is: ${CPACK_PACKAGE_FILE_NAME}")
 endif()

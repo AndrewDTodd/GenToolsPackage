@@ -27,9 +27,9 @@ namespace GenTools::GenSerialize
 
 	public:
 		JSONArray() = default;
-		JSONArray(JSONArray&&) = default;
+		JSONArray(JSONArray&&) noexcept = default;
 
-		JSONArray& operator=(JSONArray&&) = default;
+		JSONArray& operator=(JSONArray&&) noexcept = default;
 
 		template<IsJSONValue... Value>
 		JSONArray(Value&&... value) noexcept;

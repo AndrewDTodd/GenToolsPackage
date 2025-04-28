@@ -12,6 +12,7 @@
 namespace GenTools::GenSerialize
 {
 	DECLARE_FORMAT_PLUGIN(JSONFormatPlugin)
+	REGISTER_STATIC_PLUGIN(JSONFormatPlugin, 0);
 
 	namespace
 	{
@@ -487,5 +488,10 @@ namespace GenTools::GenSerialize
 	std::string JSONFormatPlugin::GetFormatName() const noexcept
 	{
 		return "JSON";
+	}
+
+	uint8_t JSONFormatPlugin::GetPluginPriority() const noexcept
+	{
+		return 0;
 	}
 }

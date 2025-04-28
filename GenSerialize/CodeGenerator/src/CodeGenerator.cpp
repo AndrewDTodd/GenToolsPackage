@@ -1,5 +1,7 @@
 #include <CodeGenerator.h>
 
+#include <sstream>
+
 #include <PlatformInterface.h>
 
 namespace GenTools::GenSerialize
@@ -15,6 +17,8 @@ namespace GenTools::GenSerialize
 		// For each SAST node (each marked type)
 		for (const auto& node : m_SASTNodes)
 		{
+			std::string typeName = node->name;
+
 			// For each format specified for the type
 			for (const auto& format : node->formats)
 			{
@@ -23,7 +27,16 @@ namespace GenTools::GenSerialize
 				{
 					std::string code = plugin->GenerateCode(node);
 
-					generated.code[format] += code;
+					std::ostringstream escapedStream;
+					std::istringstream rawStream(code);
+					std::string line;
+					while (std::getline(rawStream, line))
+					{
+						escapedStream << line << " \\\n"; // Escape newlines for macro continuation
+					}
+
+					generated.code[typeName][format] = escapedStream.str();
+					
 				}
 				else
 				{

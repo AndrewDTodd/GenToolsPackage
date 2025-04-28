@@ -33,9 +33,7 @@ namespace GenTools::GenSerialize
 
 		// Only process definitions (not forward declarations)
 		if (!recordDecl->isThisDeclarationADefinition())
-		{
 			return true;
-		}
 
 		/// Look for an annotation that starts with "serializable"
 		bool isSerializable = false;
@@ -120,7 +118,18 @@ namespace GenTools::GenSerialize
 
 		// Save the node for later lookup and processing
 		m_result.SASTMap[sastNode->name] = sastNode;
-		m_result.SASTTree.push_back(sastNode);
+
+		// We only want to add types defined in this translation unit to the SASTTree collection
+		clang::SourceLocation loc = recordDecl->getLocation();
+		const auto* fileEntry = SM.getFileEntryForID(SM.getFileID(loc));
+		const auto* mainFileEntry = SM.getFileEntryForID(SM.getMainFileID());
+
+		if (!fileEntry || !mainFileEntry)
+			return true; // Safety
+
+		if (fileEntry->getUID() == mainFileEntry->getUID()) // The type is in this file, add it
+			if(sastNode->serializationPolicy != SASTNode::SerializationPolicy::POD)
+				m_result.SASTTree.push_back(sastNode);
 
 		return true;
 	}
@@ -373,11 +382,7 @@ namespace GenTools::GenSerialize
 				sastField.type = SASTType::Object;
 				sastField.originalTypeName = fieldType.getAsString();
 
-				if (sastField.originalTypeName == "std::string")
-				{
-					sastField.type = SASTType::String;
-				}
-				else if (auto recordDecl = fieldType->getAsCXXRecordDecl())
+				if (auto recordDecl = fieldType->getAsCXXRecordDecl())
 				{
 					std::string recordName = recordDecl->getQualifiedNameAsString();
 					if (m_result.SASTMap.find(recordName) != m_result.SASTMap.end())
@@ -391,6 +396,11 @@ namespace GenTools::GenSerialize
 					}
 				}
 			}
+			else if (fieldType->isBooleanType())
+			{
+				sastField.type = SASTType::Bool;
+				sastField.originalTypeName = fieldType.getAsString();
+			}
 			else if (fieldType->isIntegerType())
 			{
 				sastField.type = SASTType::Int;
@@ -399,11 +409,6 @@ namespace GenTools::GenSerialize
 			else if (fieldType->isFloatingType())
 			{
 				sastField.type = SASTType::Float;
-				sastField.originalTypeName = fieldType.getAsString();
-			}
-			else if (fieldType->isBooleanType())
-			{
-				sastField.type = SASTType::Bool;
 				sastField.originalTypeName = fieldType.getAsString();
 			}
 			else

@@ -7,12 +7,12 @@
 namespace GenTools::GenSerialize
 {
 	/// <summary>
-	/// Holds generated serialization code for a given file/type, organized by format
+	/// Holds generated serialization code for a given marked type. First key is type name, inner map has formats (keys) mapped to generated code (values)
 	/// </summary>
 	struct GeneratedCode
 	{
 		// Map from format name to generated C++ code
-		std::unordered_map<std::string, std::string> code;
+		std::unordered_map<std::string, std::unordered_map<std::string, std::string>> code;
 	};
 }
 

@@ -19,6 +19,7 @@ namespace GenTools::GenSerialize
 	bool GeneratedFileManager::UpdateGeneratedFile(const GeneratedCode& generatedCode) const
 	{
 		auto genPath = GetGeneratedHeaderPath();
+		std::filesystem::create_directories(genPath.parent_path());
 		std::ofstream outFile(genPath);
 		if (!outFile.is_open())
 		{
@@ -26,14 +27,34 @@ namespace GenTools::GenSerialize
 			return false;
 		}
 
-		// Write out a file header and then the generated code
-		outFile << "// Auto-generated serialization code for " << m_sourceFilePath.filename().string() << ". Do not modify manually\n\n";
-		for (const auto& pair : generatedCode.code)
+		// Write put file header
+		outFile << "// Auto-generated serialization code for " << m_sourceFilePath.filename().string() << ". DO NOT MODIFY MANUALLY\n\n";
+
+		if (generatedCode.code.size() == 1)
 		{
-			const auto& format = pair.first;
-			const auto& code = pair.second;
-			outFile << "// Format: " << format << "\n";
-			outFile << code << "\n\n";
+			// Single type ? standard GENERATED_SERIALIZATION_BODY macro
+			auto& [typeName, formatMap] = *generatedCode.code.begin();
+
+			outFile << "#define GENERATED_SERIALIZATION_BODY() \\\n";
+			for (const auto& [format, code] : formatMap)
+			{
+				outFile << "/* Format: " << format << " */ \\\n";
+				outFile << code << "\n";
+			}
+		}
+		else
+		{
+			// Multiple types ? create macro per type
+			for (const auto& [typeName, formatMap] : generatedCode.code)
+			{
+				outFile << "#define " << typeName << "_SERIALIZATION_BODY() \\\n";
+				for (const auto& [format, code] : formatMap)
+				{
+					outFile << "/* Format: " << format << " */ \\\n";
+					outFile << code << "\n";
+				}
+				outFile << "\n";
+			}
 		}
 
 		outFile.close();

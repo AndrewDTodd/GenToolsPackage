@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <stdint.h>
+#include <mutex>
 
 #if defined(__GNUC__) or defined(__clang__)
 #define FORCE_INLINE inline __attribute__((always_inline))
@@ -252,6 +253,8 @@ namespace GenTools
 	class TERMINAL
 	{
 	public:
+		inline static std::mutex terminal_mutex;
+
 #ifdef _WIN_TARGET
 		static FORCE_INLINE void init_windows_terminal()
 		{
@@ -603,6 +606,15 @@ namespace GenTools
 			std::cout << _ESCAPE_CHARACTER << code << ";" << string << ";p";
 		}
 
+		static FORCE_INLINE void PRINT_MESSAGE(const std::string& message)
+		{
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			DEFAULT_TEXT();
+			std::cout << message << std::endl;
+		}
+
 		static FORCE_INLINE void PRINT_WARNING(const std::string& message)
 		{
 #ifdef _WIN_TARGET
@@ -612,6 +624,7 @@ namespace GenTools
 			std::cerr << message << std::endl;
 			DEFAULT_TEXT();
 		}
+
 		static FORCE_INLINE void PRINT_ERROR(const std::string& message)
 		{
 #ifdef _WIN_TARGET
@@ -624,6 +637,48 @@ namespace GenTools
 
 		static FORCE_INLINE void CLEAR_TERMINAL()
 		{
+#if defined(_LINUX_TARGET) or defined(_MAC_TARGET)
+			std::system("clear");
+#elif defined(_WIN_TARGET)
+			std::system("cls");
+#endif
+		}
+		
+		static FORCE_INLINE void PRINT_MESSAGE_S(const std::string& message)
+		{
+			std::lock_guard<std::mutex> lock(terminal_mutex);
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			DEFAULT_TEXT();
+			std::cout << message << std::endl;
+		}
+
+		static FORCE_INLINE void PRINT_WARNING_S(const std::string& message)
+		{
+			std::lock_guard<std::mutex> lock(terminal_mutex);
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			YELLOW_TEXT();
+			std::cerr << message << std::endl;
+			DEFAULT_TEXT();
+		}
+
+		static FORCE_INLINE void PRINT_ERROR_S(const std::string& message)
+		{
+			std::lock_guard<std::mutex> lock(terminal_mutex);
+#ifdef _WIN_TARGET
+			init_windows_terminal();
+#endif
+			RED_TEXT();
+			std::cerr << message << std::endl;
+			DEFAULT_TEXT();
+		}
+
+		static FORCE_INLINE void CLEAR_TERMINAL_S()
+		{
+			std::lock_guard<std::mutex> lock(terminal_mutex);
 #if defined(_LINUX_TARGET) or defined(_MAC_TARGET)
 			std::system("clear");
 #elif defined(_WIN_TARGET)

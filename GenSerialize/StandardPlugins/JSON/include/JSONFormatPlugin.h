@@ -2,6 +2,7 @@
 #define GENTOOLS_GENSERIALIZE_JSON_FORMAT_PLUGIN_H
 
 #include <IFormatPlugin.h>
+#include <FileFormatRegistry.h>
 
 #include <string>
 
@@ -52,6 +53,12 @@ namespace GenTools::GenSerialize
 		/// </summary>
 		/// <returns>Name of the format this plugin hangles</returns>
 		std::string FORMAT_PLUGIN_CALL GetFormatName() const noexcept override;
+
+		/// <summary>
+		/// Get the priority level assigned to the plugin. Higher priorities can override lower priority plugins with the same format name
+		/// </summary>
+		/// <returns>Priority level (default = 0)</returns>
+		virtual uint8_t FORMAT_PLUGIN_CALL GetPluginPriority() const noexcept override;
 	};
 }
 

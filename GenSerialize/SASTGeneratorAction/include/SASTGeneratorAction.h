@@ -22,13 +22,7 @@ namespace GenTools::GenSerialize
 	public:
 		SASTGeneratorAction(SASTResult& result);
 
-		//void ProcessFiles(std::vector<std::string>& paths);
-
 		std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance& ci, llvm::StringRef inFile) override;
-
-		/*const std::vector<std::shared_ptr<SASTNode>>& GetSASTTree() const;
-		const std::unordered_map<std::string, std::shared_ptr<SASTNode>>& GetSASTMap() const;
-		const std::string& GetFilePath() const;*/
 	};
 }
 

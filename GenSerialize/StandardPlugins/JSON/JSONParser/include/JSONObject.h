@@ -33,9 +33,9 @@ namespace GenTools::GenSerialize
 
 	public:
 		JSONObject() = default;
-		JSONObject(JSONObject&&) = default;
+		JSONObject(JSONObject&&) noexcept = default;
 
-		JSONObject& operator=(JSONObject&&) = default;
+		JSONObject& operator=(JSONObject&&) noexcept = default;
 
 		template<IsJSONValue Value>
 		void AddMember(std::string&& key, Value&& value) noexcept;

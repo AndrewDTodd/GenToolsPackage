@@ -23,9 +23,10 @@
 #define FORMAT_PLUGIN_CALL __cdecl
 #endif
 
-#define DECLARE_FORMAT_PLUGIN(classname)											\
-	extern "C" FORMAT_PLUGIN_ABI IFormatPlugin* CreatePlugin() {					\
-		return std::make_shared<classname>().get();									\
+#define DECLARE_FORMAT_PLUGIN(PluginClass)												\
+	extern "C" FORMAT_PLUGIN_ABI IFormatPlugin* CreatePlugin() {						\
+		static std::shared_ptr<PluginClass> instance = std::make_shared<PluginClass>(); \
+		return instance.get();															\
 	}
 
 namespace GenTools::GenSerialize
@@ -53,6 +54,12 @@ namespace GenTools::GenSerialize
 		/// </summary>
 		/// <returns>Name of the format this plugin hangles</returns>
 		virtual std::string FORMAT_PLUGIN_CALL GetFormatName() const noexcept = 0;
+
+		/// <summary>
+		/// Get the priority level assigned to the plugin. Higher priorities can override lower priority plugins with the same format name
+		/// </summary>
+		/// <returns>Priority level (default = 0)</returns>
+		virtual uint8_t FORMAT_PLUGIN_CALL GetPluginPriority() const noexcept = 0;
 	};
 }
 

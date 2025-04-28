@@ -127,6 +127,8 @@ if(${PROJECT_NAME}_BUILD)
 		SOVERSION ${PROJECT_VERSION_MAJOR}
 	)
 
+	target_link_libraries(GenSerialize PRIVATE ${TARGET_NAME})
+
 # End Target Creation *****************************************************************************
 #**************************************************************************************************
 
@@ -274,5 +276,7 @@ endif()
 add_custom_command(TARGET JSON_FormatPlugin POST_BUILD 
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different 
 	$<TARGET_FILE:JSON_FormatPlugin> # The build shared library
-	$<TARGET_FILE_DIR:run_JSONFormatPlugin_tests> # The directory where the test executalbles are 
+	$<TARGET_FILE_DIR:run_JSONFormatPlugin_tests> # The directory where the test executalbles are
+	$<TARGET_FILE_DIR:integration_GenSerialize> # The directory where the test executalbles are 
+	$<TARGET_FILE_DIR:GenSerialize> # The directory where the test executalbles are 
 )

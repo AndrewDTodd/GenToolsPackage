@@ -29,9 +29,9 @@ namespace GenTools::GenSerialize
 
 	public:
 		JSONStructure() = default;
-		JSONStructure(JSONStructure&&) = default;
+		JSONStructure(JSONStructure&&) noexcept = default;
 
-		JSONStructure& operator=(JSONStructure&&) = default;
+		JSONStructure& operator=(JSONStructure&&) noexcept = default;
 
 		template<IsJSONValue Value>
 		void AddMember(std::string&& key, Value&& value) noexcept;

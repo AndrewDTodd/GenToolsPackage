@@ -3,7 +3,6 @@
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/VirtualFileSystem.h>
-#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/ADT/IntrusiveRefCntPtr.h>
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
@@ -24,7 +23,8 @@
 #include <streambuf>
 #include <iostream>
 
-struct OutputCapture {
+struct OutputCapture
+{
 	std::stringstream outBuffer;
 	std::stringstream errBuffer;
 
@@ -51,20 +51,22 @@ using namespace clang::tooling;
 
 using namespace GenTools::GenSerialize;
 
-class JSONFormatPluginTest : public ::testing::Test {
+class JSONFormatPluginTest : public ::testing::Test
+{
 protected:
 	std::unordered_map<std::string, std::vector<std::shared_ptr<SASTNode>>> globalSASTTrees;
 	std::unordered_map<std::string, std::shared_ptr<SASTNode>> globalSASTMap;
 
-	static void AssertCodeEqual(const std::string& actual, const std::string& expected) {
+	static void AssertCodeEqual(const std::string& actual, const std::string& expected)
+	{
 		std::string normA, normB;
 		std::remove_copy(actual.begin(), actual.end(), std::back_inserter(normA), '\r');
 		std::remove_copy(expected.begin(), expected.end(), std::back_inserter(normB), '\r');
 		EXPECT_EQ(normA, normB);
 	}
 
-
-	void GenerateSASTFromSources(const std::vector<std::pair<std::string, std::string>>& virtualFiles) {
+	void GenerateSASTFromSources(const std::vector<std::pair<std::string, std::string>>& virtualFiles)
+	{
 		// Extract paths
 		std::vector<std::string> sourcePaths;
 		for (const auto& [filename, _] : virtualFiles) {
@@ -72,9 +74,14 @@ protected:
 		}
 
 		std::vector<std::string> compilationArgs = {
-			"-xc++", "-std=c++20", "-fsyntax-only", "-Wno-pragma-once-outside-header", "-nostdinc++"
+			"-xc++",                            // Treat all input as C++
+			"-std=c++20",                       // Use C++20
+			"-fsyntax-only",                    // Don't generate code, just parse
+			"-Wno-pragma-once-outside-header",  // Silence warnings for #pragma once
+			"-nostdinc++",                      // Skip system C++ headers (for speed/stability)
+			"-fno-exceptions",                  // Optional: disable exceptions
+			"-fno-rtti",                        // Optional: disable RTTI
 		};
-
 		auto Compilations = std::make_unique<FixedCompilationDatabase>(".", compilationArgs);
 
 		// === Create Virtual FS ===
@@ -129,7 +136,8 @@ protected:
 };
 
 
-TEST_F(JSONFormatPluginTest, HandlesVectorOfInts) {
+TEST_F(JSONFormatPluginTest, HandlesVectorOfInts)
+{
 	GenerateSASTFromSources({
 		{"VectorType.h", R"cpp(
 			#pragma once
@@ -211,7 +219,8 @@ static void JSONDeserialize(VectorType& objReceiver, const std::istream& isSourc
 	AssertCodeEqual(code, expected);
 }
 
-TEST_F(JSONFormatPluginTest, HandlesUnorderedMapOfPODs) {
+TEST_F(JSONFormatPluginTest, HandlesUnorderedMapOfPODs)
+{
 	GenerateSASTFromSources({
 		{"Header.h", R"cpp(
 			#pragma once

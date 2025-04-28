@@ -27,7 +27,7 @@ namespace GenTools::GenSerialize
 		std::regex includeRegex("#include\\s*[<\"]([a-zA-Z0-9_/]*)" + headerName + "\\.generated\\.h[>\"]");
 
 		// Regex to match GENERATED_SERIALIZATION_BODY() with optional spaces
-		std::regex bodyRegex(R"(GENERATED_SERIALIZATION_BODY\s*\(\s*\))");
+		std::regex bodyRegex(R"(_SERIALIZATION_BODY\s*\(\s*\))");
 
 		bool foundGeneratedHeader = std::regex_search(fileContents, includeRegex);
 		bool foundGeneratedBody = std::regex_search(fileContents, bodyRegex);

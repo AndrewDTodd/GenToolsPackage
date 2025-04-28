@@ -29,7 +29,7 @@ namespace GenTools::GenSerialize
         JSONObject obj;
         obj.Parse(jsonView);
         jsonRoot.m_members = obj.TakeMembers();
-        return std::move(jsonRoot);
+        return jsonRoot;
     }
 
     FORCE_INLINE JSONStructure JSONStructure::FromFile(std::filesystem::path& path)

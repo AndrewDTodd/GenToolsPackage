@@ -161,6 +161,30 @@
       "name": "Win-MSVC-x86_64-Release",
       "configurePreset": "Win-MSVC-x86_64",
       "configuration": "Release"
+    },
+    {
+      "name": "GenSerialize_SingleThreaded",
+      "displayName": "GenSerialize: Single Threaded Driver Test",
+      "description": "Runs the GenSerialize driver in single threaded mode with input in tests/integration/DriverTestFiles",
+      "config": "debug",
+      "configurePreset": "Win-MSVC-x86_64",
+      "filter": {
+        "include": {
+          "name": "^GenSerialize_SingleThreaded$"
+        }
+      }
+    },
+    {
+      "name": "GenSerialize_MultiThreaded",
+      "displayName": "GenSerialize: Multi Threaded Driver Test",
+      "description": "Runs the GenSerialize driver in multi threaded mode with input in tests/integration/DriverTestFiles",
+      "config": "debug",
+      "configurePreset": "Win-MSVC-x86_64",
+      "filter": {
+        "include": {
+          "name": "^GenSerialize_MultiThreaded$"
+        }
+      }
     }
   ],
   "packagePresets": [

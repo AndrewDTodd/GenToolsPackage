@@ -3,6 +3,7 @@
 #include <FileValidator.h>
 #include <CodeGenerator.h>
 #include <GeneratedFileManager.h>
+#include <DynamicPluginLoader.h>
 
 #include <PlatformInterface.h>
 
@@ -24,80 +25,87 @@
 #include <clang/Tooling/Tooling.h>
 #include <clang/Tooling/CompilationDatabase.h>
 
+#include <JSONFormatPlugin.h>
+
 using namespace GenTools;
-//using namespace GenTools::GenParse;
 using namespace GenTools::GenSerialize;
 
 using namespace llvm;
 using namespace llvm::vfs;
 using namespace clang::tooling;
 
-static llvm::cl::OptionCategory myToolCategory("GenSerialize options");
+static llvm::cl::OptionCategory AllCategories("GenSerialize command line options");
 
 static llvm::cl::opt<unsigned>
 ParseThreads("parse_threads",
 	llvm::cl::desc("Number of parallel parse threads to use. 0 to use hardware concurrency level"),
-	llvm::cl::init(0), llvm::cl::cat(myToolCategory));
-
-static llvm::cl::opt<unsigned>
-LinkThreads("link_threads",
-	llvm::cl::desc("Number of parallel link threads to use. 0 to use hardware concurrency level"),
-	llvm::cl::init(0), llvm::cl::cat(myToolCategory));
+	llvm::cl::init(1), llvm::cl::cat(AllCategories));
 
 static llvm::cl::opt<unsigned>
 GenThreads("gen_threads",
 	llvm::cl::desc("Number of parallel code generation threads to use. 0 to use hardware concurrency level"),
-	llvm::cl::init(0), llvm::cl::cat(myToolCategory));
+	llvm::cl::init(0), llvm::cl::cat(AllCategories));
+
+static llvm::cl::opt<std::string>
+PluginDirectory("plugin_dir",
+	llvm::cl::desc("Directory to scan for format plugins to be loaded dynamically"),
+	llvm::cl::init(""), llvm::cl::cat(AllCategories));
 
 static llvm::cl::list<std::string>
-FilePaths("file_paths",
-	llvm::cl::desc("List of file paths to source code for processing"),
-	llvm::cl::OneOrMore, llvm::cl::cat(myToolCategory));
+PluginFiles("plugin",
+	llvm::cl::desc("Explicit path(s) to format plugins to be loaded dynamically"),
+	llvm::cl::ZeroOrMore, llvm::cl::cat(AllCategories));
+
+static llvm::cl::list<std::string>
+IncludePaths("include_path",
+	llvm::cl::desc("Additional include paths to pass to Clang"),
+	llvm::cl::ZeroOrMore, llvm::cl::cat(AllCategories));
+
+static llvm::cl::list<std::string> SourceFiles(
+	llvm::cl::Positional,
+	llvm::cl::desc("<source files>..."),
+	llvm::cl::OneOrMore,
+	llvm::cl::cat(AllCategories)
+);
+
+REGISTER_STATIC_PLUGIN(JSONFormatPlugin, 0);
 
 int main(int argc, const char** argv)
 {
 	try
 	{
-		/*
-		// Create and get pointer to the CmdLineParser instance
-		auto* parser = CmdLineParser<>::GetInstance();
+		// Used to set virtual path for virtual files
+		const std::string virtualIncludeDir = "/__virtual_includes"; // must be absolute or look like it
 
-		// Initialize the parser with program details
-		parser->Initialize("GenSerialize", "Generates serialization code for types marked with SERIALIZABLE macros in source files from paths provided to the program");
-
-		// Define and set flags for the parser instance
-		parser->SetSubFlags(
-			Flag({ "p", "parse_threads" }, "Number of parallel parse threads to use. 0 to use hardware concurrency level", Arg_UInt32(0), true, false, false),
-			Flag({"l", "link_threads"}, "Number of parallel link threads to use. 0 to use hardware concurrency level", Arg_UInt32(0), true, false, false),
-			Flag({"g", "gen_threads"}, "Number of parallel code generation threads to use. 0 to use hardware concurrency level", Arg_UInt32(0), true, false, false),
-			ListFlag<Arg_String>({ "f", "file_paths" }, "List of file paths to source code for processing", true, true)
-		);
-
-		std::vector<std::string_view> args{argv, argv + argc};
-		std::vector<std::string_view>::const_iterator itr = args.begin();
-		itr++;
-
-		parser->Raise(itr, args.end());
-
-		std::vector<std::string> filePaths = parser->GetFlagValue<std::vector<std::string>>("file_paths").value();
-		uint32_t parallelParse = parser->GetFlagValue<uint32_t>("parse_threads").value();
-		uint32_t parallelLink = parser->GetFlagValue<uint32_t>("link_threads").value();
-		uint32_t parallelGen = parser->GetFlagValue<uint32_t>("gen_threads").value();
-
-		uint32_t numCores = std::thread::hardware_concurrency();
-		if (numCores == 0) numCores = 4;
-		if (parallelParse == 0) parallelParse = numCores;
-		if (parallelLink == 0) parallelLink = numCores;
-		*/
-
-		auto optionsParser = CommonOptionsParser::create(argc, argv, myToolCategory);
-		if (!optionsParser)
+		// Compiler args for ClangTool
+		std::vector<std::string> compilationArgs = {
+			"-xc++",                            // Treat all input as C++
+			"-std=c++20",                       // Use C++20
+			"-fsyntax-only",                    // Don't generate code, just parse
+			"-Wno-pragma-once-outside-header",  // Silence warnings for #pragma once
+			"-nostdinc++",                      // Skip system C++ headers (for speed/stability)
+			"-fno-exceptions",                  // Optional: disable exceptions
+			"-fno-rtti",                        // Optional: disable RTTI
+			"-I" + virtualIncludeDir,			// Include the virtual include directory
+		};
+		// Add include paths
+		for (const auto& path : IncludePaths)
 		{
-			TERMINAL::PRINT_ERROR("ERROR: Failed to parse options");
+			compilationArgs.push_back("-I" + path);
+		}
+
+		auto Compilations = std::make_unique<clang::tooling::FixedCompilationDatabase>(".", compilationArgs);
+
+		llvm::cl::HideUnrelatedOptions(AllCategories);
+		llvm::cl::ParseCommandLineOptions(argc, argv, "GenSerialize - Generate serialization code for C++ classes\n");
+
+		if (SourceFiles.empty())
+		{
+			TERMINAL::PRINT_ERROR("No source files provided. Use --help for usage information.");
 			return 1;
 		}
 
-		const auto& sourcePaths = optionsParser->getSourcePathList();
+		const auto& sourcePaths = SourceFiles;
 
 		// --------------------------------------------------------------------------
 		// 1. Create a shared virtual file system overlay
@@ -110,24 +118,78 @@ int main(int argc, const char** argv)
 
 		// Map "SerializationMacros.h" to an empty file.
 		auto EmptyBuffer = llvm::MemoryBuffer::getMemBuffer("", "EmptyBuffer");
-		InMemFS->addFile("SerializationMacros.h", /*ModificationTime=*/0, std::move(EmptyBuffer));
+		InMemFS->addFile(virtualIncludeDir + "/SerializationMacros.h", /*ModificationTime=*/0, std::move(EmptyBuffer));
 
 		// For each source file, map its corresponding .generated.h file to an empty file.
-		for (const auto& sourcePath : sourcePaths) {
+		for (const auto& sourcePath : sourcePaths)
+		{
 			std::filesystem::path path(sourcePath);
-			std::string virtualPath = path.filename().replace_extension(".generated.h").string();
-			auto EmptyBufferGen = llvm::MemoryBuffer::getMemBuffer("", "EmptyBufferGen");
-			InMemFS->addFile(virtualPath, 0, std::move(EmptyBufferGen));
+
+			// Relative path inside the virtual include dir
+			std::filesystem::path virtualHeaderPath = virtualIncludeDir / path.filename();
+
+			// Map the source file into InMemFS
+			auto buffer = llvm::MemoryBuffer::getFileAsStream(sourcePath);
+			if (std::error_code ec = buffer.getError())
+			{
+				TERMINAL::PRINT_WARNING("Warning: Failed to read " + sourcePath);
+				continue;
+			}
+
+			InMemFS->addFile(virtualHeaderPath.string(), 0, std::move(*buffer));
+
+			// Also map the associated .generated.h file to an empty buffer
+			auto emptyGenHeader = llvm::MemoryBuffer::getMemBuffer("", "EmptyGeneratedHeader");
+			std::filesystem::path virtualGenPath = virtualIncludeDir / path.filename().replace_extension(".generated.h");
+			InMemFS->addFile(virtualGenPath.string(), 0, std::move(emptyGenHeader));
 		}
 
 		// Create an overlay that first consults the in-memory FS, then the real FS.
 		auto OverlayFS = llvm::makeIntrusiveRefCnt<llvm::vfs::OverlayFileSystem>(InMemFS);
 		OverlayFS->pushOverlay(RealFS);
 
+		clang::FileSystemOptions fsOpts;
+		auto FileMgr = llvm::makeIntrusiveRefCnt<clang::FileManager>(fsOpts, OverlayFS);
+
 		// Global storage for per-file SAST trees
 		std::unordered_map<std::string, std::vector<std::shared_ptr<SASTNode>>> globalSASTTrees;
 		std::unordered_map<std::string, std::shared_ptr<SASTNode>> globalSASTMap;
 		std::mutex globalsMutex;
+
+		DynamicPluginLoader pluginLoader;
+
+		// 1. Load plugins from directory, if provided
+		if (!PluginDirectory.empty())
+		{
+			TERMINAL::GREEN_TEXT();
+			std::cout << "[INFO] Scanning plugin directory: " << PluginDirectory << std::endl;
+			TERMINAL::DEFAULT_TEXT();
+
+			pluginLoader.LoadPluginsFromDirectory(PluginDirectory);
+		}
+
+		// 2. Load plugins from explicit paths, if provided
+		for (const auto& pluginPath : PluginFiles)
+		{
+			TERMINAL::GREEN_TEXT();
+			std::cout << "[INFO] Loading plugin from file: " << pluginPath << std::endl;
+			TERMINAL::DEFAULT_TEXT();
+
+			if (pluginLoader.LoadPluginFromFile(pluginPath))
+			{
+				TERMINAL::GREEN_TEXT_BRIGHT();
+				std::cout << "\t>> Success" << std::endl;
+				TERMINAL::DEFAULT_TEXT();
+			}
+		}
+
+		// Check the ParseThreads and GenThreads config. If 0 set to hardware concurrency level
+		if (ParseThreads == 0)
+		{
+			ParseThreads = std::thread::hardware_concurrency();
+			if (ParseThreads == 0) // Fallback safety
+				ParseThreads = 1;
+		}
 
 		// Step 1: Parallel Parsing
 		std::vector<std::thread> parseThreads;
@@ -136,13 +198,13 @@ int main(int argc, const char** argv)
 		{
 			std::vector<std::string> fileChunk(sourcePaths.begin() + i, sourcePaths.begin() + std::min(i + chunkSize, sourcePaths.size()));
 
-			parseThreads.emplace_back([&, fileChunk = std::move(fileChunk)]() {
+			parseThreads.emplace_back([&, fileChunk = std::move(fileChunk)]() {	
 				SASTGeneratorActionFactory factory;
-				ClangTool tool(optionsParser->getCompilations(), fileChunk, std::make_shared<clang::PCHContainerOperations>(), OverlayFS);
+				ClangTool tool(*Compilations, fileChunk, std::make_shared<clang::PCHContainerOperations>(), OverlayFS, FileMgr);
 
 				int result = tool.run(&factory);
 				if (result)
-					TERMINAL::PRINT_ERROR("Error while processing a file chunk");
+					TERMINAL::PRINT_WARNING_S("Error while processing a file chunk");
 
 				// Merge per-file SASTs into global storage
 				std::lock_guard<std::mutex> lock(globalsMutex);
@@ -156,35 +218,14 @@ int main(int argc, const char** argv)
 			t.join();
 		}
 
-		// Step 2: Parallel Linking
-		//std::vector<std::thread> linkThreads;
-		//size_t chunkSize = (globalSASTTrees.size() + parallelLink - 1) / parallelLink;
-		//auto iterator = globalSASTTrees.begin();
-		//for (size_t i = 0; i < globalSASTTrees.size(); i += chunkSize)
-		//{
-		//	std::vector<std::pair<std::string, std::vector<std::shared_ptr<SASTNode>>>> localChunk;
+		if (GenThreads == 0)
+		{
+			GenThreads = std::thread::hardware_concurrency();
+			if (GenThreads == 0) // Fallback safety
+				GenThreads = 1;
+		}
 
-		//	for (size_t j = 0; j < chunkSize && iterator != globalSASTTrees.end(); j++, iterator++)
-		//	{
-		//		localChunk.emplace_back(*iterator);
-		//	}
-
-		//	linkThreads.emplace_back([&]() {
-		//		for (auto& [filePath, SASTTree] : localChunk)
-		//		{
-		//			SASTLinker linker(SASTTree, globalSASTMap);
-		//			linker.Link();
-		//		}
-		//	});
-		//}
-
-		//// Wait for all link threads to finish
-		//for (auto& t : linkThreads)
-		//{
-		//	t.join();
-		//}
-
-		// Step 3: Parallel Code Generation
+		// Step 2: Parallel Code Generation
 		std::vector<std::thread> codeGenThreads;
 		chunkSize = (globalSASTTrees.size() + GenThreads - 1) / GenThreads;
 		auto iterator = globalSASTTrees.begin();
@@ -200,13 +241,16 @@ int main(int argc, const char** argv)
 			codeGenThreads.emplace_back([&, localChunk = std::move(localChunk)]() {
 				for (const auto& [filePath, SASTTree] : localChunk)
 				{
+					if (SASTTree.empty())
+						continue;
+
 					CodeGenerator codeGen(SASTTree);
 					GeneratedCode generatedCode = codeGen.GenerateCode();
 
 					GeneratedFileManager fileManager(std::filesystem::path{filePath});
 					if (!fileManager.UpdateGeneratedFile(generatedCode))
 					{
-						TERMINAL::PRINT_ERROR("ERROR: Failed to update generated header for " + filePath);
+						TERMINAL::PRINT_ERROR_S("ERROR: Failed to update generated header for " + filePath);
 					}
 				}
 			});
@@ -223,6 +267,6 @@ int main(int argc, const char** argv)
 	{
 		TERMINAL::PRINT_ERROR(ex.what());
 
-		return -1;
+		return 1;
 	}
 }
